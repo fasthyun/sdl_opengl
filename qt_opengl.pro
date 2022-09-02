@@ -17,14 +17,19 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
     backup.cpp \
+    element3d.cpp \
+    font.cpp \
     gltf-loader.cc \
     main.cpp \
     mainwindow.cpp \
     myglwidget.cpp \
     object.cpp \
+    particle.cpp \
     zmath.cpp
 
 HEADERS += \
+    element3d.h \
+    font.h \
     mainwindow.h \
     myglwidget.h \
     object.h \
@@ -37,7 +42,9 @@ FORMS += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
-
+#
+INCLUDEPATH += /usr/include/freetype2
+INCLUDEPATH += /usr/include/libpng16
 #INCLUDEPATH += C:/boost/boost_1_53_0/
-LIBS +=   -lboost_filesystem -lboost_system
+LIBS +=   -lboost_filesystem -lboost_system -lfreetype -lGLU
 #LIBS += "-LC:/boost/boost_1_53_0/stage/lib/"

@@ -36,7 +36,6 @@ void MainWindow::on_timeout()
 {
 
    fprintf(stderr,"timeout!\n");
-   //ui->mywidget->update();
-   ui->mywidget->update_objects();
+   //ui->mywidget->update();   
    // printf("timeout!\n");
 }

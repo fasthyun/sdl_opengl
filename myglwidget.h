@@ -1,20 +1,20 @@
 #ifndef MYGLWIDGET_H
 #define MYGLWIDGET_H
 
-#include <QGLWidget>
+// #include <QGLWidget> // old
+#include <QOpenGLWidget>
 #include <QTimer>
 #include "./support/mesh.h"
 #include "object.h"
 
-class MyGLWidget : public QGLWidget
+class MyGLWidget : public QOpenGLWidget
 {
     Q_OBJECT
 public:
     explicit MyGLWidget(QWidget *parent = 0);
     ~MyGLWidget();
     void setData(vector<Meshf> *_meshes);
-    void update_objects();
-    void draw_grid();
+
 signals:
 
 public slots:
@@ -29,26 +29,28 @@ protected:
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
     void keyPressEvent(QKeyEvent *event);
+    void keyReleaseEvent(QKeyEvent *event);
 public slots:
     // slots for xyz-rotation slider
     void setXRotation(int angle);
-    void setYRotation(int angle);
-    void setZRotation(int angle);
+
     void on_timeout();
 signals:
     // signaling rotation from mouse movement
     void xRotationChanged(int angle);
-    void yRotationChanged(int angle);
-    void zRotationChanged(int angle);
 
 private:
     void draw();    
     QTimer *timer;
     qint64 time_prev;
-    qint64 time_fps;
+    float time_fps;
+    float time_call;
+
+
 
     int fps;
     int fps_count;
+    int call_count;
 
     int xRot;
     int yRot;
@@ -58,7 +60,7 @@ private:
 
     vector<Meshf> *meshes;
     vector<xObject* > objects;    
-    xObject *d_camera;
+    camera *d_camera;
 };
 
 #endif // MYGLWIDGET_H

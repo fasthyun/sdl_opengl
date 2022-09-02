@@ -1,27 +1,42 @@
 
 #include <QtWidgets>
-#include <QtOpenGL>
 #include "object.h"
 #include "myglwidget.h"
 #include "zmath.h"
+#include "font.h"
+
+#include <GL/glu.h>
 
 MyGLWidget::MyGLWidget(QWidget *parent)
-    : QGLWidget(QGLFormat(QGL::SampleBuffers), parent)
+    : QOpenGLWidget( parent)
 {
     meshes=NULL; // temp
-    xRot = 0;
-    yRot = 0;
-    zRot = 0;        
+
     timer =new QTimer();
+    setFocusPolicy(Qt::StrongFocus);
     connect(timer,SIGNAL(timeout()),this,SLOT(on_timeout()));
     timer->start(0);
     time_prev=QDateTime::currentMSecsSinceEpoch();
     fps=0;
     fps_count=0;
-    xObject *x = new xObject();
-    objects.push_back(x);    
+
+    xObject *obj = new xObject();
+    objects.push_back(obj);
+
+    obj = new grid();
+    objects.push_back(obj);
+
     d_camera = new camera();
+    set(d_camera->pos,0,4,30);
+    set(d_camera->up,0,1,0); //
+    set(d_camera->forward,0,0,-1); //
     objects.push_back(d_camera);
+    time_fps=0;
+
+    call_count=0;
+    time_call=0;
+
+    font_init();
 }
 
 MyGLWidget::~MyGLWidget()
@@ -60,108 +75,102 @@ void MyGLWidget::setXRotation(int angle)
     if (angle != xRot) {
         xRot = angle;
         emit xRotationChanged(angle);
-        updateGL();
+        update();
     }
 }
 
-void MyGLWidget::setYRotation(int angle)
-{
-    qNormalizeAngle(angle);
-    if (angle != yRot) {
-        yRot = angle;
-        emit yRotationChanged(angle);
-        updateGL();
-    }
-}
-
-void MyGLWidget::setZRotation(int angle)
-{
-    qNormalizeAngle(angle);
-    if (angle != zRot) {
-        zRot = angle;
-        emit zRotationChanged(angle);
-        updateGL();
-    }
-}
-
-void MyGLWidget::update_objects()
-{
-    for ( size_t i=0 ; i < objects.size(); i++)
-    {
-        objects[i]->update();
-    }
-
-}
 
 void MyGLWidget::on_timeout()
 {
     qint64 _now = QDateTime::currentMSecsSinceEpoch();
-    qint64 dt=_now - time_prev;
+    float  dt= (_now - time_prev)/1000.0;
     time_prev=_now;
-    time_fps+=dt;
+    time_fps +=dt;
+    time_call +=dt;
 
-    //update();
-    update_objects();
-    updateGL();
+    call_count++;
+    if (time_call>1.0)
+    {
+        fprintf(stderr,"call=%d\n",call_count);
+        call_count=0;
+        time_call-=1.0;
+    }
+
+    // update_objects
+    for ( size_t i=0 ; i < objects.size(); i++)
+    {
+        objects[i]->update(dt);
+    }
+    update();
 }
 
 void MyGLWidget::initializeGL()
 {
     //qglClearColor(Qt::black);
     glEnable(GL_DEPTH_TEST);
-    glDisable(GL_CULL_FACE);
-    //glEnable(GL_CULL);
+    glDisable(GL_CULL_FACE);    
     glShadeModel(GL_SMOOTH);
-    //glEnable(GL_LIGHTING);
-    //glEnable(GL_LIGHT0);
-    static GLfloat lightPosition[4] = { 0, 50, 80, 1.0 };
+
+    static GLfloat lightPosition[4] = { 0, 80, 80, 2.0 };
     glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 }
 
 void MyGLWidget::paintGL()
 {
+
     fps_count++;
 
-    if (time_fps>1000)
+    if (time_fps>1.0)
     {
         fps=fps_count;
-        time_fps=0;
+        time_fps=time_fps - 1.0;
         fps_count=0;
+        fprintf(stderr,"fps:%d\n",fps);
     }
-
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glTranslatef(0.0, 0.0, -10.0);
-    glRotatef(xRot / 16.0, 1.0, 0.0, 0.0);
-    glRotatef(yRot / 16.0, 0.0, 1.0, 0.0);
-    glRotatef(zRot / 16.0, 0.0, 0.0, 1.0);
+    glFrustum(-1,1,-1,1,1,5000*3);
+    LookAt(d_camera->pos, d_camera->forward , d_camera->up);
+    /*
+     float target[3];
+     add(d_camera->pos,d_camera->forward,target);
+     gluLookAt(d_camera->pos[0],d_camera->pos[1],d_camera->pos[2],
+            target[0],target[1],target[2], d_camera->up[0],d_camera->up[1],d_camera->up[2]);
+     */
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    // fprintf(stderr,"pos %f %f %f \n",pos[0],pos[1],pos[2]);
+    // fprintf(stderr,"dir %f %f %f \n",dir[0],dir[1],dir[2]);
 
+    //render_text_texture();
 
-    draw_grid();
-    draw();
+    //glEnable(GL_LIGHTING);
+
+     glEnable(GL_LIGHT0);
+    //draw();
+    glDisable(GL_LIGHTING);
+
     for ( size_t i=0 ; i < objects.size(); i++)
     {
+        //glLoadIdentity();
         objects[i]->draw();
     }
-
     glColor3f(1,1,1);
-    renderText(15,23,"FPS:" + QString::number(fps));
-
+    //renderText(15,23,"FPS:" + QString::number(fps));
 }
 
 void MyGLWidget::resizeGL(int width, int height)
 {
     //int side = qMin(width, height);
     // glViewport((width - side) / 2, (height - side) / 2, side, side);
+    printf("resize \n");
     glViewport(0,0,width,height);
-
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-
     glFrustum(-1,1,-1,1,1,5000*3);
     //glOrtho(-2, +2, -2, +2, 1.0, 15.0);
-    //gluLookAt(pos,)
-
     glMatrixMode(GL_MODELVIEW);
 }
 
@@ -172,9 +181,11 @@ void MyGLWidget::mousePressEvent(QMouseEvent *event)
 
 void MyGLWidget::mouseMoveEvent(QMouseEvent *event)
 {
+
     int dx = event->x() - lastPos.x();
     int dy = event->y() - lastPos.y();
-
+    d_camera->on_mouse_moved(dx,dy);
+    /*
     if (event->buttons() & Qt::LeftButton) {
         setXRotation(xRot + 8 * dy);
         setYRotation(yRot + 8 * dx);
@@ -182,14 +193,16 @@ void MyGLWidget::mouseMoveEvent(QMouseEvent *event)
         setXRotation(xRot + 8 * dy);
         setZRotation(zRot + 8 * dx);
     }
-
+    */
     lastPos = event->pos();
 }
 
 void MyGLWidget::keyPressEvent(QKeyEvent *e)
 {
+    d_camera->on_key_pressed(e->key());
     switch(e->key()){
     case  Qt::Key_Up :
+        fprintf(stderr,"up\n");
         break;
     case  Qt::Key_Left :
     break;
@@ -200,23 +213,11 @@ void MyGLWidget::keyPressEvent(QKeyEvent *e)
     }
 }
 
-void MyGLWidget::draw_grid()
+void MyGLWidget::keyReleaseEvent(QKeyEvent *e)
 {
-    glColor4f(0.3,0.3,0.3,1);
-    glBegin(GL_LINES);
-    for(int x=-500 ; x < 500; x++)
-    {
-        glVertex3f(x,0,-500);
-        glVertex3f(x,0,500);
-    }
-
-    for(int z=-500 ; z < 500; z++)
-    {
-        glVertex3f(-500,0,z);
-        glVertex3f(500,0,z);
-    }
-    glEnd();
+     d_camera->on_key_released(e->key());
 }
+
 
 void MyGLWidget::draw()
 {
@@ -229,7 +230,7 @@ void MyGLWidget::draw()
         //vector<float> &vertices = (m->vertices);
         //vector<unsigned int> &faces = (m->faces);
         int face_n=mesh->faces.size()/3;
-        qglColor(Qt::red);
+        glColor3f(0.6,0.6,0.6);
         glBegin(GL_TRIANGLES);
         for (int face_idx=0 ; face_idx<face_n; face_idx++)
         {
