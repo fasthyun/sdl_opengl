@@ -1,5 +1,5 @@
 #include <cmath>
-#include <qopengl.h>
+#include <GL/gl.h>
 
 void normalize(float v[3])
 {

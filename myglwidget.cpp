@@ -4,8 +4,14 @@
 #include "myglwidget.h"
 #include "zmath.h"
 #include "font.h"
-
+#include "texture.h"
 #include <GL/glu.h>
+
+
+extern int key_foward;
+extern int key_backward;
+extern int key_side_right;
+extern int key_side_left;
 
 MyGLWidget::MyGLWidget(QWidget *parent)
     : QOpenGLWidget( parent)
@@ -27,7 +33,7 @@ MyGLWidget::MyGLWidget(QWidget *parent)
     objects.push_back(obj);
 
     d_camera = new camera();
-    set(d_camera->pos,0,4,30);
+    set(d_camera->pos,0,3,7);
     set(d_camera->up,0,1,0); //
     set(d_camera->forward,0,0,-1); //
     objects.push_back(d_camera);
@@ -35,8 +41,13 @@ MyGLWidget::MyGLWidget(QWidget *parent)
 
     call_count=0;
     time_call=0;
-
-    font_init();
+    makeCurrent();
+    font_init2();
+    //init();
+    key_foward=Qt::Key_W;
+    key_backward=Qt::Key_S;
+    key_side_right=Qt::Key_D;
+    key_side_left=Qt::Key_A;
 }
 
 MyGLWidget::~MyGLWidget()
@@ -72,11 +83,7 @@ static void qNormalizeAngle(int &angle)
 void MyGLWidget::setXRotation(int angle)
 {
     qNormalizeAngle(angle);
-    if (angle != xRot) {
-        xRot = angle;
-        emit xRotationChanged(angle);
-        update();
-    }
+
 }
 
 
@@ -108,11 +115,11 @@ void MyGLWidget::initializeGL()
 {
     //qglClearColor(Qt::black);
     glEnable(GL_DEPTH_TEST);
-    glDisable(GL_CULL_FACE);    
-    glShadeModel(GL_SMOOTH);
+    //glDisable(GL_CULL_FACE);
+    //glShadeModel(GL_SMOOTH);
 
     static GLfloat lightPosition[4] = { 0, 80, 80, 2.0 };
-    glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
+    //glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 }
 
 void MyGLWidget::paintGL()
@@ -127,8 +134,11 @@ void MyGLWidget::paintGL()
         fps_count=0;
         fprintf(stderr,"fps:%d\n",fps);
     }
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    glEnable(GL_TEXTURE_2D);
+    glFrontFace(GL_CCW);
+    glEnable(GL_CULL_FACE);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glFrustum(-1,1,-1,1,1,5000*3);
@@ -144,20 +154,19 @@ void MyGLWidget::paintGL()
     // fprintf(stderr,"pos %f %f %f \n",pos[0],pos[1],pos[2]);
     // fprintf(stderr,"dir %f %f %f \n",dir[0],dir[1],dir[2]);
 
-    //render_text_texture();
+    render_text_texture();
 
     //glEnable(GL_LIGHTING);
-
-     glEnable(GL_LIGHT0);
+    //glEnable(GL_LIGHT0);
     //draw();
-    glDisable(GL_LIGHTING);
+    //glDisable(GL_LIGHTING);
 
     for ( size_t i=0 ; i < objects.size(); i++)
     {
-        //glLoadIdentity();
-        objects[i]->draw();
+       glLoadIdentity();
+       objects[i]->draw();
     }
-    glColor3f(1,1,1);
+    //glColor3f(1,1,1);
     //renderText(15,23,"FPS:" + QString::number(fps));
 }
 
@@ -221,28 +230,5 @@ void MyGLWidget::keyReleaseEvent(QKeyEvent *e)
 
 void MyGLWidget::draw()
 {
-    if (meshes==NULL) return; // hmm...
 
-    //printf("mesesh->size()= %ld \n", meshes->size());
-    for(size_t i=0; i< meshes->size();i++)
-    {
-        Meshf *mesh= &(meshes->at(i));        
-        //vector<float> &vertices = (m->vertices);
-        //vector<unsigned int> &faces = (m->faces);
-        int face_n=mesh->faces.size()/3;
-        glColor3f(0.6,0.6,0.6);
-        glBegin(GL_TRIANGLES);
-        for (int face_idx=0 ; face_idx<face_n; face_idx++)
-        {
-            float v0[3], v1[3], v2[3], Ng[3], Ns[3], u, v;
-            u=1;
-            v=1;
-            mesh->GetVerticeNormal(v0,v1,v2,Ng,Ns,face_idx,u,v);
-            glNormal3fv(Ng); // normal for geometry
-            glVertex3fv(v0);
-            glVertex3fv(v1);
-            glVertex3fv(v2);
-        }
-        glEnd();
-    }
 }

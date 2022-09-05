@@ -1,11 +1,11 @@
 #ifndef OBJECT_H
 #define OBJECT_H
 #include <vector>
-#include <QObject>
-#include <QtOpenGL>
 #include "element3d.h"
 
-// xObject , object_x , x_object
+#include "./support/mesh.h"
+// xObject , object_x , x_object, object3d.h
+
 using namespace  std;
 
 
@@ -14,6 +14,7 @@ public:
     xObject();
     virtual void update(float dt=0);
     virtual void draw();
+    void draw_meshes();
 
     void make_circle(float size=1.0);
     void draw_axis();
@@ -21,9 +22,12 @@ public:
 
     vector<vertex*> vertexes; // verts
     vector<triangle*> triangles; // tris
+    vector<Meshf> *meshes;
     virtual void on_key_pressed(uint key);
     virtual void on_key_released(uint key);
     virtual void on_mouse_moved(int dx,int dy);
+
+
 
     // just
     float pos[3];

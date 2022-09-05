@@ -46,6 +46,27 @@ void make_circle(vector<vertex*> &verts, vector<triangle*> &tris, float size)
     }
 }
 
+void make_cylinder(float size=1.0)
+{
+    /*
+    float len=3;
+    glLineWidth(3);
+    glColor3f(1.0, 0, 0);
+    glBegin(GL_POLYGON);
+    glVertex3f(0,0,0);
+    glVertex3f(1,0,0);
+
+    glColor3f(0.0, 1.0, 0);
+    glVertex3f(0,0,0);
+    glVertex3f(0,len,0);
+
+    glColor3f(0.0, 0.0, 1.0);
+    glVertex3f(0,0,0);
+    glVertex3f(0,0,len);
+    glEnd();
+    glLineWidth(1); */
+}
+
 void make_cylinder(vector<vertex*> &verts, vector<triangle*> &tris, float size)
 {
 

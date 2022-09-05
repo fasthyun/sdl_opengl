@@ -4,7 +4,6 @@
 // #include <QGLWidget> // old
 #include <QOpenGLWidget>
 #include <QTimer>
-#include "./support/mesh.h"
 #include "object.h"
 
 class MyGLWidget : public QOpenGLWidget
@@ -46,15 +45,9 @@ private:
     float time_fps;
     float time_call;
 
-
-
     int fps;
     int fps_count;
     int call_count;
-
-    int xRot;
-    int yRot;
-    int zRot;
 
     QPoint lastPos;
 

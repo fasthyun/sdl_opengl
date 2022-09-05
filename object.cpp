@@ -5,6 +5,12 @@
 #include <GL/glu.h>
 // ...
 
+// temporary
+int key_foward;
+int key_backward;
+int key_side_right;
+int key_side_left;
+
 using namespace std::chrono;
 milliseconds ms = duration_cast< milliseconds >(
     system_clock::now().time_since_epoch()
@@ -18,6 +24,7 @@ uint64_t epoch_now() { // timeSinceEpochMillisec
 
 xObject::xObject()
 {
+    meshes=NULL;
     set(pos,0,0,0);
     set(up,0,1,0); //
     set(forward,0,0,1); //
@@ -69,26 +76,6 @@ void xObject::make_circle(float size)
     }
 }
 
-void make_cylinder(float size=1.0)
-{
-    float len=3;
-    glLineWidth(3);
-    glColor3f(1.0, 0, 0);
-    glBegin(GL_POLYGON);
-    glVertex3f(0,0,0);
-    glVertex3f(1,0,0);
-
-    glColor3f(0.0, 1.0, 0);
-    glVertex3f(0,0,0);
-    glVertex3f(0,len,0);
-
-    glColor3f(0.0, 0.0, 1.0);
-    glVertex3f(0,0,0);
-    glVertex3f(0,0,len);
-    glEnd();
-    glLineWidth(1);
-}
-
 void xObject::draw_dir_up()
 {
     float len=3;
@@ -127,10 +114,39 @@ void xObject::draw_axis()
     glLineWidth(1);
 }
 
+void xObject::draw_meshes()
+{
+    if (meshes==NULL) return; // hmm...
+
+    //printf("mesesh->size()= %ld \n", meshes->size());
+    for(size_t i=0; i< meshes->size();i++)
+    {
+        Meshf *mesh= &(meshes->at(i));
+        //vector<float> &vertices = (m->vertices);
+        //vector<unsigned int> &faces = (m->faces);
+        int face_n=mesh->faces.size()/3;
+        glColor3f(0.6,0.6,0.6);
+        glBegin(GL_TRIANGLES);
+        for (int face_idx=0 ; face_idx<face_n; face_idx++)
+        {
+            float v0[3], v1[3], v2[3], Ng[3], Ns[3], u, v;
+            u=1; v=1;
+            mesh->GetVerticeNormal(v0,v1,v2,Ng,Ns,face_idx,u,v);
+            glNormal3fv(Ng); // normal for geometry
+            glVertex3fv(v0);
+            glVertex3fv(v1);
+            glVertex3fv(v2);
+        }
+        glEnd();
+    }
+}
+
 void xObject::draw()
 {
     draw_axis();
     draw_dir_up();
+    draw_meshes();
+    return;
     glColor3f(0.5,0.5,0.5);
     glBegin(GL_TRIANGLES);
     for(size_t i=0; i< triangles.size();i++)
@@ -138,8 +154,7 @@ void xObject::draw()
         triangle *tri= triangles.at(i);
         //vector<float> &vertices = (m->vertices);
         //vector<unsigned int> &faces = (m->faces);
-
-        //    glNormal3fv(Ng); // normal for geometry
+        //glNormal3fv(Ng); // normal for geometry
         int idx;
         idx=tri->v[0];
         glVertex3fv(vertexes[idx]->v);
@@ -189,22 +204,24 @@ void camera::on_key_pressed(uint key)
     float right[3],t[3];
     //fprintf(stderr,"camera.onkey\n");
     float speed=5;
-    switch(key){
-    case  Qt::Key_W :
+    if(key==key_foward) //w
+    {
         multiply(forward,speed,force);
-        break;
-    case  Qt::Key_S :
+    }
+    if(key==key_backward) //s
         multiply(forward,-speed,force);
-        break;
-    case  Qt::Key_D :
+
+    if(key==key_side_right) //d
+    {
         cross(forward,up,right);
         multiply(right,speed,force);
-        break;
-    case  Qt::Key_A :
+    }
+    if(key==key_side_left) // a
+    {
         //float right[3];
         cross(forward,up,right);
         multiply(right,-speed,force);
-        break;
+
     }
     //fprintf(stderr," pressed! %f %f %f \n",force[0],force[1],force[2]);
     //fprintf(stderr," pressed! %f %f %f \n",forward[0],forward[1],forward[2]);
@@ -213,21 +230,19 @@ void camera::on_key_pressed(uint key)
 
 void camera::on_key_released(uint key)
 {
-    switch(key){
-    case  Qt::Key_W :
+    if(key==key_foward) //w
+    {
         multiply(forward,0,force); //
         //fprintf(stderr,"release! %f %f %f \n",force[0],force[1],force[2]);
-        break;
-    case  Qt::Key_S :
-        multiply(forward,0,force);
-        break;
-    case  Qt::Key_D :
-        set(force,0,0,0);
-        break;
-    case  Qt::Key_A :
-        set(force,0,0,0);
-        break;
     }
+     if(key==key_backward) //s
+        multiply(forward,0,force);
+
+   if(key==key_side_right) //d
+        set(force,0,0,0);
+    if(key==key_side_left) // a
+        set(force,0,0,0);
+
 }
 
 void camera::on_mouse_moved(int dx, int dy)
