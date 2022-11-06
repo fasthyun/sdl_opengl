@@ -45,6 +45,7 @@ void sub(float v1[3], float v2[3], float result[3])
 
 void set(float v[3], float x,float y, float z)
 {
+    // TODO: macro
     v[0]=x;
     v[1]=y;
     v[2]=z;
@@ -52,6 +53,7 @@ void set(float v[3], float x,float y, float z)
 
 void set(float src[3], float dst[3])
 {
+    // TODO: macro
     dst[0]=src[0];
     dst[1]=src[1];
     dst[2]=src[2];
@@ -74,6 +76,7 @@ void multiply(float m[4][4], float v[3],float result[3])
 
 void quat_rotate(float r[3], float angle,float v[3],float result[3])
 {
+    // works well,
     float x = r[0] * sin(angle/2);
     float y = r[1] * sin(angle/2);
     float z = r[2] * sin(angle/2);
@@ -99,7 +102,7 @@ void quat_rotate(float r[3], float angle,float v[3],float result[3])
 
 void LookAt(float eye[3], float forward[3], float up[3])
 {
-    // 이해 10%
+    // works well, 이해 10%
     float side[3],new_up[3];
     float m[4][4];
 

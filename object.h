@@ -2,12 +2,16 @@
 #define OBJECT_H
 #include <vector>
 #include "element3d.h"
-
 #include "./support/mesh.h"
-// xObject , object_x , x_object, object3d.h
+#include "./support/material.h"
+
+/* TODO:
+   * naming to xObject , object_x , x_object, object3d.h
+*/
+
+typedef vector<vertex*> vec_vertex;
 
 using namespace  std;
-
 
 class xObject {
 public:
@@ -16,18 +20,20 @@ public:
     virtual void draw();
     void draw_meshes();
 
-    void make_circle(float size=1.0);
     void draw_axis();
     void draw_dir_up();
 
-    vector<vertex*> vertexes; // verts
+    void load_gltf(string name);
+
+    vec_vertex  vertexes; // verts
     vector<triangle*> triangles; // tris
-    vector<Meshf> *meshes;
+    vector<MeshFloat> meshes;
+    vector<Material> materials;
+    vector<Texture> xtextures;
+
     virtual void on_key_pressed(uint key);
     virtual void on_key_released(uint key);
     virtual void on_mouse_moved(int dx,int dy);
-
-
 
     // just
     float pos[3];
@@ -56,6 +62,9 @@ public:
     virtual void update(float dt=0);
     virtual void draw();
 };
+
+
+
 
 
 #endif // OBJECT_H

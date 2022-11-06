@@ -2,8 +2,10 @@
 #define ZMATH_H
 
 //#include <cmath>
-// xmath x_math, mathx, math3d.h
+// TODO:
+// * naming... xmath x_math, mathx, math3d.h
 //
+
 class x_vector {
     float v[3];
 };

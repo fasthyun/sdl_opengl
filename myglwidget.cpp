@@ -1,12 +1,10 @@
-
-#include <QtWidgets>
-#include "object.h"
-#include "myglwidget.h"
 #include "zmath.h"
 #include "font.h"
 #include "texture.h"
-#include <GL/glu.h>
-
+#include "myglwidget.h"
+//#include <GL/glu.h>
+#include <QDateTime>
+#include <QtWidgets>
 
 extern int key_foward;
 extern int key_backward;
@@ -41,10 +39,10 @@ MyGLWidget::MyGLWidget(QWidget *parent)
 
     call_count=0;
     time_call=0;
-    makeCurrent();
-    font_init2();
-    //init();
-    key_foward=Qt::Key_W;
+    /// makeCurrent();
+
+    font_init2(); // move to console.h ???
+     key_foward=Qt::Key_W;
     key_backward=Qt::Key_S;
     key_side_right=Qt::Key_D;
     key_side_left=Qt::Key_A;
@@ -120,13 +118,22 @@ void MyGLWidget::initializeGL()
 
     static GLfloat lightPosition[4] = { 0, 80, 80, 2.0 };
     //glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
+
+    printf("OpenGL loaded\n");
+    //gladLoadGLLoader(SDL_GL_GetProcAddress);
+    printf("Vendor:   %s\n", glGetString(GL_VENDOR));
+    printf("Renderer: %s\n", glGetString(GL_RENDERER));
+    printf("Version:  %s\n", glGetString(GL_VERSION));
+
+    printf("Context valid: %d \n" , context()->isValid());
+    printf("Really used OpenGl:  %d.%d \n", context()->format().majorVersion(),
+             context()->format().minorVersion());
+
 }
 
 void MyGLWidget::paintGL()
 {
-
     fps_count++;
-
     if (time_fps>1.0)
     {
         fps=fps_count;
@@ -137,7 +144,7 @@ void MyGLWidget::paintGL()
 
     glEnable(GL_TEXTURE_2D);
     glFrontFace(GL_CCW);
-    glEnable(GL_CULL_FACE);
+    //glEnable(GL_CULL_FACE);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -148,7 +155,7 @@ void MyGLWidget::paintGL()
      add(d_camera->pos,d_camera->forward,target);
      gluLookAt(d_camera->pos[0],d_camera->pos[1],d_camera->pos[2],
             target[0],target[1],target[2], d_camera->up[0],d_camera->up[1],d_camera->up[2]);
-     */
+    */
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     // fprintf(stderr,"pos %f %f %f \n",pos[0],pos[1],pos[2]);
@@ -178,14 +185,16 @@ void MyGLWidget::resizeGL(int width, int height)
     glViewport(0,0,width,height);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glFrustum(-1,1,-1,1,1,5000*3);
+    glFrustum(-1, 1, -1, 1, 1, 5000*3);
     //glOrtho(-2, +2, -2, +2, 1.0, 15.0);
-    glMatrixMode(GL_MODELVIEW);
+    glMatrixMode(GL_MODELVIEW);    
 }
 
 void MyGLWidget::mousePressEvent(QMouseEvent *event)
 {
-    lastPos = event->pos();
+    //event->
+   // lastPos = event->pos();
+
 }
 
 void MyGLWidget::mouseMoveEvent(QMouseEvent *event)

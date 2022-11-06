@@ -8,7 +8,6 @@ void make_cube(vector<vertex*> &verts, vector<triangle*> &tris, float size)
 
 }
 
-
 void make_circle(vector<vertex*> &verts, vector<triangle*> &tris, float size)
 {
     // move to element3d.cpp  3d_element, element_3d

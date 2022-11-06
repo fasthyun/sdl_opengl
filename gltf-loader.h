@@ -157,7 +157,7 @@ struct v4dArray {
 /// Loads glTF 2.0 mesh
 ///
 bool LoadGLTF(const std::string &filename, float scale,
-              std::vector<Mesh<float> > *meshes,
+              std::vector<MeshFloat> *meshes,
               std::vector<Material> *materials, std::vector<Texture> *textures);
 
 

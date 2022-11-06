@@ -67,34 +67,34 @@ inline void calculate_normal(T Nn[3], const T v0[3], const T v1[3], const T v2[3
   vnormalize(Nn, N);
 }
 
-template<typename T>
-class Mesh {
+class MeshFloat {
  public:
-    explicit Mesh(const size_t vertex_stride) :
+    explicit MeshFloat(const size_t vertex_stride) :
             stride(vertex_stride) {
     }
 
   string name;
 
-  vector<T> vertices;               /// stride * num_vertices
-  vector<T> facevarying_normals;    /// [xyz] * 3(triangle) * num_faces
-  vector<T> facevarying_tangents;   /// [xyz] * 3(triangle) * num_faces
-  vector<T> facevarying_binormals;  /// [xyz] * 3(triangle) * num_faces
-  vector<T> facevarying_uvs;        /// [xy]  * 3(triangle) * num_faces
-  vector<T>
-      facevarying_vertex_colors;           /// [xyz] * 3(triangle) * num_faces
-  vector<unsigned int> faces;         /// triangle x num_faces
+  vector<float> vertices;               /// stride * num_vertices
+  vector<float> facevarying_normals;    /// [xyz] * 3(triangle) * num_faces
+  vector<float> facevarying_tangents;   /// [xyz] * 3(triangle) * num_faces
+  vector<float> facevarying_binormals;  /// [xyz] * 3(triangle) * num_faces
+  vector<float> facevarying_uvs;        /// [xy]  * 3(triangle) * num_faces
+  vector<float> facevarying_vertex_colors;           /// [xyz] * 3(triangle) * num_faces
+  vector<unsigned int> faces;         /// triangle x num_faces  이거 vertex인덱스 3개 이어진거...
   vector<unsigned int> material_ids;  /// index x num_faces
 
-  T pivot_xform[4][4];
-	size_t stride;													 /// stride for vertex data.
+  float pivot_xform[4][4];
+  size_t stride;
+  /// stride for vertex data.
 
   // --- Required methods in Scene::Traversal. ---
 
   ///
   /// Get the geometric normal and the shading normal at `face_idx' th face.
   ///
-  void GetVerticeNormal(T v0[3],T v1[3],T v2[3],T Ng[3], T Ns[3], const unsigned int face_idx, const T u, const T v) const {
+  void GetVerticeNormal(float v0[3],float v1[3],float v2[3],float Ng[3], float Ns[3], const unsigned int face_idx, const float u, const float v)
+  const {
     // Compute geometric normal.
     unsigned int f0, f1, f2;
     //T v0[3], v1[3], v2[3];
@@ -119,7 +119,7 @@ class Mesh {
 
     if (facevarying_normals.size() > 0) {
 
-      T n0[3], n1[3], n2[3];
+      float n0[3], n1[3], n2[3];
 
       n0[0] = facevarying_normals[9 * face_idx + 0];
       n0[1] = facevarying_normals[9 * face_idx + 1];
@@ -151,31 +151,31 @@ class Mesh {
   ///
   /// Get texture coordinate at `face_idx' th face.
   ///
-  void GetTexCoord(T tcoord[3], const unsigned int face_idx, const T u, const T v) {
+  void GetTexCoord(float tcoord[3], const unsigned int face_idx, const float u, const float v) {
 
     if (facevarying_uvs.size() > 0) {
 
-      T t0[3], t1[3], t2[3];
+      float t0[3], t1[3], t2[3];
 
       t0[0] = facevarying_uvs[6 * face_idx + 0];
       t0[1] = facevarying_uvs[6 * face_idx + 1];
-      t0[2] = static_cast<T>(0.0);
+      t0[2] = static_cast<float>(0.0);
 
       t1[0] = facevarying_uvs[6 * face_idx + 2];
       t1[1] = facevarying_uvs[6 * face_idx + 3];
-      t1[2] = static_cast<T>(0.0);
+      t1[2] = static_cast<float>(0.0);
 
       t2[0] = facevarying_uvs[6 * face_idx + 4];
       t2[1] = facevarying_uvs[6 * face_idx + 5];
-      t2[2] = static_cast<T>(0.0);
+      t2[2] = static_cast<float>(0.0);
 
       lerp(tcoord, t0, t1, t2, u, v);
 
     } else {
   
-      tcoord[0] = static_cast<T>(0.0);
-      tcoord[1] = static_cast<T>(0.0);
-      tcoord[2] = static_cast<T>(0.0);
+      tcoord[0] = static_cast<float>(0.0);
+      tcoord[1] = static_cast<float>(0.0);
+      tcoord[2] = static_cast<float>(0.0);
 
     }
   
@@ -183,7 +183,7 @@ class Mesh {
 
 };
 
-using Meshf = Mesh<float>;
+//using Meshf = Mesh<float>;
 
 
 #endif // EXAMPLE_MESH_H_

@@ -6,10 +6,10 @@
 // ...
 
 // temporary
-int key_foward;
-int key_backward;
-int key_side_right;
-int key_side_left;
+uint key_foward;
+uint key_backward;
+uint key_side_right;
+uint key_side_left;
 
 using namespace std::chrono;
 milliseconds ms = duration_cast< milliseconds >(
@@ -24,7 +24,7 @@ uint64_t epoch_now() { // timeSinceEpochMillisec
 
 xObject::xObject()
 {
-    meshes=NULL;
+    //meshes=NULL;
     set(pos,0,0,0);
     set(up,0,1,0); //
     set(forward,0,0,1); //
@@ -39,42 +39,6 @@ void xObject::update(float dt)
     add(pos, t, pos);
 }
 
-void xObject::make_circle(float size)
-{
-    // move to element3d.cpp  3d_element, element_3d
-    // blender로 아니면 이렇게 ... 둘다 필요?
-
-    int n=50;
-    float dt=2*M_PI/n;
-    float x,y;
-    vertex *vert=new vertex(); //center (0,0,0)
-    vert->v[0]=0;
-    vert->v[1]=0;
-    vert->v[2]=0;
-    vertexes.push_back(vert); // center
-    for (int i=0;i<n;i++)
-    {
-         vertex *vert=new vertex();
-         x=sin(dt*i);
-         y=cos(dt*i);
-         vert->v[0]=x;
-         vert->v[1]=y;
-         vert->v[2]=0;
-         vertexes.push_back(vert);
-    }
-
-    for (int i=0;i< n;i++)
-    {
-        triangle * tri = new triangle();
-        tri->v[0]=0;
-        tri->v[1]=i;
-        if (i+1 >= n)
-            tri->v[2]=1;
-        else
-            tri->v[2]=i+1;
-        triangles.push_back(tri);
-    }
-}
 
 void xObject::draw_dir_up()
 {
@@ -92,6 +56,12 @@ void xObject::draw_dir_up()
     glVertex3fv(t);
     glEnd();
     glLineWidth(1);
+}
+
+#include "gltf-loader.h"
+void xObject::load_gltf(string name)
+{
+    LoadGLTF(name, 1, &meshes, &materials, &xtextures);
 }
 
 void xObject::draw_axis()
@@ -116,18 +86,18 @@ void xObject::draw_axis()
 
 void xObject::draw_meshes()
 {
-    if (meshes==NULL) return; // hmm...
-
-    //printf("mesesh->size()= %ld \n", meshes->size());
-    for(size_t i=0; i< meshes->size();i++)
+    // if (meshes==NULL) return; // hmm...
+    //   TODO: vertexbuffer
+    // printf("mesesh->size()= %ld \n", meshes->size());
+    for(size_t i=0; i< meshes.size();i++)
     {
-        Meshf *mesh= &(meshes->at(i));
+        MeshFloat *mesh= &(meshes.at(i));
         //vector<float> &vertices = (m->vertices);
         //vector<unsigned int> &faces = (m->faces);
         int face_n=mesh->faces.size()/3;
         glColor3f(0.6,0.6,0.6);
         glBegin(GL_TRIANGLES);
-        for (int face_idx=0 ; face_idx<face_n; face_idx++)
+        for (int face_idx=0 ; face_idx < face_n; face_idx++)
         {
             float v0[3], v1[3], v2[3], Ng[3], Ns[3], u, v;
             u=1; v=1;
@@ -145,8 +115,9 @@ void xObject::draw()
 {
     draw_axis();
     draw_dir_up();
-    draw_meshes();
-    return;
+    draw_meshes();    
+
+    /*
     glColor3f(0.5,0.5,0.5);
     glBegin(GL_TRIANGLES);
     for(size_t i=0; i< triangles.size();i++)
@@ -164,6 +135,7 @@ void xObject::draw()
         glVertex3fv(vertexes[idx]->v);
     }
     glEnd();
+    */
 }
 
 void xObject::on_key_pressed(uint key)
@@ -181,7 +153,7 @@ void xObject::on_mouse_moved(int dx, int dy)
 
 }
 
-camera::camera(): xObject()
+camera::camera(): xObject() // init
 {
     set(pos,0,5,20);
     set(up,0,1,0); //
