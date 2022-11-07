@@ -3,7 +3,7 @@
 #include FT_FREETYPE_H //<freetype/freetype.h>
 #include <iostream>
 #include <string>
-#include <algorithm>
+#include <algorithm> // std::max
 #include "texture.h"
 
 FT_Library ft;
@@ -81,8 +81,8 @@ int init_font_freetype()
         continue;
       }
       FT_GlyphSlot g = face->glyph;
-      max_w = std::max(max_w, g->bitmap.width);
-      max_h = std::max(max_h, g->bitmap.rows);
+      max_w = std::max<int>(max_w, g->bitmap.width);
+      max_h = std::max<int>(max_h, g->bitmap.rows);
     }
 
     printf("max_h=%d  max_w=%d \n",max_h,max_w);
@@ -153,7 +153,7 @@ int init_font_freetype()
         //for(int j=0; j<);
 
         x += g->bitmap.width;
-        h = std::max(h, g->bitmap.rows);
+        h = std::max<int>(h, g->bitmap.rows);
     }
 
     glBindTexture(GL_TEXTURE_2D, 0);

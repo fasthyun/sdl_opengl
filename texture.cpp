@@ -13,7 +13,7 @@ texture::texture(std::string file)
     {
         return;
     }
-    auto path="/home/hyun/works/qt_opengl/texture/"+file;
+    auto path="/home/hyun/works/sdl_opengl/texture/"+file;
     std::cout << "texture(): " << path;
     SDL_Surface *surface=LoadImage(path);
     if (surface == NULL) {

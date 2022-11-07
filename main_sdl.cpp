@@ -289,7 +289,7 @@ void init_object()
     objects.push_back(obj);
 
     obj= new xObject();
-    obj->load_gltf("/home/hyun/works/qt_opengl/data/DamagedHelmet.gltf");
+    obj->load_gltf("/home/hyun/works/sdl_opengl/data/DamagedHelmet.gltf");
     objects.push_back(obj);
 
     //time_fps=0;
