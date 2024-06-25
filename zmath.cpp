@@ -1,3 +1,7 @@
+/*
+ * it's need to change zmath.h to something better !
+ *
+ */
 #include <cmath>
 #include <GL/gl.h>
 

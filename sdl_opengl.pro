@@ -29,6 +29,7 @@ HEADERS += \
     console.h \
     element3d.h \
     font.h \
+    gltext.h \
     object.h \
     texture.h \
     zmath.h
