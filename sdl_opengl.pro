@@ -33,3 +33,12 @@ HEADERS += \
     object.h \
     texture.h \
     zmath.h
+
+DISTFILES += \
+    shader/Sprite.frag \
+    shader/Sprite.vert \
+    shader/basic_fragment.glsl \
+    shader/basic_vertex.glsl \
+    shader/fshader.glsl \
+    shader/vertex.glsl \
+    shader/vshader.glsl

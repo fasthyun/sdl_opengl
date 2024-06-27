@@ -28,6 +28,7 @@ out vec4 fragColor;
 void main()
 {
     fragColor = vertexColor;
+    //fragColor = gl_FrontColor;
 }
 
 

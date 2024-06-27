@@ -194,7 +194,7 @@ void main_loop()
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glEnable(GL_BLEND);
         //glFrontFace(GL_CCW);
-        //shader->SetActive();
+        shader->SetActive();
         //glEnableClientState(GL_VERTEX_ARRAY);
         /// glEnable(GL_CULL_FACE);
         glMatrixMode(GL_PROJECTION);

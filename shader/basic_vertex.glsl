@@ -5,9 +5,6 @@
 // Released under the BSD License
 // See LICENSE in root directory for full details.
 // ----------------------------------------------------------------
-
-// Request GLSL 3.3
-
 #version 120
 // This should correspond to the data stored
 // for each vertex in the vertex buffer.
@@ -27,9 +24,11 @@ void main()
 	// For now set the 4th coordinate to 1.0
 	//gl_Position = vec4(inPosition, 1.0);
 	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
-	vertexColor = gl_Color;
+        vertexColor = gl_Color;
+        //gl_FrontColor = gl_Color;
 }
 /*
+// Request GLSL 3.3
 #version 330
 
 //layout(location = 0) in vec4 in_position;

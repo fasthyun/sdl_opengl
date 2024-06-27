@@ -119,7 +119,7 @@ void texture::makeTexture(SDL_Surface *surface)
     int _bytes = surface->format->BytesPerPixel;
     glGenTextures(1, &d_texname);
     glBindTexture(GL_TEXTURE_2D, d_texname);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // ???
+    //glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // ???
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -139,11 +139,11 @@ void texture::makeTexture(SDL_Surface *surface)
             std::cout << "  ===> Not RGBA32: " <<  SDL_GetPixelFormatName(surface->format->format)  ;
 
             SDL_PixelFormat *format = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA32);
-            output = SDL_ConvertSurface(surface, format, 0);
-            SDL_FreeFormat(format); //
+            output = SDL_ConvertSurface(surface, format, 0);            
             std::cout << " ===> result RGBA? :" << (output->format->format==SDL_PIXELFORMAT_RGBA32) << endl;
+            SDL_FreeFormat(format); // remove a leak!
         }
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, d_width, d_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, output->pixels);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, d_width, d_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
     }
     glBindTexture(GL_TEXTURE_2D, 0); //ok!
 }
