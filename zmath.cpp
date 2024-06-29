@@ -1,5 +1,9 @@
 #include <cmath>
 #include <GL/gl.h>
+/*  TODO:
+ *  zmath 이름 바꿔야할듯... 별로임 (hyun)
+ */
+
 
 void normalize(float v[3])
 {
@@ -77,6 +81,12 @@ void multiply(float m[4][4], float v[3],float result[3])
 void quat_rotate(float r[3], float angle,float v[3],float result[3])
 {
     // works well,
+    /*
+     * 쿼터니언을 이용한 회전,  기준 벡터 r, 그리고 회전각 angle
+     * 입력 v , 결과  result
+     * 사용중:
+     * object.cpp ---> void camera::on_mouse_moved(int dx, int dy)
+     */
     float x = r[0] * sin(angle/2);
     float y = r[1] * sin(angle/2);
     float z = r[2] * sin(angle/2);
@@ -102,6 +112,7 @@ void quat_rotate(float r[3], float angle,float v[3],float result[3])
 
 void LookAt(float eye[3], float forward[3], float up[3])
 {
+    // gluLookAt 복제품 :
     // works well, 이해 10%
     float side[3],new_up[3];
     float m[4][4];
