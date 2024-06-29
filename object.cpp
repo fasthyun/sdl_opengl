@@ -256,7 +256,6 @@ void grid::draw()
     glEnd();
 }
 
-
 void grid::update(float dt)
 {
 

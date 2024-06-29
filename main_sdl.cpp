@@ -10,7 +10,6 @@
 #include "zmath.h"
 #include "font.h"
 #include "texture.h"
-
 //#include "Shader.h"
 using namespace std;
 vector<xObject* > objects; 
