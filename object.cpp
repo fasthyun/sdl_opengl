@@ -3,10 +3,11 @@
 #include "zmath.h"
 #include <iostream>
 #include <GL/glu.h>
+#include <SDL2/SDL.h>
 // ...
 
 // temporary
-uint key_foward;
+uint key_forward;
 uint key_backward;
 uint key_side_right;
 uint key_side_left;
@@ -114,8 +115,8 @@ void xObject::draw_meshes()
 void xObject::draw()
 {
     draw_axis();
-    draw_dir_up();
-    draw_meshes();    
+    //draw_dir_up();
+    //draw_meshes();
 
     /*
     glColor3f(0.5,0.5,0.5);
@@ -138,20 +139,6 @@ void xObject::draw()
     */
 }
 
-void xObject::on_key_pressed(uint key)
-{
-
-}
-
-void xObject::on_key_released(uint key)
-{
-
-}
-
-void xObject::on_mouse_moved(int dx, int dy)
-{
-
-}
 
 camera::camera(): xObject() // init
 {
@@ -159,11 +146,54 @@ camera::camera(): xObject() // init
     set(up,0,1,0); //
     set(forward,0,0,-1); //
     set(force,0,0,0);
-}
 
+    key_forward=SDLK_w;
+    key_backward=SDLK_s;
+    key_side_right=SDLK_d;
+    key_side_left=SDLK_a;
+}
+extern bool quit;
 void camera::update(float dt)
 {
+    SDL_Event e; //Event handler
     xObject::update(dt);
+
+    //Handle events on queue
+    while( SDL_PollEvent( &e ) != 0 )
+    {
+        //User requests quit
+        if( e.type == SDL_QUIT )
+        {
+            quit = true;  // global
+        }
+        //Handle keypress with current mouse position
+        else if( e.type == SDL_KEYDOWN)
+        {
+            int key=e.key.keysym.sym;
+            //int scancode=e.key.keysym.scancode;
+            /* SDLK_UP , SDLK_W */
+            //SDL_GetMouseState( &x, &y );
+            //handleKeys( e.text.text[ 0 ], x, y );
+
+            if (key == SDLK_ESCAPE)
+                quit=true;
+
+            on_key_pressed(key);
+            // printf("keycode=%d \n",key);
+        }
+        else if( e.type == SDL_KEYUP)
+        {
+            int key=e.key.keysym.sym;
+            on_key_released(key);
+        }
+        else if( e.type == SDL_MOUSEMOTION)
+        {
+            int dx=e.motion.xrel;
+            int dy=e.motion.yrel;
+            if (e.motion.state==SDL_BUTTON_LMASK)
+                on_mouse_moved(dx,dy);
+        }
+    }
 }
 
 void camera::on_key_pressed(uint key)
@@ -176,7 +206,7 @@ void camera::on_key_pressed(uint key)
     float right[3],t[3];
     //fprintf(stderr,"camera.onkey\n");
     float speed=5;
-    if(key==key_foward) //w
+    if(key==key_forward) //w
     {
         multiply(forward,speed,force);
     }
@@ -200,9 +230,10 @@ void camera::on_key_pressed(uint key)
     fprintf(stderr," pressed! pos %f %f %f \n",pos[0],pos[1],pos[2]);
 }
 
+
 void camera::on_key_released(uint key)
 {
-    if(key==key_foward) //w
+    if(key==key_forward) //w
     {
         multiply(forward,0,force); //
         //fprintf(stderr,"release! %f %f %f \n",force[0],force[1],force[2]);
@@ -241,6 +272,7 @@ void grid::draw()
 {
     //TODO: object
     draw_axis();
+
     glColor4f(0.3,0.3,0.3,1);
     glBegin(GL_LINES);
     for(int x=-500 ; x < 500; x++)
@@ -254,6 +286,7 @@ void grid::draw()
         glVertex3f(500,0,z);
     }
     glEnd();
+
 }
 
 void grid::update(float dt)

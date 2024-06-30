@@ -13,6 +13,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <vector>
 
 Shader::Shader()
 	: mShaderProgram(0)
@@ -33,6 +34,7 @@ bool Shader::Load(const std::string& vertName, const std::string& fragName)
     if (!CompileShader(vertName, GL_VERTEX_SHADER, mVertexShader) ||
         !CompileShader(fragName, GL_FRAGMENT_SHADER, mFragShader))
 	{
+        printf("Shader load() fail ........\n");
 		return false;
 	}
 	
@@ -49,6 +51,8 @@ bool Shader::Load(const std::string& vertName, const std::string& fragName)
 		return false;
 	}
 	
+
+    printf("Shader load() ........\n");//, fileName.c_str());
 	return true;
 }
 
@@ -97,7 +101,21 @@ bool Shader::CompileShader(const std::string& fileName,
 		
 		if (!IsCompiled(outShader))
 		{
+            GLint maxLength = 0;
+            glGetShaderiv(outShader, GL_INFO_LOG_LENGTH, &maxLength);
+
+            // The maxLength includes the NULL character
+            std::vector<GLchar> errorLog(maxLength);
+            glGetShaderInfoLog(outShader, maxLength, &maxLength, &errorLog[0]);
+
+            // Provide the infolog in whatever manor you deem best.
+            // Exit with failure.
+            glDeleteShader(outShader); // Don't leak the shader.
+
+            printf("ERROR:  %s\n", &errorLog[0]);
+
             printf("Failed to compile shader %s\n", fileName.c_str());
+
 			return false;
 		}
 	}

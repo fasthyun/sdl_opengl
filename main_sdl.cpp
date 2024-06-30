@@ -3,27 +3,28 @@
 #include <string>
 //#define GL_GLEXT_PROTOTYPES
 #include <SDL2/SDL.h>
-//#include <SDL2/SDL_opengl.h>
+//don't need ! #include <SDL2/SDL_opengl.h>
 #include <GL/glew.h>
 #include "object.h"
 #include "console.h"
 #include "zmath.h"
 #include "font.h"
 #include "texture.h"
-//#include "Shader.h"
+#include "Shader.h"
+
+#define GLT_DEBUG
+#define GLT_DEBUG_PRINT
+#define GLT_IMPLEMENTATION
+#include "gltext.h" /* https://github.com/vallentin/glText */
+
 using namespace std;
 vector<xObject* > objects; 
 camera *d_camera;
 console *d_console;
-Uint32 prevTime,now;
-
 bool quit;
-//Starts up SDL, creates window, and initializes OpenGL
-int init_sdl();
-//Initializes matrices and clear color
-bool init_GL();
-//Frees media and shuts down SDL
-void close();
+
+int init_SDL();  //Starts up SDL, creates window, and initializes OpenGL
+bool init_GL();  //Initializes matrices and clear color
 
 //The window we'll be rendering to
 SDL_Window* window = NULL;
@@ -31,17 +32,12 @@ SDL_Window* window = NULL;
 SDL_GLContext glContext;
 GLuint vshader,fshader;
 GLuint program;
-//Shader *shader;
-
-extern int key_foward;
-extern int key_backward;
-extern int key_side_right;
-extern int key_side_left;
+Shader *shader;
 
 int width=1024;
 int height=768;
 
-int init_sdl()
+int init_SDL()
 {
     if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO|SDL_INIT_AUDIO) != 0)
     {
@@ -50,8 +46,8 @@ int init_sdl()
     }
     // Set OpenGL attributes
     // Use the core OpenGL profile
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE); //works
-    // Specify version 3.3
+    //SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE); //works
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY); // maybe better
     //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4); //fail
     //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
     // Request a color buffer with 8-bits per RGBA channel
@@ -66,7 +62,7 @@ int init_sdl()
 
     // Create an application window with the following settings:
     window = SDL_CreateWindow(
-        "An SDL2 window",                  // window title
+        "An SDL2 window for Development",                  // window title
         SDL_WINDOWPOS_UNDEFINED,           // initial x position
         SDL_WINDOWPOS_UNDEFINED,           // initial y position
         width,                               // width, in pixels 640x480
@@ -93,12 +89,18 @@ int init_sdl()
     }
 
     // Check OpenGL properties
-    printf("OpenGL loaded\n");
+
     //gladLoadGLLoader(SDL_GL_GetProcAddress);
+    /*
+        Vendor graphic card: NVIDIA Corporation
+        Renderer: GeForce GT 635/PCIe/SSE2
+        Version GL: 4.6.0 NVIDIA 388.13
+        Version GLSL: 4.60 NVIDIA
+    */
     printf("Vendor:   %s\n", glGetString(GL_VENDOR));
     printf("Renderer: %s\n", glGetString(GL_RENDERER));
-    printf("Version:  %s\n", glGetString(GL_VERSION));
-
+    printf("Version GL:  %s\n", glGetString(GL_VERSION));
+    printf("Version GLSL:  %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
     /*
     // Enable the debug callback over gl4.3
     glEnable(GL_DEBUG_OUTPUT);
@@ -109,12 +111,9 @@ int init_sdl()
     // Close and destroy the renderer
     //SDL_DestroyRenderer(renderer);
 
-    SDL_GL_SetSwapInterval(0); // works !! no VSYNC
-    key_foward=SDLK_w;
-    key_backward=SDLK_s;
-    key_side_right=SDLK_d;
-    key_side_left=SDLK_a;
-    prevTime=SDL_GetTicks(); // init
+    SDL_GL_SetSwapInterval(0); // works !! no VSYNC wait
+
+    printf("SDL(OpenGL) loaded\n");
     return 0;
 }
 
@@ -126,17 +125,7 @@ bool init_GL()
     glViewport(0,0,width,height);
     //Initialize Projection Matrix
     glMatrixMode( GL_PROJECTION );
-    glLoadIdentity();
-    
-    //Check for error
-    error = glGetError();
-    if( error != GL_NO_ERROR )
-    {
-        //printf( "Error initializing OpenGL! %s\n", gluErrorString( error ) );
-        //printf( "Error initializing OpenGL! %d\n",  error  );
-        success = false;
-    }
-
+    glLoadIdentity();    
     //Initialize Modelview Matrix
     glMatrixMode( GL_MODELVIEW );
     glLoadIdentity();
@@ -145,12 +134,14 @@ bool init_GL()
     error = glGetError();
     if( error != GL_NO_ERROR )
     {
-       // printf( "Error initializing OpenGL! %s\n", gluErrorString( error ) );
+        printf( "Error initializing OpenGL! %s\n", gluErrorString( error ) );
+        printf( "Error initializing OpenGL! %d\n", error  );
         success = false;
-	}
-  //Initialize clear color
+    }
+
+    //Initialize clear color
     glClearColor( 0.f, 0.f, 0.f, 1.f );
-    
+
     //Check for error
     error = glGetError();
     if( error != GL_NO_ERROR )
@@ -158,8 +149,15 @@ bool init_GL()
        // printf( "Error initializing OpenGL! %s\n", gluErrorString( error ) );
         printf( "Error initializing OpenGL! %d\n",  error  );
         success = false;
+    }   
+
+    if (!gltInit())
+    {
+        printf("ERROR : Failed to initialize glText\n");
+        success = false;
     }
-    
+
+    printf("init_GL() finish...\n");
     return success;
 }
 
@@ -168,19 +166,24 @@ float  time_test=0;
 float  time_fps=0;
 int  fps_count=0;
 int  fps=0;
+
 void main_loop()
 {
-    //SDL_GL_MakeCurrent(window,glContext);
-    //Event handler
-    SDL_Event e;
+    Uint32 prevTime;
+    Uint32 _now;
+    prevTime=SDL_GetTicks(); // init
     float dt=0;
 
+    GLTtext *text1 = gltCreateText();
+    GLTtext *text2 = gltCreateText();
+
+    //SDL_GL_MakeCurrent(window,glContext);
     //While application is running
     while( !quit )
     {
-        now=SDL_GetTicks();
-        dt = (now -prevTime)/1000.0;
-        prevTime=now;
+        _now = SDL_GetTicks();
+        dt = ( _now - prevTime)/1000.0;
+        prevTime= _now;
         time_test+=dt;
         time_fps+=dt;
         fps_count++;
@@ -191,80 +194,62 @@ void main_loop()
             time_fps=0;
             fps_count=0;
         }
-        //Handle events on queue
-        while( SDL_PollEvent( &e ) != 0 )
-        {
-            //User requests quit
-            if( e.type == SDL_QUIT )
-            {
-                quit = true;
-            }
-            //Handle keypress with current mouse position
-            else if( e.type == SDL_KEYDOWN)
-            {
-                int key=e.key.keysym.sym;
-                //int scancode=e.key.keysym.scancode;
-                /* SDLK_UP , SDLK_W */
-                //SDL_GetMouseState( &x, &y );
-                //handleKeys( e.text.text[ 0 ], x, y );
 
-                if (key == SDLK_ESCAPE)
-                    quit=true;
-                
-                d_camera->on_key_pressed(key);
-                printf("keycode=%d \n",key);
-            }
-            else if( e.type == SDL_KEYUP)
-            {
-                int key=e.key.keysym.sym;
-                d_camera->on_key_released(key);
-            }
-            else if( e.type == SDL_MOUSEMOTION)
-            {
-                int dx=e.motion.xrel;
-                int dy=e.motion.yrel;
-                if (e.motion.state==SDL_BUTTON_LMASK)
-                    d_camera->on_mouse_moved(dx,dy);
-            }   
-        }
-        //update_objects
-        for ( size_t i=0 ; i < objects.size(); i++)
-        {
-            objects[i]->update(dt);
-        }
-
-        glClearColor(0,0,0,1);
+        //glClearColor(0,0,0,1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glEnable(GL_TEXTURE_2D);                
         glEnable(GL_DEPTH_TEST);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glEnable(GL_BLEND);
         //glFrontFace(GL_CCW);
-        glEnableClientState(GL_VERTEX_ARRAY);
-        //glEnable(GL_CULL_FACE);
+        shader->SetActive();
+        //glEnableClientState(GL_VERTEX_ARRAY);
+        /// glEnable(GL_CULL_FACE);
         glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();        
+        glLoadIdentity();
         // draw console? or push pop?
-        glFrustum(-1,1,-1,1,1,5000*3);
+        glFrustum(-0.5,0.5,-0.5,0.5,0.5,5000*3);
         LookAt(d_camera->pos, d_camera->forward , d_camera->up);
         glMatrixMode(GL_MODELVIEW);
-        //shader->SetActive();
         glLoadIdentity();
+
         for ( size_t i=0 ; i < objects.size(); i++)
         {
+            objects[i]->update(dt);  //update objects
             objects[i]->draw();
         }
 
-        // temp
+        // Draw top layer : FPS etc
         glViewport(0,0,width,height);
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
         glDisable(GL_DEPTH_TEST);
-        render_text("fps= " + std::to_string(fps)  ,-1,0.95);
+
+        if(1)
+        {
+            char str[30];
+            //render_text("fps= " + std::to_string(fps)  ,-1,0.95);
+            gltBeginDraw();
+            /*
+            gltSetText(text1, "Hello World!");
+            gltColor(1.0f, 1.0f, 1.0f, 1.0f);
+            gltDrawText2D(text1, 0.0f, 0.0f, 1.0f); // x=0.0, y=0.0, scale=1.0
+            gltDrawText2DAligned(text1,(GLfloat)(10),(GLfloat)(20),
+                                 3.0f,  GLT_CENTER, GLT_CENTER);
+            */
+            sprintf(str, "FPS: %d", fps);
+            gltSetText(text2, str);
+            gltDrawText2DAligned(text2, 1.0f, 30, 1.0f, GLT_LEFT, GLT_BOTTOM);
+            gltEndDraw();
+        }
         // printf("dt=%d \n",dt);
         SDL_GL_SwapWindow( window );             
     }
-
+    //gltDeleteText(text1);
+    //gltDeleteText(text2);
+    //gltTerminate();
 }
 
 void init_object()
@@ -287,58 +272,36 @@ void init_object()
     obj=new texture_manager();
     objects.push_back(obj);
 
-    obj= new xObject();
-    obj->load_gltf("/home/hyun/works/sdl_opengl/data/DamagedHelmet.gltf");
-    objects.push_back(obj);
+    //obj= new xObject();
+    //obj->load_gltf("/home/hyun/works/sdl_opengl/data/DamagedHelmet.gltf");
+    //objects.push_back(obj);
 
     //time_fps=0;
     //call_count=0;
     //time_call=0;
+    printf("init_obect())\n");
 }
+
 void init_shader()
 {
-  //  shader=new Shader();
-  //  shader->Load("./Basic.vert","./Basic.frag");
-
-    /*
-    program=glCreateProgram();
-    //glAttachShader(program​, vshader​);
-    //char *vs = NULL,*fs = NULL,*fs2 = NULL;
-    //vshader = glCreateShader(GL_VERTEX_SHADER);
-    //fshader = glCreateShader(GL_FRAGMENT_SHADER);
-
-    shader->CompileShader("./Basic.vert", GL_VERTEX_SHADER, vshader);
-    shader->CompileShader("./Basic.frag", GL_FRAGMENT_SHADER, fshader);
-
-    //const char * vv = vs;
-    //const char * ff = fs;
-
-    //glShaderSource(vshader, 1, &vv,NULL);
-    //glShaderSource(fshader, 1, &ff,NULL);
-
-    //glCompileShader(vshader);
-    //glCompileShader(fshader);
-
-
-    glAttachShader(program,vshader);
-    glAttachShader(program,fshader);
-
-    glLinkProgram(program);
-    glUseProgram(program);
-    */
-
+    shader=new Shader();
+    shader->Load("./shader/basic_vertex.glsl","./shader/basic_fragment.glsl");
 }
+
 #include <complex>
 
 int main(int argc, char *argv[])
 {
-    cout << "SDL test program() !" << endl;
-    cout << sizeof(std::complex<float>) << endl;
-    init_sdl();
+    cout << "SDL(OpenGL) program() !" << endl;
+    cout << "sizeof(complex<float>) ="  << sizeof(std::complex<float>) << "bytes" << endl;
+    init_SDL();
     init_GL();
-    //init_shader();
-    init_font();
-    init_font_freetype();
+    init_shader();
+    //texture *_tex = new texture("font-map.bmp"); // 16x6
+    texture *_tex2 = new texture("check.bmp"); //
+    //init_font();
+    //init_font_freetype();
+
     init_object(); 
     main_loop();
     return 0;

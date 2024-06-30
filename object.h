@@ -31,10 +31,6 @@ public:
     vector<Material> materials;
     vector<Texture> xtextures;
 
-    virtual void on_key_pressed(uint key);
-    virtual void on_key_released(uint key);
-    virtual void on_mouse_moved(int dx,int dy);
-
     // just
     float pos[3];
     float forward[3]; //
