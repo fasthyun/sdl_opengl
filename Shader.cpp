@@ -28,6 +28,33 @@ Shader::~Shader()
 
 }
 
+/*
+program=glCreateProgram();
+//glAttachShader(program​, vshader​);
+//char *vs = NULL,*fs = NULL,*fs2 = NULL;
+//vshader = glCreateShader(GL_VERTEX_SHADER);
+//fshader = glCreateShader(GL_FRAGMENT_SHADER);
+
+shader->CompileShader("./Basic.vert", GL_VERTEX_SHADER, vshader);
+shader->CompileShader("./Basic.frag", GL_FRAGMENT_SHADER, fshader);
+
+//const char * vv = vs;
+//const char * ff = fs;
+
+//glShaderSource(vshader, 1, &vv,NULL);
+//glShaderSource(fshader, 1, &ff,NULL);
+
+//glCompileShader(vshader);
+//glCompileShader(fshader);
+
+
+glAttachShader(program,vshader);
+glAttachShader(program,fshader);
+
+glLinkProgram(program);
+glUseProgram(program);
+*/
+
 bool Shader::Load(const std::string& vertName, const std::string& fragName)
 {
 	// Compile vertex and pixel shaders
@@ -121,7 +148,7 @@ bool Shader::CompileShader(const std::string& fileName,
 	}
 	else
 	{
-        printf("Shader file not found: %s\n", fileName.c_str());
+        printf("Shader can't open : %s\n", fileName.c_str());
 		return false;
 	}
 	

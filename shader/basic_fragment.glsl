@@ -7,7 +7,7 @@
 // ----------------------------------------------------------------
 
 // Request GLSL 3.3
-#version 330
+#version 130
 
 // This corresponds to the output color
 // to the color buffer
@@ -22,8 +22,8 @@ void main()
 }
 
 */
-in vec4  vertexColor;
-out vec4 fragColor;
+in highp vec4  vertexColor;
+out highp vec4 fragColor;
 
 void main()
 {

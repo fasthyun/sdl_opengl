@@ -830,6 +830,28 @@ GLT_API void gltTerminate(void)
 }
 
 static const GLchar* _gltText2DVertexShaderSource =
+"#version 120 \n"
+"uniform mat4 mvp;\n"
+"attribute vec2 position;\n"
+"attribute vec2 texCoord;\n"
+"varying vec2 fTexCoord;\n"
+"void main()\n"
+"{\n"
+"	fTexCoord = texCoord;\n"
+"	gl_Position = mvp * vec4(position, 0.0, 1.0);\n"
+"}\n";
+
+static const GLchar* _gltText2DFragmentShaderSource =
+"#version 120\n"
+"uniform sampler2D diffuse;\n"
+"uniform vec4 color = vec4(1.0, 1.0, 1.0, 1.0);\n"
+"varying vec2 fTexCoord;\n"
+"void main()\n"
+"{\n"
+"	gl_FragColor = texture2D(diffuse, fTexCoord) * color;\n"
+"}\n";
+
+static const GLchar* _gltText2DVertexShaderSource330 =
 "#version 330 core\n"
 "\n"
 "in vec2 position;\n"
@@ -846,7 +868,7 @@ static const GLchar* _gltText2DVertexShaderSource =
 "	gl_Position = mvp * vec4(position, 0.0, 1.0);\n"
 "}\n";
 
-static const GLchar* _gltText2DFragmentShaderSource =
+static const GLchar* _gltText2DFragmentShaderSource330 =
 "#version 330 core\n"
 "\n"
 "out vec4 fragColor;\n"
