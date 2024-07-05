@@ -27,9 +27,10 @@ public:
 class texture_manager : public xObject{
 
 public:
-    texture_manager();
+    texture_manager();    
     virtual void update(float dt=0);
     virtual void draw();
+    void render_texture(GLuint texname,float x,float y,float z,float size) ;
 };
 #endif // TEXTURE_H
 

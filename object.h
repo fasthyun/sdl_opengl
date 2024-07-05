@@ -1,6 +1,9 @@
 #ifndef OBJECT_H
 #define OBJECT_H
 #include <vector>
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_opengl.h>
+#include "Shader.h"
 #include "element3d.h"
 #include "./support/mesh.h"
 #include "./support/material.h"
@@ -14,6 +17,7 @@ typedef vector<vertex*> vec_vertex;
 using namespace  std;
 
 class xObject {
+
 public:
     xObject();
     virtual void update(float dt=0);
@@ -38,6 +42,7 @@ public:
     float force[3];
     float weight;
     uint64_t prev_time;
+    Shader *shader;
 };
 
 class camera : public xObject{
@@ -52,7 +57,9 @@ public:
 
 
 class grid : public xObject{
-
+    GLuint buffer;
+    GLuint vertex_array;
+    int grid_n;
 public:
     grid();
     virtual void update(float dt=0);

@@ -7,33 +7,25 @@
 // ----------------------------------------------------------------
 
 // Request GLSL 3.3
-#version 120
+#version 330
 
 // This corresponds to the output color
 // to the color buffer
-/*
-out vec4 outColor;
-uniform vec4 inColor;
+
+uniform sampler2D ourTexture;
+
+in vec3 ourColor;
+in vec2 TexCoord;
+
+out vec4 FragColor;
+
 
 void main()
 {
-	// RGBA of 100% blue, 100% opaque
-    outColor = inColor;
+    FragColor = texture(ourTexture, TexCoord);
 }
-
-*/
-in highp vec4  vertexColor;
-out highp vec4 fragColor;
-
-void main()
-{
-    fragColor = vertexColor;
-    //fragColor = gl_FrontColor;
-}
-
 
 /*
-
 uniform sampler2D tex;
 uniform vec2 tex_size;
 

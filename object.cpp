@@ -1,9 +1,12 @@
+#include <GL/glew.h>
 #include "object.h"
 #include <chrono>
 #include "zmath.h"
 #include <iostream>
+
 #include <GL/glu.h>
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_opengl.h>
 // ...
 
 // temporary
@@ -25,9 +28,10 @@ uint64_t epoch_now() { // timeSinceEpochMillisec
 
 xObject::xObject()
 {
+    shader=NULL;
     //meshes=NULL;
     set(pos,0,0,0);
-    set(up,0,1,0); //
+    set(up ,0,1,0); //
     set(forward,0,0,1); //
     set(force,0,0,0);
     //make_circle();
@@ -139,7 +143,6 @@ void xObject::draw()
     */
 }
 
-
 camera::camera(): xObject() // init
 {
     set(pos,0,5,20);
@@ -152,6 +155,7 @@ camera::camera(): xObject() // init
     key_side_right=SDLK_d;
     key_side_left=SDLK_a;
 }
+
 extern bool quit;
 void camera::update(float dt)
 {
@@ -243,9 +247,16 @@ void camera::on_key_released(uint key)
 
    if(key==key_side_right) //d
         set(force,0,0,0);
-    if(key==key_side_left) // a
+
+   if(key==key_side_left) // a
         set(force,0,0,0);
 
+
+   if(key==key_side_left) // a
+        set(force,0,0,0);
+
+   if(key==SDLK_1) //
+        set(force,0,0,0);
 }
 
 void camera::on_mouse_moved(int dx, int dy)
@@ -266,27 +277,64 @@ void camera::on_mouse_moved(int dx, int dy)
 
 grid::grid()
 {
+    grid_n=100;
+    shader=new Shader();
+    shader->Load("./shader/grid_vertex.glsl","./shader/grid_fragment.glsl");
+    float *vertexData = (float*)malloc(sizeof(float)*2000*4*2);
+    if (vertexData==NULL)
+    {
+        SDL_Log("ERROR: Faile to malloc !!!!");
+        return;
+    }
+    int i=0;
+    for(int x=-500 ; x < 500; x++)
+    {
+        vertexData[i++]=x;  // x
+        vertexData[i++]=0;  // y
+        vertexData[i++]=500;// z
+        vertexData[i++]=1.0;
+        vertexData[i++]=x;
+        vertexData[i++]=0;
+        vertexData[i++]=-500;
+        vertexData[i++]=1.0;
+    }
 
+    for(int z=-500 ; z < 500; z++)
+    {
+        vertexData[i++]=-500;  // x
+        vertexData[i++]=0;  // y
+        vertexData[i++]=z;// z
+        vertexData[i++]=1.0;
+        vertexData[i++]=500;
+        vertexData[i++]=0;
+        vertexData[i++]=z;
+        vertexData[i++]=1.0;
+    }
+    glGenVertexArrays(1, &vertex_array);
+    glGenBuffers(1, &buffer);
+
+    glBindVertexArray(vertex_array);
+    glBindBuffer(GL_ARRAY_BUFFER, buffer);
+    glBufferData(GL_ARRAY_BUFFER, 2000*8* sizeof(float)/* bytes */, vertexData, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float) /* bytes */, (void*)0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
+    free(vertexData);
 }
+
+
 void grid::draw()
 {
     //TODO: object
-    draw_axis();
-
-    glColor4f(0.3,0.3,0.3,1);
-    glBegin(GL_LINES);
-    for(int x=-500 ; x < 500; x++)
-    {
-        glVertex3f(x,0,-500);
-        glVertex3f(x,0,500);
-    }
-    for(int z=-500 ; z < 500; z++)
-    {
-        glVertex3f(-500,0,z);
-        glVertex3f(500,0,z);
-    }
-    glEnd();
-
+    //draw_axis();
+    glBindVertexArray(vertex_array);
+    glDrawArrays(GL_LINES, 0, 4000);
+    //glDrawArrays(GL_LINES, 0, 4);
+    glBindVertexArray(0);
+    //glDisableVertexAttribArray(0);
+    //glBindBuffer(GL_ARRAY_BUFFER, 0);    
 }
 
 void grid::update(float dt)

@@ -150,7 +150,8 @@ void texture::makeTexture(SDL_Surface *surface)
 
 
 // TODO
-void render_texture(GLuint texname,float x,float y,float z,float size) {
+void texture_manager::render_texture(GLuint texname,float x,float y,float z,float size)
+{
     glBindTexture(GL_TEXTURE_2D, texname);
     glBegin(GL_QUADS);
     glTexCoord2f(0.0, 0.0); glVertex3f(x, y , z);
@@ -164,6 +165,17 @@ void render_texture(GLuint texname,float x,float y,float z,float size) {
 texture_manager::texture_manager()
 {
 
+    float vertices[] = {
+        // positions          // colors           // texture coords
+         0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // top right
+         0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // bottom right
+        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // bottom left
+        -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // top left
+    };
+
+
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
 }
 
 void texture_manager::update(float dt)

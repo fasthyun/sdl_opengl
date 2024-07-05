@@ -22,12 +22,12 @@ void main()
 }
 
 */
-in highp vec4  vertexColor;
-out highp vec4 fragColor;
+//in highp vec4  vertexColor;
+//out highp vec4 fragColor;
 
 void main()
 {
-    fragColor = vertexColor;
+    gl_FragColor = vec4(0.5,0.5,0.5,1);
     //fragColor = gl_FrontColor;
 }
 

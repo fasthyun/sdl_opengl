@@ -40,6 +40,10 @@ DISTFILES += \
     shader/basic_fragment.glsl \
     shader/basic_vertex.glsl \
     shader/fshader.glsl \
+    shader/grid_fragment.glsl \
+    shader/grid_vertex.glsl \
+    shader/texture_fragment.glsl \
+    shader/texture_vertex.glsl \
     shader/vertex.glsl \
     shader/vshader.glsl \
     shader/basic_fragment120.glsl \
