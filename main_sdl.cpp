@@ -203,7 +203,7 @@ int init_SDL()
     // Enable the debug callback over gl4.3
     glEnable(GL_DEBUG_OUTPUT);
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);    
-    glDebugMessageCallback(GLDebugMessageCallback, NULL);
+    //glDebugMessageCallback(GLDebugMessageCallback, NULL);
     //glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, true);
 
     // Close and destroy the renderer
@@ -309,11 +309,11 @@ void main_loop()
         glLoadIdentity();
         // draw console? or push pop?
         glFrustum(-0.5,0.5,-0.5,0.5,0.5,500*3);
-        //LookAt(d_camera->pos, d_camera->forward , d_camera->up);
-        gluLookAt(d_camera->pos[0],d_camera->pos[1],d_camera->pos[2],
+        LookAt(d_camera->pos, d_camera->forward , d_camera->up);
+        /* gluLookAt(d_camera->pos[0],d_camera->pos[1],d_camera->pos[2],
                   d_camera->pos[0]+d_camera->forward[0]*3,d_camera->pos[1]+d_camera->forward[1]*3 ,
                   d_camera->pos[2]+d_camera->forward[2]*3,
-                  d_camera->up[0],d_camera->up[1],d_camera->up[2]);
+                  d_camera->up[0],d_camera->up[1],d_camera->up[2]); */
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
 

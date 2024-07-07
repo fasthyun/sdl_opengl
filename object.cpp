@@ -28,7 +28,7 @@ uint64_t epoch_now() { // timeSinceEpochMillisec
 
 xObject::xObject()
 {
-    shader=NULL;
+    shader=NULL; // ***
     //meshes=NULL;
     set(pos,0,0,0);
     set(up ,0,1,0); //

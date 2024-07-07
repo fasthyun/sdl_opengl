@@ -2,7 +2,7 @@
 #define TEXTURE_H
 
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_opengl.h>
+//#include <SDL2/SDL_opengl.h>
 #include <string>
 #include "object.h"
 
@@ -26,6 +26,7 @@ public:
 
 class texture_manager : public xObject{
 
+    unsigned int VBO, VAO, EBO;
 public:
     texture_manager();    
     virtual void update(float dt=0);

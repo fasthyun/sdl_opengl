@@ -2,7 +2,7 @@ QT      -= gui core qtwidget
 CONFIG  += c++11 debug
 CONFIG  -= qml_debug
 
-QMAKE_CXXFLAGS += -H -Wno-unused-parameter -Wno-unused-variable
+QMAKE_CXXFLAGS += -H -Wno-unused-parameter -Wno-unused-variable -Wwrite-strings
 
 INCLUDEPATH += /usr/include/freetype2
 LIBS +=  -lSDL2 -lboost_filesystem -lboost_system -lfreetype -lGL -lGLU -lGLEW
