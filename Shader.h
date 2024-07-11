@@ -15,6 +15,9 @@
 class Shader
 {
 public:
+    GLuint mVertexShader;
+    GLuint mFragShader;
+    GLuint mShaderProgram;
 	Shader();
 	~Shader();
 	// Load the vertex/fragment shaders with the given names
@@ -32,10 +35,5 @@ private:
 	// Tests whether shader compiled successfully
 	bool IsCompiled(GLuint shader);
 	// Tests whether vertex/fragment programs link
-	bool IsValidProgram();
-private:
-	// Store the shader object IDs
-	GLuint mVertexShader;
-	GLuint mFragShader;
-	GLuint mShaderProgram;
+	bool IsValidProgram();	
 };

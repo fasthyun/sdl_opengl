@@ -144,8 +144,8 @@ int init_SDL()
     }
     // Set OpenGL attributes
     // Use the core OpenGL profile
-    //SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE); //works
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY); // maybe better
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE); //works
+    //SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY); // maybe better
     //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4); //fail
     //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
     // Request a color buffer with 8-bits per RGBA channel
@@ -265,6 +265,18 @@ float  time_fps=0;
 int  fps_count=0;
 int  fps=0;
 
+void gltDrawMatrix4f(GLTtext *textid, float *mat, float x, float y )
+{
+    char str[64*4];
+    sprintf(str,"%5.4f,%5.4f,%5.4f,%5.4f\n %5.4f,%5.4f,%5.4f,%5.4f\n %5.4f,%5.4f,%5.4f,%5.4f\n %5.4f,%5.4f,%5.4f,%5.4f\n ",
+            mat[0],mat[1],mat[2],mat[3],
+            mat[4],mat[5],mat[6],mat[7],
+            mat[8],mat[9],mat[10],mat[11],
+            mat[12],mat[13],mat[14],mat[15]);
+    gltSetText(textid, str);
+    gltDrawText2D(textid, x,y,1.0);
+}
+
 void main_loop()
 {
     Uint32 prevTime;
@@ -274,6 +286,9 @@ void main_loop()
 
     GLTtext *text1 = gltCreateText();
     GLTtext *text2 = gltCreateText();
+    GLTtext *text3 = gltCreateText();
+    char str1[30];
+    char str2[30];
 
     //SDL_GL_MakeCurrent(window,glContext);
     //While application is running
@@ -314,13 +329,25 @@ void main_loop()
                   d_camera->pos[0]+d_camera->forward[0]*3,d_camera->pos[1]+d_camera->forward[1]*3 ,
                   d_camera->pos[2]+d_camera->forward[2]*3,
                   d_camera->up[0],d_camera->up[1],d_camera->up[2]); */
+        float mat[16];
+        glGetFloatv(GL_PROJECTION_MATRIX, mat);
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
+
 
         for ( size_t i=0 ; i < objects.size(); i++)
         {
             xObject *obj=objects[i];
-            if (obj->shader != NULL)   obj->shader->SetActive();
+            if (obj->shader != NULL)
+            {
+                obj->shader->SetActive();
+                GLint location=glGetUniformLocation(obj->shader->mShaderProgram, "projTrans");
+                sprintf(str1, "location: %d", location);
+                if (location>=0)
+                    glUniformMatrix4fv(location, 1, GL_FALSE, mat);
+                //void glUniformMatrix4fv(GLint location,GLsizei count, GLboolean transpose, const GLfloat *value);
+
+            }
             obj->update(dt);  //update objects
             obj->draw();
         }
@@ -336,7 +363,7 @@ void main_loop()
 
         if(true)
         {
-            char str[30];
+
             //render_text("fps= " + std::to_string(fps)  ,-1,0.95);
             gltBeginDraw();
             /*
@@ -346,9 +373,16 @@ void main_loop()
             gltDrawText2DAligned(text1,(GLfloat)(10),(GLfloat)(20),
                                  3.0f,  GLT_CENTER, GLT_CENTER);
             */
-            sprintf(str, "FPS: %d", fps);
-            gltSetText(text2, str);
-            gltDrawText2DAligned(text2, 10.0f, 30, 1.0f, GLT_LEFT, GLT_BOTTOM);
+
+            sprintf(str2, "FPS: %d", fps);
+            gltSetText(text2, str2);
+            gltDrawText2DAligned(text2, 10.0f, 20, 1.0f, GLT_LEFT, GLT_BOTTOM);
+
+
+            gltSetText(text1, str1);
+            gltDrawText2DAligned(text1, 10.0f, 40, 1.0f, GLT_LEFT, GLT_BOTTOM);
+
+            gltDrawMatrix4f(text3,mat, 10, 60);
             gltEndDraw();
         }
         // printf("dt=%d \n",dt);
@@ -382,7 +416,6 @@ void init_object()
     //obj= new xObject();
     //obj->load_gltf("/home/hyun/works/sdl_opengl/data/DamagedHelmet.gltf");
     //objects.push_back(obj);
-
     //time_fps=0;
     //call_count=0;
     //time_call=0;
@@ -405,9 +438,11 @@ int main(int argc, char *argv[])
     cout << "sizeof(complex<float>) ="  << sizeof(std::complex<float>) << "bytes" << endl;
     init_SDL();
     init_GL();
-    init_shader();
-    //texture *_tex = new texture("font-map.bmp"); // 16x6
-    texture *_tex2 = new texture("check.bmp"); //
+    // init_shader();
+    texture *_tex = new texture("font-map.bmp"); // 16x6
+    _tex = new texture("font-map-mtl.png"); // 16x6
+    _tex = new texture("check.bmp"); //
+    _tex = new texture("font-map.png"); // 16x6
     //init_font();
     //init_font_freetype();
 
@@ -415,3 +450,4 @@ int main(int argc, char *argv[])
     main_loop();
     return 0;
 }
+

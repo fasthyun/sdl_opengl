@@ -3,7 +3,7 @@
 #include <GL/glew.h>
 #include "texture.h"
 #include <iostream>
-// #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_image.h>
 
 std::vector<texture *> textures;
 
@@ -18,9 +18,8 @@ texture::texture(std::string file)
     auto path="/home/hyun/works/sdl_opengl/texture/"+file;
     std::cout << "texture(): " << path;
     SDL_Surface *surface=LoadImage(path);
-    if (surface == NULL) {
-        SDL_Log("SDL_CreateRGBSurface() failed: %s", SDL_GetError());
-        exit(1);
+    if (surface == NULL) {        
+        return;
     }
     makeTexture(surface);
     SDL_FreeSurface(surface);  // free surface !
@@ -73,20 +72,41 @@ SDL_Surface* texture::getSurface(int width, int height)
     return surface;
 }
 
+/*
+SDL_Texture *loadTexture(const char *file){
+    SDL_Surface *surface;
+    SDL_Texture *texture;
+
+    surface = IMG_Load(file);
+    if (surface == NULL){
+        printf("fail to read %s\n", file);
+        return NULL;
+    }
+
+    texture = SDL_CreateTextureFromSurface(renderer, surface);
+    if (texture == NULL){
+        printf("unable to create texture.\n");
+    }
+    SDL_FreeSurface(surface);
+
+    return texture;
+} */
+
 SDL_Surface* texture::LoadImage(std::string file)
 {
-    SDL_Surface *loadedImage = nullptr;    
-    loadedImage = SDL_LoadBMP(file.c_str());
+    SDL_Surface *surface = nullptr;
+    //surface = SDL_LoadBMP(file.c_str());
+    surface = IMG_Load(file.c_str());
     /* imgBuff = stbi_load("/home/hyun/works/qt_opengl/font-map.png", &w, &h, &comp, 0);
        if(imgBuff == nullptr){
         throw(std::string("Failed to load texture"));
         return;
     }*/
-    if (loadedImage != nullptr)
+    if (surface != nullptr)
     {
         //texture = SDL_CreateTextureFromSurface(renderer, loadedImage); //hmmm
         //SDL_FreeSurface(loadedImage);
-        return loadedImage;
+        return surface;
     }
     else
     {
@@ -103,7 +123,7 @@ GLuint texture::getTextureName()
 void texture::makeTexture(SDL_Surface *surface)
 {
     /*
-    samples :
+       * samples :
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -115,18 +135,22 @@ void texture::makeTexture(SDL_Surface *surface)
         glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
         glGenerateMipmap(GL_TEXTURE_2D);
     */
+
     d_width=surface->w;
     d_height=surface->h;
+
     int _bytes = surface->format->BytesPerPixel;
     glGenTextures(1, &d_texname);
     glBindTexture(GL_TEXTURE_2D, d_texname);
-    //glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // ???
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // power of 2 !!
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     if(_bytes == 3)
+    {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, d_width, d_height, 0, GL_RGB, GL_UNSIGNED_BYTE, surface->pixels);
+    }
     else if(_bytes == 4)
     {
         SDL_Surface *output;
@@ -136,32 +160,20 @@ void texture::makeTexture(SDL_Surface *surface)
         }
         else{
             // SDL_PIXELFORMAT_BGRA32, SDL_PIXELFORMAT_ARGB32, SDL_PIXELFORMAT_ABGR32
-
+            // SDL_PIXELFORMAT_RGBA8888
             std::cout << "  ===> Not RGBA32: " <<  SDL_GetPixelFormatName(surface->format->format)  ;
-
             SDL_PixelFormat *format = SDL_AllocFormat(SDL_PIXELFORMAT_RGBA32);
-            output = SDL_ConvertSurface(surface, format, 0);            
-            std::cout << " ===> result RGBA? :" << (output->format->format==SDL_PIXELFORMAT_RGBA32) << endl;
+            output = SDL_ConvertSurface(surface, format, 0);
+            // std::cout << " ===> result RGBA? :" << (output->format->format==SDL_PIXELFORMAT_RGBA32) << endl;
             SDL_FreeFormat(format); // remove a leak!
         }
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, d_width, d_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, surface->pixels);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, d_width, d_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, output->pixels);
     }
+    //printf("\n ===> bytes=%d format=%s  width=%d height=%d \n",_bytes,SDL_GetPixelFormatName(surface->format->format),d_width,d_height)  ;
     glBindTexture(GL_TEXTURE_2D, 0); //ok!
 }
 
 
-// TODO
-void texture_manager::render_texture(GLuint texname,float x,float y,float z,float size)
-{
-    glBindTexture(GL_TEXTURE_2D, texname);
-    glBegin(GL_QUADS);
-    glTexCoord2f(0.0, 0.0); glVertex3f(x, y , z);
-    glTexCoord2f(0.0, 1.0); glVertex3f(x, y + size, z);
-    glTexCoord2f(1.0, 1.0); glVertex3f(x+size, y+size, z);
-    glTexCoord2f(1.0, 0.0); glVertex3f(x+size, y, z);
-    glEnd();
-    glBindTexture(GL_TEXTURE_2D, 0); //!!!
-}
 
 texture_manager::texture_manager()
 {
@@ -171,18 +183,14 @@ texture_manager::texture_manager()
 
     float vertices[] = {
         // positions          // texture coords
-         0.5f,  0.5f, 0.0f,   1.0f, 1.0f, // top right
-         0.5f, -0.5f, 0.0f,   1.0f, 0.0f, // bottom right
-        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, // bottom left
+         1.0f,  1.0f, 0.0f,   1.0f, 1.0f, // top right
+         1.0f, -1.0f, 0.0f,   1.0f, 0.0f, // bottom right
+        -1.0f, -1.0f, 0.0f,   0.0f, 0.0f, // bottom left
 
-        -0.5f,  0.5f, 0.0f,   0.0f, 1.0f,  // top left
-        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, // bottom left
-         0.5f,  0.5f, 0.0f,   1.0f, 1.0f, // top right
+        -1.0f,  1.0f, 0.0f,   0.0f, 1.0f, // top left
+        -1.0f, -1.0f, 0.0f,   0.0f, 0.0f, // bottom left
+         1.0f,  1.0f, 0.0f,   1.0f, 1.0f, // top right
     };
-
-    //glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
-    //glEnableVertexAttribArray(2);
-
 
     unsigned int indices[] = {
         0, 1, 3, // first triangle
@@ -206,11 +214,33 @@ texture_manager::texture_manager()
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+
+    int imgFlags = IMG_INIT_PNG;
+    if( !( IMG_Init( imgFlags ) & imgFlags ) )
+    {
+        printf( "SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError() );
+    }
+
+
 }
 
 void texture_manager::update(float dt)
 {
 
+}
+
+
+// TODO
+void texture_manager::render_texture(GLuint texname,float x,float y,float z,float size)
+{
+    glBindTexture(GL_TEXTURE_2D, texname);
+    glBegin(GL_QUADS);
+    glTexCoord2f(0.0, 0.0); glVertex3f(x, y , z);
+    glTexCoord2f(0.0, 1.0); glVertex3f(x, y + size, z);
+    glTexCoord2f(1.0, 1.0); glVertex3f(x+size, y+size, z);
+    glTexCoord2f(1.0, 0.0); glVertex3f(x+size, y, z);
+    glEnd();
+    glBindTexture(GL_TEXTURE_2D, 0); //!!!
 }
 
 void texture_manager::draw()
@@ -219,10 +249,7 @@ void texture_manager::draw()
     {
         GLuint texname=textures[i]->getTextureName();
         //render_texture(texname,i*5,0,0,5);
-        glBindTexture(GL_TEXTURE_2D, texture);
-
-        // render container
-        ourShader.use();
+        glBindTexture(GL_TEXTURE_2D, texname);
         glBindVertexArray(VAO);
         //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         glDrawArrays(GL_TRIANGLES, 0, 6);

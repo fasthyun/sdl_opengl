@@ -5,6 +5,17 @@ void make_cube(vector<vertex*> &verts, vector<triangle*> &tris, float size)
 {
     // move to element3d.cpp  3d_element, element_3d
     // blender로 아니면 이렇게 ... 둘다 필요?
+    float vertices[] = {
+        // positions          // texture coords
+         1.0f,  1.0f, 0.0f,   1.0f, 1.0f, // top right
+         1.0f, -1.0f, 0.0f,   1.0f, 0.0f, // bottom right
+        -1.0f, -1.0f, 0.0f,   0.0f, 0.0f, // bottom left
+
+        -1.0f,  1.0f, 0.0f,   0.0f, 1.0f, // top left
+        -1.0f, -1.0f, 0.0f,   0.0f, 0.0f, // bottom left
+         1.0f,  1.0f, 0.0f,   1.0f, 1.0f, // top right
+    };
+
 
 }
 

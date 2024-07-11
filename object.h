@@ -29,7 +29,7 @@ public:
 
     void load_gltf(string name);
 
-    vec_vertex  vertexes; // verts
+    vector<vertex*>  vertexes; // verts
     vector<triangle*> triangles; // tris
     vector<MeshFloat> meshes;
     vector<Material> materials;
