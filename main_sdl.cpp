@@ -3,6 +3,7 @@
 #include <string>
 //#define GL_GLEXT_PROTOTYPES
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 //don't need ! #include <SDL2/SDL_opengl.h>
 #include <GL/glew.h>
 #include "object.h"
@@ -15,7 +16,7 @@
 #define GLT_DEBUG
 #define GLT_DEBUG_PRINT
 #define GLT_IMPLEMENTATION
-#include "gltext.h" /* https://github.com/vallentin/glText */
+#include "gltext.h"         /* https://github.com/vallentin/glText */
 
 using namespace std;
 vector<xObject* > objects; 
@@ -28,8 +29,7 @@ bool init_GL();  //Initializes matrices and clear color
 
 //The window we'll be rendering to
 SDL_Window* window = NULL;
-//OpenGL context
-SDL_GLContext glContext;
+SDL_GLContext glContext; //OpenGL context
 GLuint vshader,fshader;
 GLuint program;
 
@@ -49,87 +49,87 @@ void GLDebugMessageCallback(GLenum source, GLenum type, GLuint id,
 
     switch (source) {
         case GL_DEBUG_SOURCE_API:
-        _source = "API";
+        _source = (char*) "API";
         break;
 
         case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
-        _source = "WINDOW SYSTEM";
+        _source = (char*)"WINDOW SYSTEM";
         break;
 
         case GL_DEBUG_SOURCE_SHADER_COMPILER:
-        _source = "SHADER COMPILER";
+        _source = (char*)"SHADER COMPILER";
         break;
 
         case GL_DEBUG_SOURCE_THIRD_PARTY:
-        _source = "THIRD PARTY";
+        _source = (char*)"THIRD PARTY";
         break;
 
         case GL_DEBUG_SOURCE_APPLICATION:
-        _source = "APPLICATION";
+        _source = (char*)"APPLICATION";
         break;
 
         case GL_DEBUG_SOURCE_OTHER:
-        _source = "UNKNOWN";
+        _source = (char*)"UNKNOWN";
         break;
 
         default:
-        _source = "UNKNOWN";
+        _source = (char*)"UNKNOWN";
         break;
     }
 
     switch (type) {
         case GL_DEBUG_TYPE_ERROR:
-        _type = "ERROR";
+        _type = (char*)"ERROR";
         break;
 
         case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
-        _type = "DEPRECATED BEHAVIOR";
+        _type =(char*) "DEPRECATED BEHAVIOR";
         break;
 
         case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
-        _type = "UDEFINED BEHAVIOR";
+        _type =(char*) "UDEFINED BEHAVIOR";
         break;
 
         case GL_DEBUG_TYPE_PORTABILITY:
-        _type = "PORTABILITY";
+        _type = (char*)"PORTABILITY";
         break;
 
         case GL_DEBUG_TYPE_PERFORMANCE:
-        _type = "PERFORMANCE";
+        _type = (char*)"PERFORMANCE";
         break;
 
         case GL_DEBUG_TYPE_OTHER:
-        _type = "OTHER";
+        _type = (char*)"OTHER";
         break;
 
         case GL_DEBUG_TYPE_MARKER:
-        _type = "MARKER";
+        _type = (char*)"MARKER";
         break;
 
         default:
-        _type = "UNKNOWN";
+        _type = (char*)"UNKNOWN";
         break;
     }
 
     switch (severity) {
         case GL_DEBUG_SEVERITY_HIGH:
-        _severity = "HIGH";
+        _severity = (char*)"HIGH";
         break;
 
         case GL_DEBUG_SEVERITY_MEDIUM:
-        _severity = "MEDIUM";
+        _severity = (char*)"MEDIUM";
         break;
 
         case GL_DEBUG_SEVERITY_LOW:
-        _severity = "LOW";
+        _severity = (char*)"LOW";
         break;
 
         case GL_DEBUG_SEVERITY_NOTIFICATION:
-        _severity = "NOTIFICATION";
+        _severity = (char*)"NOTIFICATION";
         break;
 
         default:
-        _severity = "UNKNOWN";
+        _severity = (char*)"UNKNOWN";
         break;
     }
     printf("%d: %s of %s severity, raised from %s: %s\n", id, _type, _severity, _source, msg);
@@ -211,6 +211,13 @@ int init_SDL()
 
     SDL_GL_SetSwapInterval(0); // works !! no VSYNC wait
 
+
+    int imgFlags = IMG_INIT_PNG;
+    if( !( IMG_Init( imgFlags ) & imgFlags ) )
+    {
+        printf( "SDL_image could not initialize! SDL_image Error: %s\n", IMG_GetError() );
+    }
+
     printf("SDL(OpenGL) loaded\n");
     return 0;
 }
@@ -249,7 +256,7 @@ bool init_GL()
         success = false;
     }   
 
-    if (!gltInit())
+    if (!gltInit()) // glText font init!
     {
         printf("ERROR : Failed to initialize glText\n");
         success = false;
@@ -317,9 +324,7 @@ void main_loop()
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         //glFrontFace(GL_CCW);
-
-        //glEnableClientState(GL_VERTEX_ARRAY);
-        /// glEnable(GL_CULL_FACE);
+        //glEnable(GL_CULL_FACE);
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
         // draw console? or push pop?
@@ -329,24 +334,28 @@ void main_loop()
                   d_camera->pos[0]+d_camera->forward[0]*3,d_camera->pos[1]+d_camera->forward[1]*3 ,
                   d_camera->pos[2]+d_camera->forward[2]*3,
                   d_camera->up[0],d_camera->up[1],d_camera->up[2]); */
-        float mat[16];
-        glGetFloatv(GL_PROJECTION_MATRIX, mat);
+        float proj_m[16];
+        float model_m[16];
+        glGetFloatv(GL_PROJECTION_MATRIX, proj_m);
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
-
 
         for ( size_t i=0 ; i < objects.size(); i++)
         {
             xObject *obj=objects[i];
+            glLoadIdentity();
+            glTranslatef(obj->pos[0], obj->pos[1], obj->pos[2] );
+            glGetFloatv(GL_MODELVIEW_MATRIX, model_m);
             if (obj->shader != NULL)
             {
                 obj->shader->SetActive();
-                GLint location=glGetUniformLocation(obj->shader->mShaderProgram, "projTrans");
+                GLint location=glGetUniformLocation(obj->shader->mShaderProgram, "projView");
                 sprintf(str1, "location: %d", location);
                 if (location>=0)
-                    glUniformMatrix4fv(location, 1, GL_FALSE, mat);
-                //void glUniformMatrix4fv(GLint location,GLsizei count, GLboolean transpose, const GLfloat *value);
-
+                    glUniformMatrix4fv(location, 1, GL_FALSE, proj_m); // ===> GLint location,GLsizei count, GLboolean transpose, const GLfloat *value
+                location=glGetUniformLocation(obj->shader->mShaderProgram, "modelView");
+                if (location>=0)
+                    glUniformMatrix4fv(location, 1, GL_FALSE, model_m);
             }
             obj->update(dt);  //update objects
             obj->draw();
@@ -363,7 +372,6 @@ void main_loop()
 
         if(true)
         {
-
             //render_text("fps= " + std::to_string(fps)  ,-1,0.95);
             gltBeginDraw();
             /*
@@ -382,7 +390,7 @@ void main_loop()
             gltSetText(text1, str1);
             gltDrawText2DAligned(text1, 10.0f, 40, 1.0f, GLT_LEFT, GLT_BOTTOM);
 
-            gltDrawMatrix4f(text3,mat, 10, 60);
+            gltDrawMatrix4f(text3,proj_m, 10, 60);
             gltEndDraw();
         }
         // printf("dt=%d \n",dt);
@@ -395,6 +403,11 @@ void main_loop()
 
 void init_object()
 {
+    texture *_tex = new texture("font-map.bmp"); // 16x6
+    _tex = new texture("font-map-mtl.png"); // 16x6
+    _tex = new texture("check.bmp"); //
+    _tex = new texture("font-map.png"); // 16x6
+
     xObject *obj=new xObject();
     objects.push_back(obj);
 
@@ -410,8 +423,12 @@ void init_object()
     obj=new console();
     objects.push_back(obj);
 
-    obj=new texture_manager();
-    objects.push_back(obj);
+    xObject *texobj=new texture_object("check.bmp");
+    set(texobj->pos,2,0,0);
+    objects.push_back(texobj);
+
+  //  obj=new texture_manager();
+  //  objects.push_back(obj);
 
     //obj= new xObject();
     //obj->load_gltf("/home/hyun/works/sdl_opengl/data/DamagedHelmet.gltf");
@@ -435,14 +452,11 @@ void init_shader()
 int main(int argc, char *argv[])
 {
     cout << "SDL(OpenGL) program() !" << endl;
-    cout << "sizeof(complex<float>) ="  << sizeof(std::complex<float>) << "bytes" << endl;
+    cout << "sizeof(complex<float>) = "  << sizeof(std::complex<float>) << "bytes" << endl;
     init_SDL();
     init_GL();
-    // init_shader();
-    texture *_tex = new texture("font-map.bmp"); // 16x6
-    _tex = new texture("font-map-mtl.png"); // 16x6
-    _tex = new texture("check.bmp"); //
-    _tex = new texture("font-map.png"); // 16x6
+
+    //init_shader();
     //init_font();
     //init_font_freetype();
 

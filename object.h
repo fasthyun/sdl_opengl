@@ -29,8 +29,8 @@ public:
 
     void load_gltf(string name);
 
-    vector<vertex*>  vertexes; // verts
-    vector<triangle*> triangles; // tris
+    vector<vertex>  vertexes; // verts
+    vector<triangle> triangles; // tris
     vector<MeshFloat> meshes;
     vector<Material> materials;
     vector<Texture> xtextures;
@@ -43,6 +43,9 @@ public:
     float weight;
     uint64_t prev_time;
     Shader *shader;
+
+    unsigned int VBO, VAO, EBO;
+
 };
 
 class camera : public xObject{

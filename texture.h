@@ -21,7 +21,17 @@ public:
     void makeTexture(SDL_Surface *);
     GLuint  getTextureName();
     int d_width,d_height;
-    GLuint d_texname;
+    GLuint d_tex_glname;
+    string d_filename;
+};
+
+class texture_object : public xObject{
+    GLuint texname;
+    //unsigned int VBO, VAO, EBO;
+public:
+    texture_object(char *texture_filename);
+    virtual void update(float dt=0);
+    virtual void draw();
 };
 
 class texture_manager : public xObject{
@@ -31,6 +41,7 @@ public:
     texture_manager();    
     virtual void update(float dt=0);
     virtual void draw();
+    static GLuint get_glname(string filename);
     void render_texture(GLuint texname,float x,float y,float z,float size) ;
 };
 #endif // TEXTURE_H

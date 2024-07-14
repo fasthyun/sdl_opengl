@@ -6,23 +6,26 @@
 // See LICENSE in root directory for full details.
 // ----------------------------------------------------------------
 
-// Request GLSL 3.3
-#version 330
+// Request GLSL
+#version 130
 
 // This corresponds to the output color
 // to the color buffer
 
 uniform sampler2D ourTexture;
 
-in vec3 ourColor;
-in vec2 TexCoord;
+//in vec3 ourColor;
+//in vec2 TexCoord;
+//attribute vec3 ourColor;
+varying vec2 TexCoord;
 
 out vec4 FragColor;
 
 
 void main()
 {
-    FragColor = texture(ourTexture, TexCoord);
+    FragColor = texture2D(ourTexture, TexCoord);
+    // FragColor = texture(ourTexture, TexCoord);
 }
 
 /*

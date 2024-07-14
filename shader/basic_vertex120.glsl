@@ -1,4 +1,4 @@
-#version 120
+#version 130
 
 uniform mat4 gl_ModelViewProjectionMatrix;
 attribute vec4 gl_Vertex;

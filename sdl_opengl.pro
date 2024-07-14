@@ -2,7 +2,7 @@ QT      -= gui core qtwidget
 CONFIG  += c++11 debug
 CONFIG  -= qml_debug
 
-QMAKE_CXXFLAGS += -H -Wno-unused-parameter -Wno-unused-variable -Wwrite-strings
+QMAKE_CXXFLAGS += -H -Wno-unused-parameter -Wno-unused-variable -Wwrite-strings -Wunused-but-set-variable -Wunused-function
 
 INCLUDEPATH += /usr/include/freetype2
 

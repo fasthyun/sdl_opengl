@@ -1,22 +1,22 @@
 #include "element3d.h"
 #include <cmath>
 
-void make_cube(vector<vertex*> &verts, vector<triangle*> &tris, float size)
+void make_cube(vector<vertex> &verts, vector<triangle> &tris, float size)
 {
     // move to element3d.cpp  3d_element, element_3d
-    // blender로 아니면 이렇게 ... 둘다 필요?
-    float vertices[] = {
-        // positions          // texture coords
-         1.0f,  1.0f, 0.0f,   1.0f, 1.0f, // top right
-         1.0f, -1.0f, 0.0f,   1.0f, 0.0f, // bottom right
-        -1.0f, -1.0f, 0.0f,   0.0f, 0.0f, // bottom left
+    // blender로  아니면 이렇게 ... 둘 다 필요?
+    vertex vert;
+    vertex_set(vert,-1.f, 1.f, 1.f,  0.,1.);  verts.push_back(vert); // 0  upper left
+    vertex_set(vert, 1.f, 1.f, 1.f,  1.0,1.0);  verts.push_back(vert); // 1  upper right
+    vertex_set(vert, 1.f,-1.f, 1.f,  1.f,0.);  verts.push_back(vert); // 2  down right
+    vertex_set(vert,-1.f,-1.f, 1.f,  0,0);  verts.push_back(vert); // 3  down left
 
-        -1.0f,  1.0f, 0.0f,   0.0f, 1.0f, // top left
-        -1.0f, -1.0f, 0.0f,   0.0f, 0.0f, // bottom left
-         1.0f,  1.0f, 0.0f,   1.0f, 1.0f, // top right
-    };
+    //vertex_set(vert, 1.f, 1.f, 1.f,  1.,1.);  verts.push_back(vert); // 1  upper right
+    //vertex_set(vert, 1.f,-1.f, 1.f,  1.,0);  verts.push_back(vert); // 2  down right
 
-
+    triangle tri;
+    triangle_set(tri,0,1,3); tris.push_back(tri);
+    triangle_set(tri,1,2,3); tris.push_back(tri);
 }
 
 void make_circle(vector<vertex*> &verts, vector<triangle*> &tris, float size)
@@ -85,4 +85,20 @@ void make_cylinder(vector<vertex*> &verts, vector<triangle*> &tris, float size)
 void make_cone(vector<vertex*> &verts, vector<triangle*> &tris, float size)
 {
 
+}
+
+void vertex_set(vertex &vert, float x, float y, float z, float _tu, float _tv)
+{
+    vert.v[0]=x;
+    vert.v[1]=y;
+    vert.v[2]=z;
+    vert.tu=_tu;
+    vert.tv=_tv;
+}
+
+void triangle_set(triangle &tri, int i, int j, int k)
+{
+    tri.v[0]=i;
+    tri.v[1]=j;
+    tri.v[2]=k;
 }

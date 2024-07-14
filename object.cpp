@@ -29,12 +29,16 @@ uint64_t epoch_now() { // timeSinceEpochMillisec
 xObject::xObject()
 {
     shader=NULL; // ***
+    //shader=new Shader();
+    //shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
+
     //meshes=NULL;
     set(pos,0,0,0);
     set(up ,0,1,0); //
     set(forward,0,0,1); //
     set(force,0,0,0);
     //make_circle();
+
 }
 
 void xObject::update(float dt)
@@ -55,7 +59,7 @@ void xObject::draw_dir_up()
     glVertex3fv(pos);
     add(pos,up,t);
     glVertex3fv(t);
-    //glColor3f(0.0, 1.0, 0);
+    glColor3f(0.0, 1.0, 0);
     glVertex3fv(pos);
     add(pos,forward,t);
     glVertex3fv(t);

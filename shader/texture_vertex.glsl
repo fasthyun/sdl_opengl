@@ -15,17 +15,19 @@ void main(void)
 }
 
 */
-#version 330 core
-uniform mat4 projTrans;
+#version 130
+uniform mat4 projView;
+uniform mat4 modelView;
+//layout (location = 0) in vec3 vPos;
+//layout (location = 1) in vec2 vTexCoord;
+attribute vec3 vPos;
+attribute vec2 vTexCoord;
 
-layout (location = 0) in vec3 vPos;
-layout (location = 1) in vec2 vTexCoord;
-
-out vec3 ourColor;
+//out vec3 ourColor;
 out vec2 TexCoord;
 
 void main()
 {
-    gl_Position = projTrans* vec4(vPos, 1.0);
+    gl_Position = projView * modelView* vec4(vPos, 1.0);
     TexCoord = vTexCoord; // vec2(aTexCoord.x, aTexCoord.y);
 }
