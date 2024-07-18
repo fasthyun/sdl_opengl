@@ -6,17 +6,34 @@ void make_cube(vector<vertex> &verts, vector<triangle> &tris, float size)
     // move to element3d.cpp  3d_element, element_3d
     // blender로  아니면 이렇게 ... 둘 다 필요?
     vertex vert;
-    vertex_set(vert,-1.f, 1.f, 1.f,  0.,1.);  verts.push_back(vert); // 0  upper left
+    vertex_set(vert,-1.f, 1.f, 1.f,  0.,1.);    verts.push_back(vert); // 0  upper left
     vertex_set(vert, 1.f, 1.f, 1.f,  1.0,1.0);  verts.push_back(vert); // 1  upper right
-    vertex_set(vert, 1.f,-1.f, 1.f,  1.f,0.);  verts.push_back(vert); // 2  down right
-    vertex_set(vert,-1.f,-1.f, 1.f,  0,0);  verts.push_back(vert); // 3  down left
+    vertex_set(vert, 1.f,-1.f, 1.f,  1.f,0.);   verts.push_back(vert); // 2  down right
+    vertex_set(vert,-1.f,-1.f, 1.f,  0,0);      verts.push_back(vert); // 3  down left
 
-    //vertex_set(vert, 1.f, 1.f, 1.f,  1.,1.);  verts.push_back(vert); // 1  upper right
-    //vertex_set(vert, 1.f,-1.f, 1.f,  1.,0);  verts.push_back(vert); // 2  down right
+    vertex_set(vert,-1.f, 1.f, -1.f,  0.0,1.0);  verts.push_back(vert); // 4  upper left
+    vertex_set(vert, 1.f, 1.f, -1.f,  1.0,1.0);  verts.push_back(vert); // 5  upper right
+    vertex_set(vert, 1.f,-1.f, -1.f,  1.0,0.0);  verts.push_back(vert); // 6  down right
+    vertex_set(vert,-1.f,-1.f, -1.f,  0.0,0.0);  verts.push_back(vert); // 7  down left
 
     triangle tri;
-    triangle_set(tri,0,1,3); tris.push_back(tri);
-    triangle_set(tri,1,2,3); tris.push_back(tri);
+    triangle_set(tri,0,3,1); tris.push_back(tri); // front
+    triangle_set(tri,1,3,2); tris.push_back(tri);
+
+    triangle_set(tri,0,1,4); tris.push_back(tri); // up
+    triangle_set(tri,1,5,4); tris.push_back(tri);
+
+    triangle_set(tri,1,2,5); tris.push_back(tri); // right
+    triangle_set(tri,2,6,5); tris.push_back(tri);
+
+    triangle_set(tri,0,4,3); tris.push_back(tri); // left
+    triangle_set(tri,3,4,7); tris.push_back(tri);
+
+    triangle_set(tri,4,5,7); tris.push_back(tri); // back
+    triangle_set(tri,5,6,7); tris.push_back(tri);
+
+    triangle_set(tri,2,3,7); tris.push_back(tri); // bottom
+    triangle_set(tri,2,7,6); tris.push_back(tri);
 }
 
 void make_circle(vector<vertex*> &verts, vector<triangle*> &tris, float size)

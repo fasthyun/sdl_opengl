@@ -25,14 +25,23 @@ public:
     string d_filename;
 };
 
-class texture_object : public xObject{
-    GLuint texname;
-    //unsigned int VBO, VAO, EBO;
+class texture_object : public xObject{        
 public:
+    texture_object();
     texture_object(char *texture_filename);
+    //void make_glVertexArray();
     virtual void update(float dt=0);
     virtual void draw();
 };
+
+class model_object : public texture_object{
+public:
+    //model_object(){};
+    model_object(char *str);
+    virtual void update(float dt=0);
+    virtual void draw();
+};
+
 
 class texture_manager : public xObject{
 

@@ -12,7 +12,7 @@
    * naming to xObject , object_x , x_object, object3d.h
 */
 
-typedef vector<vertex*> vec_vertex;
+//typedef vector<vertex*> vec_vertex;
 
 using namespace  std;
 
@@ -23,12 +23,10 @@ public:
     virtual void update(float dt=0);
     virtual void draw();
     void draw_meshes();
-
     void draw_axis();
     void draw_dir_up();
-
     void load_gltf(string name);
-
+    void make_glVertexArray();
     vector<vertex>  vertexes; // verts
     vector<triangle> triangles; // tris
     vector<MeshFloat> meshes;
@@ -41,11 +39,13 @@ public:
     float up[3];
     float force[3];
     float weight;
+    float mat[16];
     uint64_t prev_time;
     Shader *shader;
 
-    unsigned int VBO, VAO, EBO;
-
+    GLuint VBO, VAO, EBO;
+    GLuint texname;
+    vector<xObject> children;
 };
 
 class camera : public xObject{
@@ -55,7 +55,13 @@ public:
     virtual void update(float dt=0);
     void on_key_pressed(uint key);
     void on_key_released(uint key);
-    void on_mouse_moved(int dx,int dy);
+    void on_mouse_moved(int dx,int dy);    
+
+    // temporary
+    uint key_forward;
+    uint key_backward;
+    uint key_side_right;
+    uint key_side_left;
 };
 
 
@@ -68,6 +74,7 @@ public:
     virtual void update(float dt=0);
     virtual void draw();
 };
+
 
 
 

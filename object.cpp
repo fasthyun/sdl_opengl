@@ -3,17 +3,13 @@
 #include <chrono>
 #include "zmath.h"
 #include <iostream>
+#include "model.h"
 
 #include <GL/glu.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_opengl.h>
 // ...
 
-// temporary
-uint key_forward;
-uint key_backward;
-uint key_side_right;
-uint key_side_left;
 
 using namespace std::chrono;
 milliseconds ms = duration_cast< milliseconds >(
@@ -29,16 +25,17 @@ uint64_t epoch_now() { // timeSinceEpochMillisec
 xObject::xObject()
 {
     shader=NULL; // ***
+    VBO=0;
+    VAO=0;
+    EBO=0;
     //shader=new Shader();
     //shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
-
     //meshes=NULL;
     set(pos,0,0,0);
     set(up ,0,1,0); //
     set(forward,0,0,1); //
     set(force,0,0,0);
     //make_circle();
-
 }
 
 void xObject::update(float dt)
@@ -71,6 +68,30 @@ void xObject::draw_dir_up()
 void xObject::load_gltf(string name)
 {
     LoadGLTF(name, 1, &meshes, &materials, &xtextures);
+}
+
+void xObject::make_glVertexArray()
+{
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    //glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertexes.size()*sizeof(vertex), vertexes.data(), GL_STATIC_DRAW);
+    //printf("sizeof(vertex)= %d data=%x\n", sizeof(vertex), vertexes.data());
+    //printf(" why??? %f %f %f %f %f\n", vertexes.data()[0].v[0],vertexes.data()[0].v[1],vertexes.data()[0].v[2],vertexes.data()[0].v[3], vertexes.data()[4]);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, triangles.size()*sizeof(triangle) ,triangles.data(), GL_STATIC_DRAW);
+
+    // position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+    glBindVertexArray(-1);
 }
 
 void xObject::draw_axis()
@@ -122,7 +143,7 @@ void xObject::draw_meshes()
 
 void xObject::draw()
 {
-    draw_axis();
+    // draw_axis();
     //draw_dir_up();
     //draw_meshes();
 
@@ -145,6 +166,26 @@ void xObject::draw()
     }
     glEnd();
     */
+    for ( size_t i=0 ; i < children.size(); i++)
+    {
+        xObject *obj = &children[i];
+
+        //translate(model_m, obj->pos[0], obj->pos[1], obj->pos[2] );
+        /*
+        if (obj->shader != NULL)
+        {
+            obj->shader->SetActive();
+            GLint location=glGetUniformLocation(obj->shader->mShaderProgram, "projView");
+            /// sprintf(str1, "location: %d", location);
+            if (location>=0)
+                glUniformMatrix4fv(location, 1, GL_FALSE, proj_m); // ===> GLint location,GLsizei count, GLboolean transpose, const GLfloat *value
+            location=glGetUniformLocation(obj->shader->mShaderProgram, "modelView");
+            if (location>=0)
+                glUniformMatrix4fv(location, 1, GL_FALSE, model_m);
+
+        }
+        obj->draw(); */
+    }
 }
 
 camera::camera(): xObject() // init
@@ -169,6 +210,7 @@ void camera::update(float dt)
     //Handle events on queue
     while( SDL_PollEvent( &e ) != 0 )
     {
+        int key=e.key.keysym.sym;
         //User requests quit
         if( e.type == SDL_QUIT )
         {
@@ -176,13 +218,11 @@ void camera::update(float dt)
         }
         //Handle keypress with current mouse position
         else if( e.type == SDL_KEYDOWN)
-        {
-            int key=e.key.keysym.sym;
+        {            
             //int scancode=e.key.keysym.scancode;
             /* SDLK_UP , SDLK_W */
             //SDL_GetMouseState( &x, &y );
             //handleKeys( e.text.text[ 0 ], x, y );
-
             if (key == SDLK_ESCAPE)
                 quit=true;
 
@@ -190,16 +230,15 @@ void camera::update(float dt)
             // printf("keycode=%d \n",key);
         }
         else if( e.type == SDL_KEYUP)
-        {
-            int key=e.key.keysym.sym;
+        {            
             on_key_released(key);
         }
         else if( e.type == SDL_MOUSEMOTION)
         {
             int dx=e.motion.xrel;
             int dy=e.motion.yrel;
-            if (e.motion.state==SDL_BUTTON_LMASK)
-                on_mouse_moved(dx,dy);
+            //if (e.motion.state==SDL_BUTTON_LMASK)
+            on_mouse_moved(dx,dy);
         }
     }
 }
@@ -209,7 +248,6 @@ void camera::on_key_pressed(uint key)
     /*
      *  right_side,
      *  혹은 dir 성분만  zero해야하는거 아닐까?
-     *
      */
     float right[3],t[3];
     //fprintf(stderr,"camera.onkey\n");
@@ -235,7 +273,7 @@ void camera::on_key_pressed(uint key)
     }
     //fprintf(stderr," pressed! %f %f %f \n",force[0],force[1],force[2]);
     //fprintf(stderr," pressed! %f %f %f \n",forward[0],forward[1],forward[2]);
-    fprintf(stderr," pressed! pos %f %f %f \n",pos[0],pos[1],pos[2]);
+    //fprintf(stderr," pressed! pos %f %f %f \n",pos[0],pos[1],pos[2]);
 }
 
 
@@ -246,7 +284,7 @@ void camera::on_key_released(uint key)
         multiply(forward,0,force); //
         //fprintf(stderr,"release! %f %f %f \n",force[0],force[1],force[2]);
     }
-     if(key==key_backward) //s
+    if(key==key_backward) //s
         multiply(forward,0,force);
 
    if(key==key_side_right) //d
@@ -254,7 +292,6 @@ void camera::on_key_released(uint key)
 
    if(key==key_side_left) // a
         set(force,0,0,0);
-
 
    if(key==key_side_left) // a
         set(force,0,0,0);
@@ -284,6 +321,7 @@ grid::grid()
     grid_n=100;
     shader=new Shader();
     shader->Load("./shader/grid_vertex.glsl","./shader/grid_fragment.glsl");
+
     float *vertexData = (float*)malloc(sizeof(float)*2000*4*2);
     if (vertexData==NULL)
     {
@@ -324,7 +362,6 @@ grid::grid()
     glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float) /* bytes */, (void*)0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
-
     free(vertexData);
 }
 
@@ -337,8 +374,7 @@ void grid::draw()
     glDrawArrays(GL_LINES, 0, 4000);
     //glDrawArrays(GL_LINES, 0, 4);
     glBindVertexArray(0);
-    //glDisableVertexAttribArray(0);
-    //glBindBuffer(GL_ARRAY_BUFFER, 0);    
+    //glDisableVertexAttribArray(0);    
 }
 
 void grid::update(float dt)

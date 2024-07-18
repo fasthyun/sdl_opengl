@@ -3,22 +3,65 @@
 #include <vector>
 #include <iostream>
 #include <SDL2/SDL_image.h>
+#include "model.h"
 
 std::vector<texture *> textures;
 
+/*
+SDL_Texture *loadTexture(const char *file){
+    SDL_Surface *surface;
+    SDL_Texture *texture;
+
+    surface = IMG_Load(file);
+    if (surface == NULL){
+        printf("fail to read %s\n", file);
+        return NULL;
+    }
+
+    texture = SDL_CreateTextureFromSurface(renderer, surface);
+    if (texture == NULL){
+        printf("unable to create texture.\n");
+    }
+    SDL_FreeSurface(surface);
+
+    return texture;
+} */
+
+SDL_Surface* texture::LoadImage(std::string file)
+{
+    SDL_Surface *surface = nullptr;
+    //surface = SDL_LoadBMP(file.c_str());
+    surface = IMG_Load(file.c_str());
+    /* imgBuff = stbi_load("/home/hyun/works/qt_opengl/font-map.png", &w, &h, &comp, 0);
+       if(imgBuff == nullptr){
+        throw(std::string("Failed to load texture"));
+        return;
+    }*/
+    if (surface != nullptr)
+    {
+        //texture = SDL_CreateTextureFromSurface(renderer, loadedImage); //hmmm
+        //SDL_FreeSurface(loadedImage);
+        return surface;
+    }
+    else
+    {
+        std::cout << SDL_GetError() << std::endl;
+        return 0 ;
+    }
+}
+
 texture::texture(std::string _filename)
 {
-    d_tex_glname=-1;
+    d_tex_glname = -1;
     // Temporary
     if (_filename=="")
     {
         return;
     }
-
-    auto path="/home/hyun/works/sdl_opengl/texture/"+_filename;
+    auto path="./texture/"+_filename;
     std::cout << "texture(): " << path  << "\n";
-    SDL_Surface *surface=LoadImage(path);
-    if (surface == NULL) {        
+    SDL_Surface *surface = IMG_Load(path.c_str()); //SDL_Surface *surface=LoadImage(path);
+    if (surface == NULL) {
         return;
     }
     makeTexture(surface);
@@ -70,49 +113,6 @@ SDL_Surface* texture::getSurface(int width, int height)
            exit(1);
     }
     return surface;
-}
-
-/*
-SDL_Texture *loadTexture(const char *file){
-    SDL_Surface *surface;
-    SDL_Texture *texture;
-
-    surface = IMG_Load(file);
-    if (surface == NULL){
-        printf("fail to read %s\n", file);
-        return NULL;
-    }
-
-    texture = SDL_CreateTextureFromSurface(renderer, surface);
-    if (texture == NULL){
-        printf("unable to create texture.\n");
-    }
-    SDL_FreeSurface(surface);
-
-    return texture;
-} */
-
-SDL_Surface* texture::LoadImage(std::string file)
-{
-    SDL_Surface *surface = nullptr;
-    //surface = SDL_LoadBMP(file.c_str());
-    surface = IMG_Load(file.c_str());
-    /* imgBuff = stbi_load("/home/hyun/works/qt_opengl/font-map.png", &w, &h, &comp, 0);
-       if(imgBuff == nullptr){
-        throw(std::string("Failed to load texture"));
-        return;
-    }*/
-    if (surface != nullptr)
-    {
-        //texture = SDL_CreateTextureFromSurface(renderer, loadedImage); //hmmm
-        //SDL_FreeSurface(loadedImage);
-        return surface;
-    }
-    else
-    {
-        std::cout << SDL_GetError() << std::endl;
-        return 0 ;
-    }
 }
 
 GLuint texture::getTextureName()
@@ -180,22 +180,7 @@ texture_manager::texture_manager()
     shader=new Shader();
     shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
 
-    float vertices[] = {
-        // positions          // texture coords
-         1.0f,  1.0f, 0.0f,   1.0f, 1.0f, // top right
-         1.0f, -1.0f, 0.0f,   1.0f, 0.0f, // bottom right
-        -1.0f, -1.0f, 0.0f,   0.0f, 0.0f, // bottom left
-
-        -1.0f,  1.0f, 0.0f,   0.0f, 1.0f, // top left
-        -1.0f, -1.0f, 0.0f,   0.0f, 0.0f, // bottom left
-         1.0f,  1.0f, 0.0f,   1.0f, 1.0f, // top right
-    };
-
-    unsigned int indices[] = {
-        0, 1, 3, // first triangle
-        1, 2, 3  // second triangle
-    };
-
+    /*
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
@@ -213,7 +198,7 @@ texture_manager::texture_manager()
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
-
+*/
 }
 
 void texture_manager::update(float dt)
@@ -251,7 +236,7 @@ GLuint texture_manager::get_glname(string filename)
 
 void texture_manager::draw()
 {
-    for ( size_t i=0 ; i < 1; i++)
+   /* for ( size_t i=0 ; i < 1; i++)
     {
         //render_texture(texname,i*5,0,0,5);
         GLuint texname=textures[i]->getTextureName();
@@ -260,81 +245,23 @@ void texture_manager::draw()
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         //glDrawArrays(GL_TRIANGLES, 0, 6);
     }
+    */
 }
 
+
+texture_object::texture_object(): xObject()
+{
+
+}
 
 texture_object::texture_object(char *filename): xObject()
 {
     shader=new Shader();
     shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
-
-    float vertices[] = {
-        // positions          // texture coords
-         1.0f,  1.0f, 0.0f,   1.0f, 1.0f, // top right
-         1.0f, -1.0f, 0.0f,   1.0f, 0.0f, // bottom right
-        -1.0f, -1.0f, 0.0f,   0.0f, 0.0f, // bottom left
-
-        -1.0f,  1.0f, 0.0f,   0.0f, 1.0f, // top left
-        -1.0f, -1.0f, 0.0f,   0.0f, 0.0f, // bottom left
-         1.0f,  1.0f, 0.0f,   1.0f, 1.0f, // top right
-    };
-
-    unsigned int indices[] = {
-        0, 1, 3, // first triangle
-        1, 2, 3  // second triangle
-    };
-
     make_cube(vertexes,triangles,1);
-
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
-
-    glBindVertexArray(VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    //glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glBufferData(GL_ARRAY_BUFFER, vertexes.size()*sizeof(vertex), vertexes.data(), GL_STATIC_DRAW);
-    printf(" sizeof(vertices)= %d, sizeof(vertex)= %d data=%x\n", sizeof(vertices), sizeof(vertex), vertexes.data());
-    printf(" why??? %f %f %f %f %f\n", vertexes.data()[0],vertexes.data()[1],vertexes.data()[2],vertexes.data()[3], vertexes.data()[4]);
-
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, triangles.size()*sizeof(triangle) ,triangles.data(), GL_STATIC_DRAW);
-
-    // position attribute
-//    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-//    glEnableVertexAttribArray(0);
-//    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
- //   glEnableVertexAttribArray(1);
-
-    // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-
-    /*
-    texname = -1;
-    shader=new Shader();
-    shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
-
-    make_cube(vertexes,triangles,1);
-
-    printf("vertex.size() = %ld , vertex.capacity()=%ld \n",vertexes.size(),vertexes.capacity());
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    //glGenBuffers(1, &EBO);
-
-    glBindVertexArray(VAO);
-
-   //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    //glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    */
+    make_glVertexArray();
     texname=texture_manager::get_glname(filename);
-    printf("texname = %d , sizeof(vertex)= %d, data=%x\n", texname, sizeof(vertex), vertexes.data());
-  glBindVertexArray(-1);
+    printf("VAO=%d, texname = %d , sizeof(vertex)= %d, data=%x\n",VAO, texname, sizeof(vertex), vertexes.data());
 }
 
 void texture_object::update(float dt)
@@ -344,7 +271,7 @@ void texture_object::update(float dt)
 
 void texture_object::draw()
 {
-   if (1)
+   if (VAO>0)
    {
        //printf("texture draw!!\n");
         glBindTexture(GL_TEXTURE_2D, texname);
@@ -352,4 +279,31 @@ void texture_object::draw()
         glDrawElements(GL_TRIANGLES, triangles.size()*3, GL_UNSIGNED_INT, 0); // ????? count why ????
         //glDrawArrays(GL_TRIANGLES, 0, vertexes.size());
    }
+}
+
+
+model_object::model_object(char *str): texture_object()
+{
+    shader=new Shader();
+    shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
+    Import3DFromFile("./model/chair_1.blend", *this);
+    //Import3DFromFile("./model/Bob.blend", *this);
+    texname=texture_manager::get_glname("check.bmp");
+}
+
+void model_object::update(float dt)
+{
+
+}
+
+void model_object::draw()
+{
+    if (VAO>0)
+    {
+        //printf("texture draw!!\n");
+         glBindTexture(GL_TEXTURE_2D, texname);
+         glBindVertexArray(VAO);
+         glDrawElements(GL_TRIANGLES, triangles.size()*3, GL_UNSIGNED_INT, 0); // ????? count why ????
+         //glDrawArrays(GL_TRIANGLES, 0, vertexes.size());
+    }
 }

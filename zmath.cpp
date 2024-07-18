@@ -4,9 +4,77 @@
  */
 #include <cmath>
 #include <GL/gl.h>
-/*  TODO:
+
+/*
+ *  TODO:
  *  zmath 이름 바꿔야할듯... 별로임 (hyun)
  */
+float IDENTITY_MATRIX[]={1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1};
+
+
+void load(float dst[16], float src[16])
+{
+    for(int i=0; i<16;i++)
+        dst[i]=src[i];
+}
+
+void copy(float dest[], float src[])
+{
+    int c;
+    for(c = 0; c < 16; c++)
+        dest[c] = src[c];
+}
+
+void multMat(float *matDest, float *matA, float *matB)
+{
+    float dest[16];
+    int c, d, e;
+
+    for(c = 0; c < 4; c++)
+        for(d = 0; d < 4; d++)
+            for(e = 0, dest[c + d * 4] = 0; e < 4; e++)
+                dest[c + d * 4] += matA[c + e * 4] * matB[e + d * 4];
+
+    copy(matDest, dest);
+}
+
+void translate(float *dest, float x, float y, float z)
+{
+        dest[0] = 1;  dest[4] = 0;  dest[8] = 0;  dest[12]= x;
+        dest[1] = 0;  dest[5] = 1;  dest[9] = 0;  dest[13]= y;
+        dest[2] = 0;  dest[6] = 0;  dest[10]= 1;  dest[14]= z;
+        dest[3] = 0;  dest[7] = 0;  dest[11]= 0;  dest[15]= 1;
+}
+
+void rotMatX(float *dest, float a)
+{
+    copy(dest, IDENTITY_MATRIX);
+
+    dest[5] = cos(a);
+    dest[6] = -sin(a);
+    dest[9] = sin(a);
+    dest[10]= cos(a);
+}
+
+void rotMatY(float *dest, float a)
+{
+    copy(dest, IDENTITY_MATRIX);
+
+    dest[0] = cos(a);
+    dest[2] = sin(a);
+    dest[8] = -sin(a);
+    dest[10]= cos(a);
+}
+
+void rotMatZ(float * dest, float a)
+{
+    copy(dest, IDENTITY_MATRIX);
+
+    dest[0] = cos(a);
+    dest[1] = sin(a);
+    dest[4] = -sin(a);
+    dest[5]= cos(a);
+}
 
 
 void normalize(float v[3])
@@ -148,4 +216,3 @@ void LookAt(float eye[3], float forward[3], float up[3])
     glMultMatrixf(&m[0][0]);
     glTranslatef(-eye[0], -eye[1], -eye[2]);
 }
-

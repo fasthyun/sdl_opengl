@@ -6,7 +6,7 @@ QMAKE_CXXFLAGS += -H -Wno-unused-parameter -Wno-unused-variable -Wwrite-strings 
 
 INCLUDEPATH += /usr/include/freetype2
 
-LIBS +=  -lSDL2 -lSDL2_image -lboost_filesystem -lboost_system -lfreetype -lGL -lGLU -lGLEW
+LIBS +=  -lSDL2 -lSDL2_image -lassimp -lboost_filesystem -lboost_system -lfreetype -lGL -lGLU -lGLEW
 
 DEFINES +=  #Qt5 #되네
 
@@ -20,6 +20,7 @@ SOURCES += \
     font.cpp \
     gltf-loader.cc \
     main_sdl.cpp \
+    model.cpp \
     object.cpp \
     particle.cpp \
     texture.cpp \
@@ -31,6 +32,7 @@ HEADERS += \
     element3d.h \
     font.h \
     gltext.h \
+    model.h \
     object.h \
     texture.h \
     zmath.h
