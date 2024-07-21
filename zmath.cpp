@@ -4,18 +4,35 @@
  */
 #include <cmath>
 #include <GL/gl.h>
-
+#include <stdio.h>
 /*
  *  TODO:
  *  zmath 이름 바꿔야할듯... 별로임 (hyun)
  */
 float IDENTITY_MATRIX[]={1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1};
 
+void print(float mat[16])
+{
+  printf("%08.4f,%8.4f,%8.4f,%8.4f\n"
+            "%08.4f,%8.4f,%8.4f,%8.4f\n"
+            "%08.4f,%8.4f,%8.4f,%8.4f\n"
+            "%08.4f,%8.4f,%8.4f,%8.4f\n",
+        mat[0],mat[1],mat[2],mat[3],
+        mat[4],mat[5],mat[6],mat[7],
+        mat[8],mat[9],mat[10],mat[11],
+        mat[12],mat[13],mat[14],mat[15]);
+}
 
 void load(float dst[16], float src[16])
 {
     for(int i=0; i<16;i++)
         dst[i]=src[i];
+}
+
+void loadIdentity(float mat[16])
+{
+    for(int i=0; i<16;i++)
+        mat[i]=IDENTITY_MATRIX[i];
 }
 
 void copy(float dest[], float src[])
@@ -40,10 +57,10 @@ void multMat(float *matDest, float *matA, float *matB)
 
 void translate(float *dest, float x, float y, float z)
 {
-        dest[0] = 1;  dest[4] = 0;  dest[8] = 0;  dest[12]= x;
-        dest[1] = 0;  dest[5] = 1;  dest[9] = 0;  dest[13]= y;
-        dest[2] = 0;  dest[6] = 0;  dest[10]= 1;  dest[14]= z;
-        dest[3] = 0;  dest[7] = 0;  dest[11]= 0;  dest[15]= 1;
+       /* dest[0] = 1;  dest[4] = 0;  dest[8] = 0; */  dest[12]= x;
+       /* dest[1] = 0;  dest[5] = 1;  dest[9] = 0; */ dest[13]= y;
+       /* dest[2] = 0;  dest[6] = 0;  dest[10]= 1; */ dest[14]= z;
+      /*  dest[3] = 0;  dest[7] = 0;  dest[11]= 0; */ dest[15]= 1;
 }
 
 void rotMatX(float *dest, float a)

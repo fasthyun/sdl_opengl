@@ -31,13 +31,9 @@ bool init_GL();  //Initializes matrices and clear color
 //The window we'll be rendering to
 SDL_Window* window = NULL;
 SDL_GLContext glContext; //OpenGL context
-GLuint vshader,fshader;
-GLuint program;
-
 
 int width=1024;
 int height=768;
-
 
 // Callback function for printing debug statements
 void GLDebugMessageCallback(GLenum source, GLenum type, GLuint id,
@@ -277,7 +273,10 @@ int  fps=0;
 void gltDrawMatrix4f(GLTtext *textid, float *mat, float x, float y )
 {
     char str[64*4];
-    sprintf(str,"%5.4f,%5.4f,%5.4f,%5.4f\n %5.4f,%5.4f,%5.4f,%5.4f\n %5.4f,%5.4f,%5.4f,%5.4f\n %5.4f,%5.4f,%5.4f,%5.4f\n ",
+    sprintf(str,"%08.4f,%8.4f,%8.4f,%8.4f\n"
+                "%08.4f,%8.4f,%8.4f,%8.4f\n"
+                "%08.4f,%8.4f,%8.4f,%8.4f\n"
+                "%08.4f,%8.4f,%8.4f,%8.4f\n",
             mat[0],mat[1],mat[2],mat[3],
             mat[4],mat[5],mat[6],mat[7],
             mat[8],mat[9],mat[10],mat[11],
@@ -296,8 +295,13 @@ void main_loop()
     GLTtext *text1 = gltCreateText();
     GLTtext *text2 = gltCreateText();
     GLTtext *text3 = gltCreateText();
+    GLTtext *text4 = gltCreateText();
+
     char str1[30];
     char str2[30];
+
+    float proj_m[16];
+    float model_m[16];
 
     //SDL_GL_MakeCurrent(window,glContext);    
     while( !quit ) //While application is running
@@ -324,7 +328,7 @@ void main_loop()
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         //glFrontFace(GL_CCW);
-        glEnable(GL_CULL_FACE);
+        //glEnable(GL_CULL_FACE);
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
         // draw console? or push pop?
@@ -334,8 +338,7 @@ void main_loop()
                   d_camera->pos[0]+d_camera->forward[0]*3,d_camera->pos[1]+d_camera->forward[1]*3 ,
                   d_camera->pos[2]+d_camera->forward[2]*3,
                   d_camera->up[0],d_camera->up[1],d_camera->up[2]); */
-        float proj_m[16];
-        float model_m[16];
+
         glGetFloatv(GL_PROJECTION_MATRIX, proj_m);
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
@@ -344,18 +347,19 @@ void main_loop()
             xObject *obj = objects[i];
             //glLoadIdentity();
             //glGetFloatv(GL_MODELVIEW_MATRIX, model_m);
-            translate(model_m, obj->pos[0], obj->pos[1], obj->pos[2] );
+            //translate(model_m, obj->pos[0], obj->pos[1], obj->pos[2] );
 
             if (obj->shader != NULL)
             {
                 obj->shader->SetActive();
                 GLint location=glGetUniformLocation(obj->shader->mShaderProgram, "projView");
                 if (location>=0)
-                    glUniformMatrix4fv(location, 1, GL_FALSE, proj_m); // ===> GLint location,GLsizei count, GLboolean transpose, const GLfloat *value
-                location=glGetUniformLocation(obj->shader->mShaderProgram, "modelView");
+                    glUniformMatrix4fv(location, 1, GL_FALSE, proj_m); // GLint location,GLsizei count, GLboolean transpose, const GLfloat *value
+
+                /*location=glGetUniformLocation(obj->shader->mShaderProgram, "modelView");
                 //sprintf(str1, "location: %d", location);
                 if (location>=0)
-                    glUniformMatrix4fv(location, 1, GL_FALSE, model_m);
+                    glUniformMatrix4fv(location, 1, GL_FALSE, model_m); */
             }
             obj->update(dt);  //update objects
             obj->draw();
@@ -394,7 +398,7 @@ void main_loop()
             gltEndDraw();
         }
         // printf("dt=%d \n",dt);
-        SDL_GL_SwapWindow( window );             
+        SDL_GL_SwapWindow( window );
     }
     //gltDeleteText(text1);
     //gltDeleteText(text2);
@@ -408,8 +412,9 @@ void init_object()
     _tex = new texture("check.bmp"); //
     _tex = new texture("font-map.png"); // 16x6
 
-    xObject *obj=new xObject();
-    objects.push_back(obj);
+    xObject *obj;
+    //obj=new xObject();
+    //objects.push_back(obj);
 
     obj = new grid();
     objects.push_back(obj);
@@ -424,7 +429,7 @@ void init_object()
     objects.push_back(obj);
 
     xObject *texobj=new texture_object("check.bmp");
-    set(texobj->pos,0,0,0);
+    set(texobj->pos,-2,0,0);
     objects.push_back(texobj);
 
     texobj=new texture_object("font-map-mtl.png");

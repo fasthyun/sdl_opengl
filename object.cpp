@@ -24,6 +24,7 @@ uint64_t epoch_now() { // timeSinceEpochMillisec
 
 xObject::xObject()
 {
+    parent=NULL;
     shader=NULL; // ***
     VBO=0;
     VAO=0;
@@ -36,6 +37,7 @@ xObject::xObject()
     set(forward,0,0,1); //
     set(force,0,0,0);
     //make_circle();
+    loadIdentity(model_m);
 }
 
 void xObject::update(float dt)
@@ -143,48 +145,31 @@ void xObject::draw_meshes()
 
 void xObject::draw()
 {
-    // draw_axis();
+    //draw_axis();
     //draw_dir_up();
     //draw_meshes();
 
-    /*
-    glColor3f(0.5,0.5,0.5);
-    glBegin(GL_TRIANGLES);
-    for(size_t i=0; i< triangles.size();i++)
+    if (VAO>0)
     {
-        triangle *tri= triangles.at(i);
-        //vector<float> &vertices = (m->vertices);
-        //vector<unsigned int> &faces = (m->faces);
-        //glNormal3fv(Ng); // normal for geometry
-        int idx;
-        idx=tri->v[0];
-        glVertex3fv(vertexes[idx]->v);
-        idx=tri->v[1];
-        glVertex3fv(vertexes[idx]->v);
-        idx=tri->v[2];
-        glVertex3fv(vertexes[idx]->v);
+        //float model_m[16];
+        //loadIdentity(model_m);
+        glBindTexture(GL_TEXTURE_2D, texname);
+        translate(model_m, pos[0], pos[1], pos[2] );
+        GLint location;
+        location=glGetUniformLocation(shader->mShaderProgram, "modelView");
+        if (location>=0)
+            glUniformMatrix4fv(location, 1, GL_FALSE, model_m);
+         //printf("texture draw!!\n");
+         glBindVertexArray(VAO);
+         glDrawElements(GL_TRIANGLES, triangles.size()*3, GL_UNSIGNED_INT, 0); // ????? count why ????
+         //glDrawArrays(GL_TRIANGLES, 0, vertexes.size());
     }
-    glEnd();
-    */
+
     for ( size_t i=0 ; i < children.size(); i++)
     {
+        // Parent shader is active
         xObject *obj = &children[i];
-
-        //translate(model_m, obj->pos[0], obj->pos[1], obj->pos[2] );
-        /*
-        if (obj->shader != NULL)
-        {
-            obj->shader->SetActive();
-            GLint location=glGetUniformLocation(obj->shader->mShaderProgram, "projView");
-            /// sprintf(str1, "location: %d", location);
-            if (location>=0)
-                glUniformMatrix4fv(location, 1, GL_FALSE, proj_m); // ===> GLint location,GLsizei count, GLboolean transpose, const GLfloat *value
-            location=glGetUniformLocation(obj->shader->mShaderProgram, "modelView");
-            if (location>=0)
-                glUniformMatrix4fv(location, 1, GL_FALSE, model_m);
-
-        }
-        obj->draw(); */
+        obj->draw();
     }
 }
 

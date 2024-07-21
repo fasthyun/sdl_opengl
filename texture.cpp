@@ -142,7 +142,7 @@ void texture::makeTexture(SDL_Surface *surface)
     int _bytes = surface->format->BytesPerPixel;
     glGenTextures(1, &d_tex_glname);
     glBindTexture(GL_TEXTURE_2D, d_tex_glname);
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // power of 2 !!
+    //glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // power of 2 !!
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -259,7 +259,7 @@ texture_object::texture_object(char *filename): xObject()
     shader=new Shader();
     shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
     make_cube(vertexes,triangles,1);
-    make_glVertexArray();
+    make_glVertexArray(); // works!!!
     texname=texture_manager::get_glname(filename);
     printf("VAO=%d, texname = %d , sizeof(vertex)= %d, data=%x\n",VAO, texname, sizeof(vertex), vertexes.data());
 }
@@ -271,24 +271,17 @@ void texture_object::update(float dt)
 
 void texture_object::draw()
 {
-   if (VAO>0)
-   {
-       //printf("texture draw!!\n");
-        glBindTexture(GL_TEXTURE_2D, texname);
-        glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, triangles.size()*3, GL_UNSIGNED_INT, 0); // ????? count why ????
-        //glDrawArrays(GL_TRIANGLES, 0, vertexes.size());
-   }
+    xObject::draw();
 }
-
 
 model_object::model_object(char *str): texture_object()
 {
+    texname=texture_manager::get_glname("check.bmp");
+    printf("texture_name=%d \n", texname);
     shader=new Shader();
     shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
-    Import3DFromFile("./model/chair_1.blend", *this);
+    Import3DFromFile("./model/box.blend", *this);
     //Import3DFromFile("./model/Bob.blend", *this);
-    texname=texture_manager::get_glname("check.bmp");
 }
 
 void model_object::update(float dt)
@@ -298,12 +291,5 @@ void model_object::update(float dt)
 
 void model_object::draw()
 {
-    if (VAO>0)
-    {
-        //printf("texture draw!!\n");
-         glBindTexture(GL_TEXTURE_2D, texname);
-         glBindVertexArray(VAO);
-         glDrawElements(GL_TRIANGLES, triangles.size()*3, GL_UNSIGNED_INT, 0); // ????? count why ????
-         //glDrawArrays(GL_TRIANGLES, 0, vertexes.size());
-    }
+   xObject::draw();
 }

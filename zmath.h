@@ -10,9 +10,11 @@ class x_vector {
     float v[3];
 };
 
+void print(float mat[16]);
 
 void translate(float *dest, float x, float y, float z);
 void copy(float dest[], float src[]);
+void loadIdentity(float mat[16]);
 
 void normalize(float v[3]);
 void gluMakeIdentityf(float m[16]);

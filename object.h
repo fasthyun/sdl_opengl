@@ -22,6 +22,9 @@ public:
     xObject();
     virtual void update(float dt=0);
     virtual void draw();
+    void set_parent(xObject *p){ parent=p;}
+    void set_shader(Shader *s){ shader=s;}
+    void set_texture(GLuint name){ texname=name;}
     void draw_meshes();
     void draw_axis();
     void draw_dir_up();
@@ -33,13 +36,14 @@ public:
     vector<Material> materials;
     vector<Texture> xtextures;
 
-    // just
+    // variables
+    xObject *parent;
     float pos[3];
     float forward[3]; //
     float up[3];
     float force[3];
     float weight;
-    float mat[16];
+    float model_m[16];
     uint64_t prev_time;
     Shader *shader;
 

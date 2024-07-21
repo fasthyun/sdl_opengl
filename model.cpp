@@ -32,10 +32,8 @@
 #include <assimp/DefaultLogger.hpp>
 #include <assimp/LogStream.hpp>
 
-bool		active=true;		// Window Active Flag Set To TRUE by Default
-
 void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale,xObject &obj,int level=0);
-GLuint scene_list = 0;
+
 // images / texture
 std::map<std::string, GLuint*> textureIdMap;	// map image filenames to textureIds
 GLuint*		textureIds;							// pointer to texture Array
@@ -332,14 +330,14 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
     {
         tab= tab + '\t';
     }
-    // update transform
-    m.Transpose();
-    copy(obj.mat,&m.a1);
+
+    m.Transpose();  // update transform for OpenGL
+    copy(obj.model_m,&m.a1);
     //glPushMatrix();
     //glMultMatrixf((float*)&m);
-
+    print(obj.model_m);
     // draw all meshes assigned to this node    
-    printf("%s nd->mNumMeshes=%d \n",tab.c_str(),nd->mNumMeshes);
+    printf("%s[%s].mNumMeshes=%d \n",tab.c_str(),nd->mName.C_Str(),nd->mNumMeshes);
     for (n=0 ; n < nd->mNumMeshes; ++n)
     {
         int mesh_idx=nd->mMeshes[n]; // mesh index
@@ -371,30 +369,37 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
             {
                 tu=mesh->mTextureCoords[0][i].x;
                 tv= 1 - mesh->mTextureCoords[0][i].y; //mTextureCoords[channel][vertex]
-            }            
+            }
+            printf("%s %2.3f %2.3f %2.3f *tu=%.2f tv=%.2f\n",tab.c_str(),
+                   mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z,  tu,tv);
+
             vertex_set(vert,mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z, tu,tv);
             obj.vertexes.push_back(vert);
         }
 
+        printf("%s[%d].mNumFaces=%d \n",tab.c_str(), n,mesh->mNumFaces);
         for (t = 0; t < mesh->mNumFaces; ++t) {
             const struct aiFace* face = &mesh->mFaces[t];
             GLenum face_mode;
 
-            triangle tri;
+            triangle tr;
             switch(face->mNumIndices)
             {
-                case 1: face_mode = GL_POINTS; break;
-                case 2: face_mode = GL_LINES; break;
+                case 1: face_mode = GL_POINTS;
+                    std::cout << "Error: not triangle " << face->mNumIndices << "\n";
+                    break;
+                case 2: face_mode = GL_LINES;
+                    std::cout << "Error: not triangle " << face->mNumIndices << "\n";
+                    break;
                 case 3: face_mode = GL_TRIANGLES;
-                    triangle_set(tri,face->mIndices[0],face->mIndices[1],face->mIndices[2]);
-                    obj.triangles.push_back(tri);
+                    triangle_set(tr, face->mIndices[0], face->mIndices[1], face->mIndices[2]);
+                    obj.triangles.push_back(tr);
                     if(mesh->mNormals != nullptr)
                     {
                     }
                     else
                         std::cout << "Error: mesh.mNormals NULL " << "\n";
                     break;
-
                 default:
                     face_mode = GL_POLYGON;
                     std::cout << "Error: not triangle " << face->mNumIndices << "\n";
@@ -402,18 +407,26 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
             }
         }
     }
-
-    printf("%snd->mNumChildren=%d \n",tab.c_str(),nd->mNumChildren);
-    // draw all children
-    for (n = 0; n < nd->mNumChildren; ++n)
+    if (obj.triangles.size()>0 )
     {
-        xObject child;
-        obj.children.push_back(child);
-        loadToObject(sc, nd->mChildren[n], scale, child, level+1);
+        obj.make_glVertexArray(); // make_glVertexArray
+        std::cout << tab << " +--> OK : make_glVertexArray() " << "\n";
     }
-    obj.make_glVertexArray();
-    // make_glVertexArray
-    std::cout << tab << " OK : make_glVertexArray() " << "\n";
+    if (nd->mNumChildren > 0)
+    {
+        printf("%snd->mNumChildren=%d \n",tab.c_str(),nd->mNumChildren);
+
+        //from child object
+        for (n = 0; n < nd->mNumChildren; ++n)
+        {
+            xObject child;
+            child.set_parent(&obj);
+            child.set_shader(obj.shader); // get from parent's shader
+            child.set_texture(obj.texname);
+            obj.children.push_back(child);
+            loadToObject(sc, nd->mChildren[n], scale, child, level+1);
+        }
+    }
 }
 
 int DrawGLScene()				//Here's where we do all the drawing
@@ -426,22 +439,17 @@ int DrawGLScene()				//Here's where we do all the drawing
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	// Clear The Screen And The Depth Buffer
 	glLoadIdentity();				// Reset MV Matrix
 
-	glTranslatef(0.0f, -10.0f, -40.0f);	// Move 40 Units And Into The Screen
-
+    glTranslatef(0.0f, -10.0f, -40.0f);
     glRotatef(xrot, 1.0f, 0.0f, 0.0f);
 	glRotatef(yrot, 0.0f, 1.0f, 0.0f);
 	glRotatef(zrot, 0.0f, 0.0f, 1.0f);
 
-    //drawAiScene(g_scene);
     logInfo("drawing objects");
-    //recursive_render(g_scene, g_scene->mRootNode, 0.5);
-	yrot += 0.2f;
-
+    yrot += 0.2f;
     return true;					// okay
 }
 
 /*
-
 int WINAPI WinMain()
 
 {
@@ -458,60 +466,5 @@ int WINAPI WinMain()
 	}
 
 	logInfo("=============== Post Import ====================");
-
-
-	if (!CreateGLWindow(windowTitle, 640, 480, 16, fullscreen))
-	{
-		cleanup();
-		return 0;
-	}
-
-	while(!done)	// Game Loop
-	{
-		if (PeekMessage(&msg, nullptr, 0,0, PM_REMOVE))
-		{
-			if (msg.message==WM_QUIT)
-			{
-				done = TRUE;
-			}
-			else
-			{
-				TranslateMessage(&msg);
-				DispatchMessage(&msg);
-			}
-		}
-		else
-		{
-			// Draw The Scene. Watch For ESC Key And Quit Messaged From DrawGLScene()
-			if (active)
-			{
-				if (keys[VK_ESCAPE])
-				{
-					done=TRUE;
-				}
-				else
-				{
-					DrawGLScene();
-					SwapBuffers(hDC);
-				}
-			}
-
-			if (keys[VK_F1])
-			{
-				keys[VK_F1]=FALSE;
-				KillGLWindow();
-				fullscreen=!fullscreen;
-				if (!CreateGLWindow(windowTitle, 640, 480, 16, fullscreen))
-				{
-					cleanup();
-					return 0;
-				}
-			}
-		}
-	}
-
-	// *** cleanup ***
-	cleanup();
-	return static_cast<int>(msg.wParam);
 }
 */
