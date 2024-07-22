@@ -49,7 +49,7 @@ public:
 
     GLuint VBO, VAO, EBO;
     GLuint texname;
-    vector<xObject> children;
+    vector<xObject*> children;
 };
 
 class camera : public xObject{

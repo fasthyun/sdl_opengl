@@ -32,11 +32,7 @@ SDL_Surface* texture::LoadImage(std::string file)
     SDL_Surface *surface = nullptr;
     //surface = SDL_LoadBMP(file.c_str());
     surface = IMG_Load(file.c_str());
-    /* imgBuff = stbi_load("/home/hyun/works/qt_opengl/font-map.png", &w, &h, &comp, 0);
-       if(imgBuff == nullptr){
-        throw(std::string("Failed to load texture"));
-        return;
-    }*/
+
     if (surface != nullptr)
     {
         //texture = SDL_CreateTextureFromSurface(renderer, loadedImage); //hmmm
@@ -180,25 +176,6 @@ texture_manager::texture_manager()
     shader=new Shader();
     shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
 
-    /*
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glGenBuffers(1, &EBO);
-
-    glBindVertexArray(VAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-*/
 }
 
 void texture_manager::update(float dt)
@@ -210,14 +187,7 @@ void texture_manager::update(float dt)
 // TODO
 void texture_manager::render_texture(GLuint texname,float x,float y,float z,float size)
 {
-    glBindTexture(GL_TEXTURE_2D, texname);
-    glBegin(GL_QUADS);
-    glTexCoord2f(0.0, 0.0); glVertex3f(x, y , z);
-    glTexCoord2f(0.0, 1.0); glVertex3f(x, y + size, z);
-    glTexCoord2f(1.0, 1.0); glVertex3f(x+size, y+size, z);
-    glTexCoord2f(1.0, 0.0); glVertex3f(x+size, y, z);
-    glEnd();
-    glBindTexture(GL_TEXTURE_2D, 0); //!!!
+
 }
 
 GLuint texture_manager::get_glname(string filename)

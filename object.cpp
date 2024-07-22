@@ -66,10 +66,10 @@ void xObject::draw_dir_up()
     glLineWidth(1);
 }
 
-#include "gltf-loader.h"
+///#include "gltf-loader.h"
 void xObject::load_gltf(string name)
 {
-    LoadGLTF(name, 1, &meshes, &materials, &xtextures);
+   /// LoadGLTF(name, 1, &meshes, &materials, &xtextures);
 }
 
 void xObject::make_glVertexArray()
@@ -151,25 +151,26 @@ void xObject::draw()
 
     if (VAO>0)
     {
-        //float model_m[16];
-        //loadIdentity(model_m);
         glBindTexture(GL_TEXTURE_2D, texname);
         translate(model_m, pos[0], pos[1], pos[2] );
         GLint location;
         location=glGetUniformLocation(shader->mShaderProgram, "modelView");
         if (location>=0)
             glUniformMatrix4fv(location, 1, GL_FALSE, model_m);
-         //printf("texture draw!!\n");
+         //printf("texture draw!! %d\n",triangles.size());
          glBindVertexArray(VAO);
          glDrawElements(GL_TRIANGLES, triangles.size()*3, GL_UNSIGNED_INT, 0); // ????? count why ????
          //glDrawArrays(GL_TRIANGLES, 0, vertexes.size());
     }
-
-    for ( size_t i=0 ; i < children.size(); i++)
+    else
+     ;
+   for ( size_t i=0 ; i < children.size(); i++)
     {
         // Parent shader is active
-        xObject *obj = &children[i];
+        xObject *obj = children[i];
         obj->draw();
+       // printf("obj.children()=%d  %d\n",i,obj->VAO);
+
     }
 }
 

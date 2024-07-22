@@ -428,20 +428,20 @@ void init_object()
     obj=new console();
     objects.push_back(obj);
 
-    xObject *texobj=new texture_object("check.bmp");
-    set(texobj->pos,-2,0,0);
-    objects.push_back(texobj);
+    xObject *texobj;//=new texture_object("check.bmp");
+    //set(texobj->pos,-2,0,0);
+    //objects.push_back(texobj);
 
-    texobj=new texture_object("font-map-mtl.png");
-    set(texobj->pos,2,0,0);
-    objects.push_back(texobj);
+    //texobj=new texture_object("font-map-mtl.png");
+    //set(texobj->pos,2,0,0);
+    //objects.push_back(texobj);
 
-    texobj=new texture_object("font-map.png");
-    set(texobj->pos,4,0,0);
-    objects.push_back(texobj);
+    //texobj=new texture_object("font-map.png");
+    //set(texobj->pos,4,0,0);
+    //objects.push_back(texobj);
 
     xObject *model_obj=new model_object("");
-    set(model_obj->pos,0,10,0);
+    set(model_obj->pos,0,2,0);
     objects.push_back(model_obj);
 
 

@@ -335,7 +335,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
     copy(obj.model_m,&m.a1);
     //glPushMatrix();
     //glMultMatrixf((float*)&m);
-    print(obj.model_m);
+    //print(obj.model_m);
     // draw all meshes assigned to this node    
     printf("%s[%s].mNumMeshes=%d \n",tab.c_str(),nd->mName.C_Str(),nd->mNumMeshes);
     for (n=0 ; n < nd->mNumMeshes; ++n)
@@ -370,8 +370,8 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
                 tu=mesh->mTextureCoords[0][i].x;
                 tv= 1 - mesh->mTextureCoords[0][i].y; //mTextureCoords[channel][vertex]
             }
-            printf("%s %2.3f %2.3f %2.3f *tu=%.2f tv=%.2f\n",tab.c_str(),
-                   mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z,  tu,tv);
+            //printf("%s %2.3f %2.3f %2.3f *tu=%.2f tv=%.2f\n",tab.c_str(),
+            //       mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z,  tu,tv);
 
             vertex_set(vert,mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z, tu,tv);
             obj.vertexes.push_back(vert);
@@ -410,7 +410,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
     if (obj.triangles.size()>0 )
     {
         obj.make_glVertexArray(); // make_glVertexArray
-        std::cout << tab << " +--> OK : make_glVertexArray() " << "\n";
+        std::cout << tab << " +--> OK : make_glVertexArray() " << obj.VAO << "\n";
     }
     if (nd->mNumChildren > 0)
     {
@@ -419,13 +419,14 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
         //from child object
         for (n = 0; n < nd->mNumChildren; ++n)
         {
-            xObject child;
-            child.set_parent(&obj);
-            child.set_shader(obj.shader); // get from parent's shader
-            child.set_texture(obj.texname);
+            xObject *child=new xObject();
+            child->set_parent(&obj);
+            child->set_shader(obj.shader); // get from parent's shader
+            child->set_texture(obj.texname);
             obj.children.push_back(child);
-            loadToObject(sc, nd->mChildren[n], scale, child, level+1);
+            loadToObject(sc, nd->mChildren[n], scale, *child, level+1);
         }
+        printf("%sobj.children=%d \n",tab.c_str(), obj.children.size());
     }
 }
 
