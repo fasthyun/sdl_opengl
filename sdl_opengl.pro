@@ -21,7 +21,7 @@ SOURCES += \
     console.cpp \
     element3d.cpp \
     gltext.c \
-    main_sdl.cpp \
+    main.cpp \
     misc.c \
     model.cpp \
     object.cpp \
