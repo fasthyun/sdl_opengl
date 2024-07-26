@@ -1,14 +1,17 @@
 QT      -= gui core qtwidget
-CONFIG  += c++11 debug
+CONFIG  += c++11 debug warn_off
 CONFIG  -= qml_debug
 
 QMAKE_CXXFLAGS += -H -Wno-unused-parameter -Wno-unused-variable -Wwrite-strings -Wunused-but-set-variable -Wunused-function
+QMAKE_CFLAGS += -Wunused-function
 
-INCLUDEPATH += /usr/include/freetype2
-
-LIBS +=  -lSDL2 -lSDL2_image -lassimp -lboost_filesystem -lboost_system -lfreetype -lGL -lGLU -lGLEW
-
+#INCLUDEPATH += /usr/include/freetype2
+LIBS +=  -lSDL2 -lSDL2_image -lassimp -lboost_filesystem -lboost_system  -lGL -lGLU -lGLEW
+#QMAKE_LIBDIR += ./
+# -lfreetype
 DEFINES +=  #Qt5 #되네
+
+#QMAKE_PRE_LINK = gcc -shared -o libgltext.so gltext.o
 
 TARGET = main
 
@@ -17,9 +20,9 @@ SOURCES += \
     backup.cpp \
     console.cpp \
     element3d.cpp \
-    font.cpp \
-    gltf-loader.cc \
+    gltext.c \
     main_sdl.cpp \
+    misc.c \
     model.cpp \
     object.cpp \
     particle.cpp \
@@ -30,8 +33,7 @@ HEADERS += \
     Shader.h \
     console.h \
     element3d.h \
-    font.h \
-    gltext.h \
+    font.h \    
     model.h \
     object.h \
     texture.h \

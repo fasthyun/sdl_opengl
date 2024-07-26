@@ -89,7 +89,7 @@ extern "C" {
 #	ifndef GLT_STATIC
 #		define GLT_STATIC
 #	endif
-#	define GLT_API static
+#	define GLT_API  //static
 #endif
 
 #define GLT_LEFT 0
@@ -141,7 +141,7 @@ GLT_API GLboolean gltIsCharacterDrawable(const char c);
 GLT_API GLint gltCountDrawableCharacters(const char *str);
 
 GLT_API GLint gltCountNewLines(const char *str);
-
+void gltDrawMatrix4f(GLTtext *textid, float *mat, float x, float y );
 // After this point everything you'll see is the
 // implementation and all the internal stuff.
 // Use it at your own discretion, but be warned

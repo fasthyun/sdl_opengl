@@ -13,11 +13,10 @@
 #include "texture.h"
 #include "Shader.h"
 #include "model.h"
-
-//#define GLT_DEBUG
-//#define GLT_DEBUG_PRINT
-#define GLT_IMPLEMENTATION
+//#define GLT_IMPORTS
+//#define GLT_IMPLEMENTATION //?????
 #include "gltext.h"         /* https://github.com/vallentin/glText */
+//#include "misc.h"
 
 using namespace std;
 vector<xObject* > objects; 
@@ -34,103 +33,6 @@ SDL_GLContext glContext; //OpenGL context
 
 int width=1024;
 int height=768;
-
-// Callback function for printing debug statements
-void GLDebugMessageCallback(GLenum source, GLenum type, GLuint id,
-                            GLenum severity, GLsizei length,
-                            const GLchar *msg, const void *data)
-{
-    char* _source;
-    char* _type;
-    char* _severity;
-
-    switch (source) {
-        case GL_DEBUG_SOURCE_API:
-        _source = (char*) "API";
-        break;
-
-        case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
-        _source = (char*)"WINDOW SYSTEM";
-        break;
-
-        case GL_DEBUG_SOURCE_SHADER_COMPILER:
-        _source = (char*)"SHADER COMPILER";
-        break;
-
-        case GL_DEBUG_SOURCE_THIRD_PARTY:
-        _source = (char*)"THIRD PARTY";
-        break;
-
-        case GL_DEBUG_SOURCE_APPLICATION:
-        _source = (char*)"APPLICATION";
-        break;
-
-        case GL_DEBUG_SOURCE_OTHER:
-        _source = (char*)"UNKNOWN";
-        break;
-
-        default:
-        _source = (char*)"UNKNOWN";
-        break;
-    }
-
-    switch (type) {
-        case GL_DEBUG_TYPE_ERROR:
-        _type = (char*)"ERROR";
-        break;
-
-        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
-        _type =(char*) "DEPRECATED BEHAVIOR";
-        break;
-
-        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
-        _type =(char*) "UDEFINED BEHAVIOR";
-        break;
-
-        case GL_DEBUG_TYPE_PORTABILITY:
-        _type = (char*)"PORTABILITY";
-        break;
-
-        case GL_DEBUG_TYPE_PERFORMANCE:
-        _type = (char*)"PERFORMANCE";
-        break;
-
-        case GL_DEBUG_TYPE_OTHER:
-        _type = (char*)"OTHER";
-        break;
-
-        case GL_DEBUG_TYPE_MARKER:
-        _type = (char*)"MARKER";
-        break;
-
-        default:
-        _type = (char*)"UNKNOWN";
-        break;
-    }
-
-    switch (severity) {
-        case GL_DEBUG_SEVERITY_HIGH:
-        _severity = (char*)"HIGH";
-        break;
-
-        case GL_DEBUG_SEVERITY_MEDIUM:
-        _severity = (char*)"MEDIUM";
-        break;
-
-        case GL_DEBUG_SEVERITY_LOW:
-        _severity = (char*)"LOW";
-        break;
-
-        case GL_DEBUG_SEVERITY_NOTIFICATION:
-        _severity = (char*)"NOTIFICATION";
-        break;
-
-        default:
-        _severity = (char*)"UNKNOWN";
-        break;
-    }
-    printf("%d: %s of %s severity, raised from %s: %s\n", id, _type, _severity, _source, msg);
-}
 
 bool init_SDL()
 {
@@ -269,21 +171,6 @@ float  time_fps=0;
 int  fps_count=0;
 int  fps=0;
 
-// misc.cpp
-void gltDrawMatrix4f(GLTtext *textid, float *mat, float x, float y )
-{
-    char str[64*4];
-    sprintf(str,"%08.4f,%8.4f,%8.4f,%8.4f\n"
-                "%08.4f,%8.4f,%8.4f,%8.4f\n"
-                "%08.4f,%8.4f,%8.4f,%8.4f\n"
-                "%08.4f,%8.4f,%8.4f,%8.4f\n",
-            mat[0],mat[1],mat[2],mat[3],
-            mat[4],mat[5],mat[6],mat[7],
-            mat[8],mat[9],mat[10],mat[11],
-            mat[12],mat[13],mat[14],mat[15]);
-    gltSetText(textid, str);
-    gltDrawText2D(textid, x,y,1.0);
-}
 
 void main_loop()
 {
@@ -384,21 +271,20 @@ void main_loop()
             gltDrawText2D(text1, 0.0f, 0.0f, 1.0f); // x=0.0, y=0.0, scale=1.0
             gltDrawText2DAligned(text1,(GLfloat)(10),(GLfloat)(20),
                                  3.0f,  GLT_CENTER, GLT_CENTER);
-            */
-
+            */            
             sprintf(str2, "FPS: %d", fps);
             gltSetText(text2, str2);
             gltDrawText2DAligned(text2, 10.0f, 20, 1.0f, GLT_LEFT, GLT_BOTTOM);
 
-
             gltSetText(text1, str1);
             gltDrawText2DAligned(text1, 10.0f, 40, 1.0f, GLT_LEFT, GLT_BOTTOM);
 
-            gltDrawMatrix4f(text3,proj_m, 10, 60);
+            gltDrawMatrix4f(text3 ,proj_m , 10, 60);
             gltEndDraw();
         }
         // printf("dt=%d \n",dt);
         SDL_GL_SwapWindow( window );
+        //SDL_WarpMouseInWindow(window,width/2,height/2);
     }
     //gltDeleteText(text1);
     //gltDeleteText(text2);
@@ -440,8 +326,8 @@ void init_object()
     //set(texobj->pos,4,0,0);
     //objects.push_back(texobj);
 
-    xObject *model_obj=new model_object("");
-    set(model_obj->pos,0,2,0);
+    xObject *model_obj=new model_object((char*)"");
+    set(model_obj->pos,0,10,0);
     objects.push_back(model_obj);
 
 
@@ -473,11 +359,9 @@ int main(int argc, char *argv[])
     cout << "sizeof(complex<float>) = "  << sizeof(std::complex<float>) << "bytes" << endl;
     init_SDL();
     init_GL();
-
     //init_shader();
     //init_font();
     //init_font_freetype();
-
     init_object(); 
     main_loop();
     return 0;

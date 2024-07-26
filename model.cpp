@@ -12,18 +12,23 @@
 // Thanks to NeHe on whose OpenGL tutorials this one's based on! :)
 // http://nehe.gamedev.net/
 // ----------------------------------------------------------------------------
-#include <iostream>
 #include <GL/glew.h>  // why?
 
 #include "element3d.h"
 #include "object.h"
+#include "texture.h"
 #include "zmath.h"
 
+#include <iostream>
 #include <fstream>
 
 //to map image filenames to textureIds
 #include <string>
 #include <map>
+#include <boost/algorithm/string/replace.hpp> // replace_all()
+
+#include <boost/filesystem.hpp>
+
 
 // assimp include files. These three are usually needed.
 #include <assimp/Importer.hpp>
@@ -32,6 +37,7 @@
 #include <assimp/DefaultLogger.hpp>
 #include <assimp/LogStream.hpp>
 
+int LoadGLTextures(const aiScene* scene) ;
 void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale,xObject &obj,int level=0);
 
 // images / texture
@@ -96,6 +102,7 @@ bool Import3DFromFile(const std::string &filename,xObject &obj)
     std::cout << "Import of scene " + filename + " succeeded.\n";
     // We're done. Everything will be cleaned up by the importer destructor
 
+    LoadGLTextures(g_scene);
     loadToObject(g_scene, g_scene->mRootNode, 1.0, obj);
     return true;
 }
@@ -115,87 +122,9 @@ void freeTextureIds() {
 	}
 }
 
-int LoadGLTextures(const aiScene* scene) {
-	freeTextureIds();
-
-    if (scene->HasTextures() == true)   // ?????????
-		return 1;
-
-	/* getTexture Filenames and Numb of Textures */
-	for (unsigned int m=0; m<scene->mNumMaterials; m++)
-	{
-		int texIndex = 0;
-		aiReturn texFound = AI_SUCCESS;
-		aiString path;	// filename
-
-		while (texFound == AI_SUCCESS)
-		{
-			texFound = scene->mMaterials[m]->GetTexture(aiTextureType_DIFFUSE, texIndex, &path);
-			textureIdMap[path.data] = nullptr; //fill map with textures, pointers still NULL yet
-			texIndex++;
-		}
-	}
-
-	const size_t numTextures = textureIdMap.size();
-
-	/* create and fill array with GL texture ids */
-	textureIds = new GLuint[numTextures];
-	glGenTextures(static_cast<GLsizei>(numTextures), textureIds); /* Texture name generation */
-
-	/* get iterator */
-	std::map<std::string, GLuint*>::iterator itr = textureIdMap.begin();
-
-    //std::string basepath = getBasePath(modelpath);
-	for (size_t i=0; i<numTextures; i++)
-	{
-		std::string filename = (*itr).first;  // get filename
-		(*itr).second =  &textureIds[i];	  // save texture id for filename in map
-		itr++;								  // next texture
-
-        //std::string fileloc = basepath + filename;	/* Loading of image */
-
-        /*
-         * int x, y, n;
-        unsigned char *data ;// = stbi_load(ileloc.c_str(), &x, &y, &n, STBI_rgb_alpha);
-
-		if (nullptr != data )
-		{
-            // Binding of texture name
-            glBindTexture(GL_TEXTURE_2D, textureIds[i]);
-			// redefine standard texture values
-            // We will use linear interpolation for magnification filter
-            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-            // We will use linear interpolation for minifying filter
-            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-            // Texture specification
-            glTexImage2D(GL_TEXTURE_2D, 0, n, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);// Texture specification.
-
-            // we also want to be able to deal with odd texture dimensions
-            glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
-            glPixelStorei( GL_UNPACK_ROW_LENGTH, 0 );
-            glPixelStorei( GL_UNPACK_SKIP_PIXELS, 0 );
-            glPixelStorei( GL_UNPACK_SKIP_ROWS, 0 );
-           // stbi_image_free(data);
-        } else {
-            // Error occurred
-            const std::string message = "Couldn't load Image: " + filename;
-            std::wstring targetMessage;
-            wchar_t *tmp = new wchar_t[message.size() + 1];
-            memset(tmp, L'\0', sizeof(wchar_t) *(message.size() + 1));
-            //utf8::utf8to16(message.c_str(), message.c_str() + message.size(), tmp);
-
-		}
-        */
-	}
-
-    return true;
-}
-
 // All Setup For OpenGL goes here
 int InitGL()
 {
-    //if (!LoadGLTextures(g_scene))
-
     GLfloat LightAmbient[]= { 0.5f, 0.5f, 0.5f, 1.0f };
     GLfloat LightDiffuse[]= { 1.0f, 1.0f, 1.0f, 1.0f };
     GLfloat LightPosition[]= { 0.0f, 0.0f, 15.0f, 1.0f };
@@ -315,8 +244,103 @@ void apply_material(const aiMaterial *mtl)
 		glDisable(GL_CULL_FACE);
 }
 
+
+int LoadGLTextures(const aiScene* scene) {
+    freeTextureIds();
+
+    if (scene->HasTextures() == true)   // ?????????
+        return 1;
+
+    /* getTexture Filenames and Numb of Textures */
+    for (unsigned int m=0; m < scene->mNumMaterials; m++)
+    {
+        int texIndex = 0;
+        aiReturn texFound = AI_SUCCESS;
+        aiString path;	// filename
+
+        while (texFound == AI_SUCCESS)
+        {
+            texFound = scene->mMaterials[m]->GetTexture(aiTextureType_DIFFUSE, texIndex, &path);
+            textureIdMap[path.data] = nullptr; //fill map with textures, pointers still NULL yet
+            texIndex++;
+        }
+    }
+
+    const size_t numTextures = textureIdMap.size();
+
+    /* create and fill array with GL texture ids */
+    textureIds = new GLuint[numTextures];
+    //glGenTextures(static_cast<GLsizei>(numTextures), textureIds); /* Texture name generation */
+
+    /* get iterator */
+    std::map<std::string, GLuint*>::iterator itr = textureIdMap.begin();
+
+    //std::string basepath = getBasePath(modelpath);
+    for (size_t i=0; i<numTextures; i++)
+    {
+        std::string path = (*itr).first;  // get filename
+        (*itr).second =  &textureIds[i];	  // save texture id for filename in map
+        itr++;								  // next texture
+
+        // in place
+        //boost::replace_all(filename, "\", "/");
+        boost::replace_all(path, "\\", "/");
+        boost::replace_all(path, "//", "/");
+        boost::filesystem::path p(path);
+        //p=p.native();
+
+        string filename=p.filename().string();
+        //std::string fileloc = basepath + filename;	/* Loading of image */
+        //filename=getBasePath(filename);
+        std::cout << "loadGLTextures = " + filename << "\n";
+
+        texture *_tex = new texture(filename); //
+        if (_tex->d_tex_glname > 0)
+            textureIds[i]=_tex->d_tex_glname;
+
+        /*
+         * int x, y, n;
+        unsigned char *data ;// = stbi_load(fileloc.c_str(), &x, &y, &n, STBI_rgb_alpha);
+
+        if (nullptr != data )
+        {
+            // Binding of texture name
+            glBindTexture(GL_TEXTURE_2D, textureIds[i]);
+            // redefine standard texture values
+            // We will use linear interpolation for magnification filter
+            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+            // We will use linear interpolation for minifying filter
+            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+            // Texture specification
+            glTexImage2D(GL_TEXTURE_2D, 0, n, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);// Texture specification.
+
+            // we also want to be able to deal with odd texture dimensions
+            glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
+            glPixelStorei( GL_UNPACK_ROW_LENGTH, 0 );
+            glPixelStorei( GL_UNPACK_SKIP_PIXELS, 0 );
+            glPixelStorei( GL_UNPACK_SKIP_ROWS, 0 );
+
+        } else {
+            // Error occurred
+            const std::string message = "Couldn't load Image: " + filename;
+            std::wstring targetMessage;
+            wchar_t *tmp = new wchar_t[message.size() + 1];
+            memset(tmp, L'\0', sizeof(wchar_t) *(message.size() + 1));
+            //utf8::utf8to16(message.c_str(), message.c_str() + message.size(), tmp);
+
+        }
+        */
+    }
+
+    return true;
+}
+
+
 void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale, xObject &obj, int level)
 {    
+    /*
+     *  30%
+     */
     unsigned int i;
     unsigned int n=0, t;
     aiMatrix4x4 m = nd->mTransformation;
@@ -331,18 +355,37 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
         tab= tab + '\t';
     }
 
-    m.Transpose();  // update transform for OpenGL
+    m.Transpose();  // transpose for OpenGL
     copy(obj.model_m,&m.a1);
     //glPushMatrix();
     //glMultMatrixf((float*)&m);
     //print(obj.model_m);
     // draw all meshes assigned to this node    
     printf("%s[%s].mNumMeshes=%d \n",tab.c_str(),nd->mName.C_Str(),nd->mNumMeshes);
+    if (nd->mNumMeshes>1)
+    {
+        //error
+    }
+
     for (n=0 ; n < nd->mNumMeshes; ++n)
     {
-        int mesh_idx=nd->mMeshes[n]; // mesh index
+        int mesh_idx=nd->mMeshes[n];  // mesh index
         const struct aiMesh* mesh = sc->mMeshes[mesh_idx];
+
         //apply_material(sc->mMaterials[mesh->mMaterialIndex]);
+        const aiMaterial *mtl=sc->mMaterials[mesh->mMaterialIndex];
+
+        int texIndex = 0;
+        aiString texPath;	//contains filename of texture
+
+        if(AI_SUCCESS == mtl->GetTexture(aiTextureType_DIFFUSE, texIndex, &texPath))
+        {
+            //bind texture
+            unsigned int texId = *textureIdMap[texPath.data];
+            printf("%s texId=%d\n",tab.c_str(),texId);
+            obj.set_texture(texId);
+        }
+
         /*
         if(mesh->mNormals == nullptr)
            glDisable(GL_LIGHTING);
@@ -422,7 +465,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
             xObject *child=new xObject();
             child->set_parent(&obj);
             child->set_shader(obj.shader); // get from parent's shader
-            child->set_texture(obj.texname);
+            //child->set_texture(obj.texname);
             obj.children.push_back(child);
             loadToObject(sc, nd->mChildren[n], scale, *child, level+1);
         }
@@ -449,23 +492,3 @@ int DrawGLScene()				//Here's where we do all the drawing
     yrot += 0.2f;
     return true;					// okay
 }
-
-/*
-int WINAPI WinMain()
-
-{
-	MSG msg = {};
-	BOOL done=FALSE;
-
-	createAILogger();
-	logInfo("App fired!");
-
-	if (!Import3DFromFile(modelpath))
-	{
-		cleanup();
-		return 0;
-	}
-
-	logInfo("=============== Post Import ====================");
-}
-*/

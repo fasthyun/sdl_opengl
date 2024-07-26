@@ -58,6 +58,7 @@ texture::texture(std::string _filename)
     std::cout << "texture(): " << path  << "\n";
     SDL_Surface *surface = IMG_Load(path.c_str()); //SDL_Surface *surface=LoadImage(path);
     if (surface == NULL) {
+        std::cout << "Error: fail read " << path  << "\n";
         return;
     }
     makeTexture(surface);
@@ -106,7 +107,7 @@ SDL_Surface* texture::getSurface(int width, int height)
     //surface = SDL_CreateRGBSurface(0, width, height, 32, 0, 0, 0, 0);
     if (surface == NULL) {
            SDL_Log("SDL_CreateRGBSurface() failed: %s", SDL_GetError());
-           exit(1);
+           return 0;
     }
     return surface;
 }
@@ -250,8 +251,8 @@ model_object::model_object(char *str): texture_object()
     printf("texture_name=%d \n", texname);
     shader=new Shader();
     shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
-    Import3DFromFile("./model/box.blend", *this);
-    //Import3DFromFile("./model/Bob.blend", *this);
+    //Import3DFromFile("./model/box.blend", *this);
+    Import3DFromFile("./model/Bob.blend", *this);
 }
 
 void model_object::update(float dt)

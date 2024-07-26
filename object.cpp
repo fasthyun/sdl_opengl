@@ -225,8 +225,10 @@ void camera::update(float dt)
             int dy=e.motion.yrel;
             //if (e.motion.state==SDL_BUTTON_LMASK)
             on_mouse_moved(dx,dy);
+            //SDL_WarpMouseGlobal(int x, int y);
         }
     }
+
 }
 
 void camera::on_key_pressed(uint key)
