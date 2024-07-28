@@ -93,6 +93,8 @@ bool Import3DFromFile(const std::string &filename,xObject &obj)
 
 	// If the import failed, report it
 	if (g_scene == nullptr) {
+        std::string message = "Couldn't open file: " + filename + "," + importer.GetErrorString();
+        std::cout << message << "\n";
 		logInfo( importer.GetErrorString());
         return false;
     }
@@ -394,7 +396,9 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
         */
 
         if(mesh->mColors[0] != nullptr)
-        {  glEnable(GL_COLOR_MATERIAL);
+        {
+            printf("%s color!!! \n",tab.c_str());
+            glEnable(GL_COLOR_MATERIAL);
         }
         else
         {  glDisable(GL_COLOR_MATERIAL);
@@ -406,7 +410,11 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
             if(mesh->mNormals != nullptr)
                 mesh->mNormals[i].x;
             if(mesh->mColors[0] != nullptr)
+            {
                 mesh->mColors[0][i];     //Color4f(&mesh->mColors[0][vertexIndex]);
+
+                printf("%s vertice color!!! \n",tab.c_str());
+            }
             float tu=0,tv=0;
             if(mesh->HasTextureCoords(0))	//HasTextureCoords(texture_coordinates_set)
             {

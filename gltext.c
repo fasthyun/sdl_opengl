@@ -1,3 +1,4 @@
+//#define GL_GLEXT_PROTOTYPES
 #include <GL/glew.h>
 #include <stdio.h>
 #define GLT_IMPLEMENTATION

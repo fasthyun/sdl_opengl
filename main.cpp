@@ -1,7 +1,6 @@
 #include <iostream>
 #include <vector>
 #include <string>
-//#define GL_GLEXT_PROTOTYPES
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 //don't need ! #include <SDL2/SDL_opengl.h>
@@ -13,10 +12,9 @@
 #include "texture.h"
 #include "Shader.h"
 #include "model.h"
-//#define GLT_IMPORTS
-//#define GLT_IMPLEMENTATION //?????
+
 #include "gltext.h"         /* https://github.com/vallentin/glText */
-//#include "misc.h"
+//#includ "misc.h"
 
 using namespace std;
 vector<xObject* > objects; 
@@ -166,7 +164,7 @@ bool init_GL()
 }
 
 
-float  time_test=0;
+//float  time_test=0;
 float  time_fps=0;
 int  fps_count=0;
 int  fps=0;
@@ -196,7 +194,7 @@ void main_loop()
         _now = SDL_GetTicks();
         dt = ( _now - prevTime)/1000.0;
         prevTime= _now;
-        time_test+=dt;
+        //time_test+=dt;
         time_fps+=dt;
         fps_count++;
 
@@ -291,10 +289,10 @@ void main_loop()
 
 void init_object()
 {
-    texture *_tex = new texture("font-map.bmp"); // 16x6
-    _tex = new texture("font-map-mtl.png"); // 16x6
-    _tex = new texture("check.bmp"); //
-    _tex = new texture("font-map.png"); // 16x6
+    //texture *_tex = new texture("font-map.bmp"); // 16x6
+    //_tex = new texture("font-map-mtl.png"); // 16x6
+    //_tex = new texture("check.bmp"); //
+    //_tex = new texture("font-map.png"); // 16x6
 
     xObject *obj;
     //obj=new xObject();
@@ -324,7 +322,12 @@ void init_object()
     //set(texobj->pos,4,0,0);
     //objects.push_back(texobj);
 
-    xObject *model_obj=new model_object((char*)"");
+    //xObject *model_obj=new model_object("./model/stage.blend");
+    //set(model_obj->pos,0,-4,0);
+    //objects.push_back(model_obj);
+
+
+    xObject *model_obj=new model_object("./model/box.blend");
     set(model_obj->pos,0,10,0);
     objects.push_back(model_obj);
 

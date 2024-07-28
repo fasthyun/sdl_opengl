@@ -38,6 +38,8 @@ class model_object : public texture_object{
 public:
     //model_object(){};
     model_object(char *str);
+    model_object(string  str);
+
     virtual void update(float dt=0);
     virtual void draw();
 };

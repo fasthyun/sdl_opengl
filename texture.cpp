@@ -248,12 +248,22 @@ void texture_object::draw()
 model_object::model_object(char *str): texture_object()
 {
     //texname=texture_manager::get_glname("check.bmp");
-    printf("texture_name=%d \n", texname);
+    printf("model_object=%s \n", str);
     shader=new Shader();
     shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
-    Import3DFromFile("./model/box.blend", *this);
-    //Import3DFromFile("./model/Bob.blend", *this);
+    Import3DFromFile(str, *this);
 }
+
+model_object::model_object(string str): texture_object()
+{
+    //texname=texture_manager::get_glname("check.bmp");
+    //printf("texture_name=%d \n", texname);
+    cout << "model_object <<" << str <<"\n";
+    shader=new Shader();
+    shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
+    Import3DFromFile(str, *this);
+}
+
 
 void model_object::update(float dt)
 {
