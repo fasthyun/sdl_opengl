@@ -21,6 +21,17 @@ uint64_t epoch_now() { // timeSinceEpochMillisec
   using namespace std::chrono;
   return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
 }
+extern vector<xObject* > objects;
+xObject* findObject(char *_name)
+{
+    for ( size_t i=0 ; i < objects.size(); i++)
+    {
+        xObject *obj = objects[i];
+        if (obj->name==_name)
+            return obj;
+    }
+    return NULL;
+}
 
 xObject::xObject()
 {
@@ -152,25 +163,34 @@ void xObject::draw()
     if (VAO>0)
     {
         glBindTexture(GL_TEXTURE_2D, texname);
-        translate(model_m, pos[0], pos[1], pos[2] );
+        translate(model_m, pos[0], pos[1], pos[2]);
+        float _m[16];
+        if (parent)
+        {
+            loadIdentity(_m);
+            //set(_m,parent->model_m);
+            multiply4x4(_m, parent->model_m, model_m);
+        }
+        else
+            set(_m,model_m);
+
         GLint location;
-        location=glGetUniformLocation(shader->mShaderProgram, "modelView");
-        if (location>=0)
-            glUniformMatrix4fv(location, 1, GL_FALSE, model_m);
-         //printf("texture draw!! %d\n",triangles.size());
-         glBindVertexArray(VAO);
-         glDrawElements(GL_TRIANGLES, triangles.size()*3, GL_UNSIGNED_INT, 0); // ????? count why ????
-         //glDrawArrays(GL_TRIANGLES, 0, vertexes.size());
+        location = glGetUniformLocation(shader->mShaderProgram, "modelView");
+        if (location >= 0)
+            glUniformMatrix4fv(location, 1, GL_FALSE, _m);
+
+        //printf("texture draw!! %d\n",triangles.size());
+        glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, triangles.size()*3, GL_UNSIGNED_INT, 0); // ????? count why ????
+        //glDrawArrays(GL_TRIANGLES, 0, vertexes.size());
     }
-    else
-     ;
+
    for ( size_t i=0 ; i < children.size(); i++)
     {
         // Parent shader is active
         xObject *obj = children[i];
         obj->draw();
        // printf("obj.children()=%d  %d\n",i,obj->VAO);
-
     }
 }
 
@@ -185,6 +205,8 @@ camera::camera(): xObject() // init
     key_backward=SDLK_s;
     key_side_right=SDLK_d;
     key_side_left=SDLK_a;
+
+    ball=NULL;
 }
 
 extern bool quit;
@@ -197,13 +219,24 @@ void camera::update(float dt)
     while( SDL_PollEvent( &e ) != 0 )
     {
         int key=e.key.keysym.sym;
-        //User requests quit
-        if( e.type == SDL_QUIT )
+
+        switch(e.type)
         {
-            quit = true;  // global
+            case SDL_QUIT:
+                quit = true;  // global
+                break;
+            case SDL_MOUSEBUTTONDOWN:
+                printf("clicked! \n");
+                if (ball==NULL)
+                    ball=findObject("ball");
+                set(ball->pos, pos);
+                break;
+            default :;
+
         }
+
         //Handle keypress with current mouse position
-        else if( e.type == SDL_KEYDOWN)
+        if( e.type == SDL_KEYDOWN)
         {            
             //int scancode=e.key.keysym.scancode;
             /* SDLK_UP , SDLK_W */
@@ -211,7 +244,6 @@ void camera::update(float dt)
             //handleKeys( e.text.text[ 0 ], x, y );
             if (key == SDLK_ESCAPE)
                 quit=true;
-
             on_key_pressed(key);
             // printf("keycode=%d \n",key);
         }
@@ -223,10 +255,14 @@ void camera::update(float dt)
         {
             int dx=e.motion.xrel;
             int dy=e.motion.yrel;
-            //if (e.motion.state==SDL_BUTTON_LMASK)
-            on_mouse_moved(dx,dy);
-            //SDL_WarpMouseGlobal(int x, int y);
+
+            on_mouse_moved(dx,dy);            
+            if (e.motion.state==SDL_BUTTON_LMASK)
+            {
+               // printf("dddddd!\n");
+            }
         }
+
     }
 
 }
@@ -269,22 +305,22 @@ void camera::on_key_released(uint key)
 {
     if(key==key_forward) //w
     {
-        multiply(forward,0,force); //
+        multiply(forward,0.0,force); //
         //fprintf(stderr,"release! %f %f %f \n",force[0],force[1],force[2]);
     }
     if(key==key_backward) //s
-        multiply(forward,0,force);
+        multiply(forward,0.0,force);
 
-   if(key==key_side_right) //d
+    if(key==key_side_right) //d
         set(force,0,0,0);
 
-   if(key==key_side_left) // a
+    if(key==key_side_left) // a
         set(force,0,0,0);
 
-   if(key==key_side_left) // a
+    if(key==key_side_left) // a
         set(force,0,0,0);
 
-   if(key==SDLK_1) //
+    if(key==SDLK_1) //
         set(force,0,0,0);
 }
 
@@ -294,14 +330,14 @@ void camera::on_mouse_moved(int dx, int dy)
     float v[3];
     quat_rotate(up,angle,forward,v);
     normalize(v);
-    set(v,forward);
+    set(forward,v);
 
     angle=-1*M_PI*dy/360.0;
     float side[3];
     cross(forward,up,side);
     quat_rotate(side,angle,forward,v);
     normalize(v);
-    set(v,forward);
+    set(forward,v);
 }
 
 grid::grid()

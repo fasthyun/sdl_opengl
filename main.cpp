@@ -22,8 +22,6 @@ camera *d_camera;
 console *d_console;
 bool quit;
 
-bool init_SDL();  //Starts up SDL, creates window, and initializes OpenGL
-bool init_GL();  //Initializes matrices and clear color
 
 //The window we'll be rendering to
 SDL_Window* window = NULL;
@@ -164,14 +162,15 @@ bool init_GL()
 }
 
 
-//float  time_test=0;
-float  time_fps=0;
-int  fps_count=0;
-int  fps=0;
 
 
 void main_loop()
 {
+    //float  time_test=0;
+    float  time_fps=0;
+    int  fps_count=0;
+    int  fps=0;
+
     Uint32 prevTime;
     Uint32 _now;
     prevTime=SDL_GetTicks(); // init
@@ -314,23 +313,33 @@ void init_object()
     //set(texobj->pos,-2,0,0);
     //objects.push_back(texobj);
 
-    //texobj=new texture_object("font-map-mtl.png");
-    //set(texobj->pos,2,0,0);
-    //objects.push_back(texobj);
+    texobj=new texture_object("font-map-mtl.png");
+    set(texobj->pos,2,0,0);
+    objects.push_back(texobj);
 
-    //texobj=new texture_object("font-map.png");
-    //set(texobj->pos,4,0,0);
-    //objects.push_back(texobj);
+    texobj=new texture_object("font-map.png");
+    set(texobj->pos,4,0,0);
+    objects.push_back(texobj);
 
     //xObject *model_obj=new model_object("./model/stage.blend");
     //set(model_obj->pos,0,-4,0);
     //objects.push_back(model_obj);
 
 
-    xObject *model_obj=new model_object("./model/box.blend");
-    set(model_obj->pos,0,10,0);
-    objects.push_back(model_obj);
+    obj=new model_object("./model/stage.fbx");
+    obj->name="ground";
+    set(obj->pos,0,0,0);
+    objects.push_back(obj);
 
+
+    obj=new model_object("./model/ball.fbx");
+    obj->name="ball";
+    set(obj->pos,2,0,0);
+    objects.push_back(obj);
+
+    //xObject *model_obj=new model_object("./model/box.fbx");
+    //set(model_obj->pos,0,10,0);
+    //objects.push_back(model_obj);
 
   //  obj=new texture_manager();
   //  objects.push_back(obj);
@@ -344,13 +353,14 @@ void init_object()
     printf("init_obect())\n");
 }
 
+/*
 void init_shader()
 {
-    /*
+
     shader=new Shader();
     shader->Load("./shader/basic_vertex.glsl","./shader/basic_fragment.glsl");
-    */
-}
+
+}*/
 
 #include <complex>
 

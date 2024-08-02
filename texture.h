@@ -10,6 +10,8 @@
  *  Qt나 다른 플렛폼에 들어갈수있게 ..할수 있을듯...
  */
 
+void makeTexture(SDL_Surface *);
+
 class texture
 {
 public:
@@ -53,6 +55,7 @@ public:
     virtual void update(float dt=0);
     virtual void draw();
     static GLuint get_glname(string filename);
+    static GLuint load_texture(string filename);
     void render_texture(GLuint texname,float x,float y,float z,float size) ;
 };
 #endif // TEXTURE_H

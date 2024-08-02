@@ -46,14 +46,18 @@ SDL_Surface* texture::LoadImage(std::string file)
     }
 }
 
-texture::texture(std::string _filename)
+#include <boost/algorithm/string/replace.hpp> // replace_all()
+#include <boost/filesystem.hpp>
+//std::string base_filename = path.substr(path.find_last_of("/\\") + 1)
+
+texture::texture(std::string _path)
 {
-    d_tex_glname = -1;
-    // Temporary
-    if (_filename=="")
-    {
-        return;
-    }
+    d_tex_glname = -1;    
+
+    //boost::replace_all(_path, "\\", "/");
+    //boost::replace_all(_path, "//", "/");
+    string  _filename=boost::filesystem::path(_path).filename().string();  // basename!
+
     auto path="./texture/"+_filename;
     std::cout << "texture(): " << path  << "\n";
     SDL_Surface *surface = IMG_Load(path.c_str()); //SDL_Surface *surface=LoadImage(path);
@@ -63,7 +67,7 @@ texture::texture(std::string _filename)
     }
     makeTexture(surface);
     SDL_FreeSurface(surface);  // free surface !
-    textures.push_back(this);
+    //textures.push_back(this);
     d_filename=_filename;
 }
 
@@ -73,7 +77,7 @@ texture::texture(int width, int height)
     // not a file
     SDL_Surface*surface = getSurface(width,height);
     makeTexture(surface);
-    textures.push_back(this);
+    //textures.push_back(this);
     SDL_FreeSurface(surface);
 }
 
@@ -82,7 +86,7 @@ texture::texture( SDL_Surface *surface)
     d_tex_glname=-1;
     // not a file
     makeTexture(surface);
-    textures.push_back(this);
+    //textures.push_back(this);
 }
 
 SDL_Surface* texture::getSurface(int width, int height)
@@ -131,6 +135,23 @@ void texture::makeTexture(SDL_Surface *surface)
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Width, Height, 0, GL_RGBA, GL_UNSIGNED_BYTE, Image);
         glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
         glGenerateMipmap(GL_TEXTURE_2D);
+
+
+        // Binding of texture name
+        glBindTexture(GL_TEXTURE_2D, textureIds[i]);
+        // redefine standard texture values
+        // We will use linear interpolation for magnification filter
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+        // We will use linear interpolation for minifying filter
+        glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+        // Texture specification
+        glTexImage2D(GL_TEXTURE_2D, 0, n, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);// Texture specification.
+
+        // we also want to be able to deal with odd texture dimensions
+        glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
+        glPixelStorei( GL_UNPACK_ROW_LENGTH, 0 );
+        glPixelStorei( GL_UNPACK_SKIP_PIXELS, 0 );
+        glPixelStorei( GL_UNPACK_SKIP_ROWS, 0 );
     */
 
     d_width = surface->w;
@@ -139,7 +160,7 @@ void texture::makeTexture(SDL_Surface *surface)
     int _bytes = surface->format->BytesPerPixel;
     glGenTextures(1, &d_tex_glname);
     glBindTexture(GL_TEXTURE_2D, d_tex_glname);
-    //glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // power of 2 !!
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // power of 2 !!, need in AMD!
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -193,15 +214,35 @@ void texture_manager::render_texture(GLuint texname,float x,float y,float z,floa
 
 GLuint texture_manager::get_glname(string filename)
 {
+    GLuint texname = 0 ;
+    // cout << "1. get_glname => "<< filename << "," << to_string(texname) << "\n";
     for ( size_t i=0 ; i < textures.size(); i++)
     {
         if(textures[i]->d_filename==filename)
         {
-            GLuint texname=textures[i]->getTextureName();
-            return texname;
+            texname=textures[i]->getTextureName();
+            cout << " texname==>" << texname << "\n";
+            break;
         }
     }
-    return -1;
+    // cout << "2. get_glname => "<< filename << "," << to_string(texname)  << "\n";
+    if (texname == 0)
+    {
+        texname=load_texture(filename);
+    }
+
+    return texname;
+}
+
+GLuint texture_manager::load_texture(string path)
+{
+    std::string basename = path.substr(path.find_last_of("/\\") + 1);
+
+    cout << "load_texture "<< basename << "\n;";
+    texture *_tex = new texture(basename);
+    if (_tex->getTextureName()>0)
+        textures.push_back(_tex);
+    return _tex->getTextureName();
 }
 
 
@@ -230,7 +271,7 @@ texture_object::texture_object(char *filename): xObject()
     shader=new Shader();
     shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
     make_cube(vertexes,triangles,1);
-    make_glVertexArray(); // works!!!
+    make_glVertexArray(); // works!!!    
     texname=texture_manager::get_glname(filename);
     printf("VAO=%d, texname = %d , sizeof(vertex)= %d, data=%x\n",VAO, texname, sizeof(vertex), vertexes.data());
 }
@@ -256,12 +297,7 @@ model_object::model_object(char *str): texture_object()
 
 model_object::model_object(string str): texture_object()
 {
-    //texname=texture_manager::get_glname("check.bmp");
-    //printf("texture_name=%d \n", texname);
-    cout << "model_object <<" << str <<"\n";
-    shader=new Shader();
-    shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
-    Import3DFromFile(str, *this);
+    model_object(str.c_str());
 }
 
 

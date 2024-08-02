@@ -1,8 +1,8 @@
 #include <GL/glew.h>
 #include <stdio.h>
-//#define GLT_DEBUG
-//#define GLT_DEBUG_PRINT
+
 #include "misc.h"
+
 
 // Callback function for printing debug statements
 void GLDebugMessageCallback(GLenum source, GLenum type, GLuint id,

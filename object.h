@@ -50,6 +50,7 @@ public:
     GLuint VBO, VAO, EBO;
     GLuint texname;
     vector<xObject*> children;
+    string name;
 };
 
 class camera : public xObject{
@@ -66,6 +67,7 @@ public:
     uint key_backward;
     uint key_side_right;
     uint key_side_left;
+    xObject *ball;
 };
 
 
@@ -80,7 +82,7 @@ public:
 };
 
 
-
+xObject* findObject(char *_name);
 
 
 

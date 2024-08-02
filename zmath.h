@@ -21,11 +21,12 @@ void gluMakeIdentityf(float m[16]);
 void cross(float v1[3], float v2[3], float result[3]);
 
 void set(float v[3], float x,float y, float z);
-void set(float src[3], float dst[3]);
+void set(float dst[3], float src[3]);
 void add(float v1[3], float v2[3], float result[3]);
 void sub(float v1[3], float v2[3], float result[3]);
 void multiply(float v[3],float c, float result[3]);
 void multiply(float m[4][4], float v[3],float result[3]);
+void multiply4x4(float dest[16], float *matA, float *matB);
 void LookAt(float eye[3], float center[3], float up[3]);
 
 /* matrix */

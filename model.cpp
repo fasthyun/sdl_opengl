@@ -25,10 +25,6 @@
 //to map image filenames to textureIds
 #include <string>
 #include <map>
-#include <boost/algorithm/string/replace.hpp> // replace_all()
-
-#include <boost/filesystem.hpp>
-
 
 // assimp include files. These three are usually needed.
 #include <assimp/Importer.hpp>
@@ -89,7 +85,8 @@ bool Import3DFromFile(const std::string &filename,xObject &obj)
     }
 	fin.close();
 	
-	g_scene = importer.ReadFile(filename, aiProcessPreset_TargetRealtime_Quality);
+    g_scene = importer.ReadFile(filename,aiProcess_Triangulate ); //, aiProcessPreset_TargetRealtime_MaxQuality);
+                                            //aiProcessPreset_TargetRealtime_MaxQuality
 
 	// If the import failed, report it
 	if (g_scene == nullptr) {
@@ -250,8 +247,11 @@ void apply_material(const aiMaterial *mtl)
 int LoadGLTextures(const aiScene* scene) {
     freeTextureIds();
 
-    if (scene->HasTextures() == true)   // ?????????
+    if (scene->HasTextures() == true)
+    {
+        printf("============> internal texture!!\n");
         return 1;
+    }
 
     /* getTexture Filenames and Numb of Textures */
     for (unsigned int m=0; m < scene->mNumMaterials; m++)
@@ -259,13 +259,58 @@ int LoadGLTextures(const aiScene* scene) {
         int texIndex = 0;
         aiReturn texFound = AI_SUCCESS;
         aiString path;	// filename
+        aiMaterial *material=scene->mMaterials[m];
 
         while (texFound == AI_SUCCESS)
         {
-            texFound = scene->mMaterials[m]->GetTexture(aiTextureType_DIFFUSE, texIndex, &path);
+            texFound = material->GetTexture(aiTextureType_DIFFUSE, texIndex, &path);
             textureIdMap[path.data] = nullptr; //fill map with textures, pointers still NULL yet
             texIndex++;
         }
+        printf("material[%d]= %s, %d\n", m, material->GetName().C_Str() ,material->mNumProperties);
+        int count;
+        for(int i=0; i<22 ;i++)
+        {
+            count = material->GetTextureCount((aiTextureType)i);
+            //count = material->GetTextureCount(aiTextureType_DIFFUSE);
+            if (count !=0)
+                printf(" + texture_type[%d]= %d\n",i,count);
+        }
+        for(int i=0; i<material->mNumProperties ;i++)
+        {
+           aiMaterialProperty *prop = material->mProperties[i];
+           //if (strcmp(material->mProperties[i]->mKey.C_Str(),"?mat.name")==0)
+           if (prop->mType==aiPTI_String)
+           {
+                printf(" + material.properties[%d]= %s, %s \n",i,material->mProperties[i]->mKey.C_Str(),((aiString *) material->mProperties[i]->mData)->C_Str());
+           }
+           else if (prop->mType==aiPTI_Float)
+           {
+
+                int count = prop->mDataLength/4;
+                float *f = (float *) prop->mData;
+                string str="(";
+                for(int i=0 ; i< count ; i++ )
+                    str+=" " + std::to_string(f[i]);
+                str+=" )";
+                printf(" + material.properties[%d]= %s,  %s\n",i,prop->mKey.C_Str(),str.c_str());
+           }
+
+           else if (prop->mType==aiPTI_Integer)
+               {
+
+                    int count = prop->mDataLength/4;
+                    int *j = (int *) prop->mData;
+                    string str="(";
+                    for(int i=0 ; i< count ; i++ )
+                        str+=" " + std::to_string(j[i]);
+                    str+=" )";
+                    printf(" + material.properties[%d]= %s,  %s\n",i,prop->mKey.C_Str(),str.c_str());
+               }
+            else
+                printf(" + material.properties[%d]= |%s| \n",i,material->mProperties[i]->mKey.C_Str());
+        }
+        //std::cout << " material["<< m <<"].name = " <<  << "\n";
     }
 
     const size_t numTextures = textureIdMap.size();
@@ -277,68 +322,26 @@ int LoadGLTextures(const aiScene* scene) {
     /* get iterator */
     std::map<std::string, GLuint*>::iterator itr = textureIdMap.begin();
 
-    //std::string basepath = getBasePath(modelpath);
     for (size_t i=0; i<numTextures; i++)
     {
         std::string path = (*itr).first;  // get filename
         (*itr).second =  &textureIds[i];	  // save texture id for filename in map
         itr++;								  // next texture
 
-        // in place
         //boost::replace_all(filename, "\", "/");
-        boost::replace_all(path, "\\", "/");
-        boost::replace_all(path, "//", "/");
-        boost::filesystem::path p(path);
-        //p=p.native();
-
-        string filename=p.filename().string();
-        //std::string fileloc = basepath + filename;	/* Loading of image */
         //filename=getBasePath(filename);
-        std::cout << "loadGLTextures = " + filename << "\n";
-
-        texture *_tex = new texture(filename); //
+        std::cout << "loadGLTextures() = " + path  << "\n";
+        texture *_tex = new texture(path); //
         if (_tex->d_tex_glname > 0)
             textureIds[i]=_tex->d_tex_glname;
 
-        /*
-         * int x, y, n;
-        unsigned char *data ;// = stbi_load(fileloc.c_str(), &x, &y, &n, STBI_rgb_alpha);
-
-        if (nullptr != data )
-        {
-            // Binding of texture name
-            glBindTexture(GL_TEXTURE_2D, textureIds[i]);
-            // redefine standard texture values
-            // We will use linear interpolation for magnification filter
-            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-            // We will use linear interpolation for minifying filter
-            glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-            // Texture specification
-            glTexImage2D(GL_TEXTURE_2D, 0, n, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);// Texture specification.
-
-            // we also want to be able to deal with odd texture dimensions
-            glPixelStorei( GL_UNPACK_ALIGNMENT, 1 );
-            glPixelStorei( GL_UNPACK_ROW_LENGTH, 0 );
-            glPixelStorei( GL_UNPACK_SKIP_PIXELS, 0 );
-            glPixelStorei( GL_UNPACK_SKIP_ROWS, 0 );
-
-        } else {
-            // Error occurred
-            const std::string message = "Couldn't load Image: " + filename;
-            std::wstring targetMessage;
-            wchar_t *tmp = new wchar_t[message.size() + 1];
-            memset(tmp, L'\0', sizeof(wchar_t) *(message.size() + 1));
-            //utf8::utf8to16(message.c_str(), message.c_str() + message.size(), tmp);
-
-        }
-        */
     }
 
     return true;
 }
 
 
-void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale, xObject &obj, int level)
+void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale, xObject &xobj, int level)
 {    
     /*
      *  30%
@@ -358,12 +361,11 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
     }
 
     m.Transpose();  // transpose for OpenGL
-    copy(obj.model_m,&m.a1);
-    //glPushMatrix();
-    //glMultMatrixf((float*)&m);
-    //print(obj.model_m);
+    copy(xobj.model_m, &m.a1);
+
     // draw all meshes assigned to this node    
     printf("%s[%s].mNumMeshes=%d \n",tab.c_str(),nd->mName.C_Str(),nd->mNumMeshes);
+    print(xobj.model_m);
     if (nd->mNumMeshes>1)
     {
         //error
@@ -385,7 +387,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
             //bind texture
             unsigned int texId = *textureIdMap[texPath.data];
             printf("%s texId=%d\n",tab.c_str(),texId);
-            obj.set_texture(texId);
+            xobj.set_texture(texId);
         }
 
         /*
@@ -412,8 +414,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
             if(mesh->mColors[0] != nullptr)
             {
                 mesh->mColors[0][i];     //Color4f(&mesh->mColors[0][vertexIndex]);
-
-                printf("%s vertice color!!! \n",tab.c_str());
+                /// printf("%s vertice color!!! \n",tab.c_str());
             }
             float tu=0,tv=0;
             if(mesh->HasTextureCoords(0))	//HasTextureCoords(texture_coordinates_set)
@@ -425,7 +426,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
             //       mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z,  tu,tv);
 
             vertex_set(vert,mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z, tu,tv);
-            obj.vertexes.push_back(vert);
+            xobj.vertexes.push_back(vert);
         }
 
         printf("%s[%d].mNumFaces=%d \n",tab.c_str(), n,mesh->mNumFaces);
@@ -444,7 +445,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
                     break;
                 case 3: face_mode = GL_TRIANGLES;
                     triangle_set(tr, face->mIndices[0], face->mIndices[1], face->mIndices[2]);
-                    obj.triangles.push_back(tr);
+                    xobj.triangles.push_back(tr);
                     if(mesh->mNormals != nullptr)
                     {
                     }
@@ -458,10 +459,10 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
             }
         }
     }
-    if (obj.triangles.size()>0 )
+    if (xobj.triangles.size()>0 )
     {
-        obj.make_glVertexArray(); // make_glVertexArray
-        std::cout << tab << " +--> OK : make_glVertexArray() " << obj.VAO << "\n";
+        xobj.make_glVertexArray(); // make_glVertexArray
+        std::cout << tab << " +--> OK : make_glVertexArray() " << xobj.VAO << "\n";
     }
     if (nd->mNumChildren > 0)
     {
@@ -470,18 +471,19 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
         //from child object
         for (n = 0; n < nd->mNumChildren; ++n)
         {
+            // 임시
             xObject *child=new xObject();
-            child->set_parent(&obj);
-            child->set_shader(obj.shader); // get from parent's shader
-            //child->set_texture(obj.texname);
-            obj.children.push_back(child);
+            child->set_parent(&xobj); //
+            child->set_shader(xobj.shader); // from parent's shader
+            ///child->set_texture(obj.texname);  // 삭제예쩡
+            xobj.children.push_back(child);
             loadToObject(sc, nd->mChildren[n], scale, *child, level+1);
         }
-        printf("%sobj.children=%d \n",tab.c_str(), obj.children.size());
+        printf("%sobj.children=%d \n",tab.c_str(), xobj.children.size());
     }
 }
 
-int DrawGLScene()				//Here's where we do all the drawing
+int DrawGLScene() //Here's where we do all the drawing
 {
 
     GLfloat		xrot;

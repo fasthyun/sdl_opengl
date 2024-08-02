@@ -8,15 +8,16 @@
 /*
  *  TODO:
  *  zmath 이름 바꿔야할듯... 별로임 (hyun)
+ *  xmath
  */
 float IDENTITY_MATRIX[]={1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1};
 
 void print(float mat[16])
 {
-  printf("%08.4f,%8.4f,%8.4f,%8.4f\n"
-            "%08.4f,%8.4f,%8.4f,%8.4f\n"
-            "%08.4f,%8.4f,%8.4f,%8.4f\n"
-            "%08.4f,%8.4f,%8.4f,%8.4f\n",
+  printf("%8.4f,%8.4f,%8.4f,%8.4f\n"
+            "%8.4f,%8.4f,%8.4f,%8.4f\n"
+            "%8.4f,%8.4f,%8.4f,%8.4f\n"
+            "%8.4f,%8.4f,%8.4f,%8.4f\n",
         mat[0],mat[1],mat[2],mat[3],
         mat[4],mat[5],mat[6],mat[7],
         mat[8],mat[9],mat[10],mat[11],
@@ -42,18 +43,6 @@ void copy(float dest[], float src[])
         dest[c] = src[c];
 }
 
-void multMat(float *matDest, float *matA, float *matB)
-{
-    float dest[16];
-    int c, d, e;
-
-    for(c = 0; c < 4; c++)
-        for(d = 0; d < 4; d++)
-            for(e = 0, dest[c + d * 4] = 0; e < 4; e++)
-                dest[c + d * 4] += matA[c + e * 4] * matB[e + d * 4];
-
-    copy(matDest, dest);
-}
 
 void translate(float *dest, float x, float y, float z)
 {
@@ -144,7 +133,7 @@ void set(float v[3], float x,float y, float z)
     v[2]=z;
 }
 
-void set(float src[3], float dst[3])
+void set(float dst[3], float src[3])
 {
     // TODO: macro
     dst[0]=src[0];
@@ -165,6 +154,19 @@ void multiply(float m[4][4], float v[3],float result[3])
     result[1]=m[1][0]*v[0] + m[1][1]*v[1] + m[1][2]*v[2];
     result[2]=m[2][0]*v[0] + m[2][1]*v[1] + m[2][2]*v[2];
     //result[3]= 0 + 0 + 0 + 1;
+}
+
+void multiply4x4(float *matDest, float *matA, float *matB) // column
+{
+    float dest[16];
+    int c, d, e;
+
+    for(c = 0; c < 4; c++)
+        for(d = 0; d < 4; d++)
+            for(e = 0, dest[c + d * 4] = 0; e < 4; e++)
+                dest[c + d * 4] += matA[c + e * 4] * matB[e + d * 4];
+
+    copy(matDest, dest);
 }
 
 void quat_rotate(float r[3], float angle,float v[3],float result[3])
