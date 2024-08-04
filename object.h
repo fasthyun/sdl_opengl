@@ -61,7 +61,7 @@ public:
     void on_key_pressed(uint key);
     void on_key_released(uint key);
     void on_mouse_moved(int dx,int dy);    
-
+    bool d_focus;
     // temporary
     uint key_forward;
     uint key_backward;

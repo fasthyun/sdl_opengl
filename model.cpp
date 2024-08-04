@@ -121,7 +121,7 @@ void freeTextureIds() {
 	}
 }
 
-// All Setup For OpenGL goes here
+/*  All Setup For OpenGL goes here
 int InitGL()
 {
     GLfloat LightAmbient[]= { 0.5f, 0.5f, 0.5f, 1.0f };
@@ -147,7 +147,7 @@ int InitGL()
 	glEnable(GL_LIGHT1);
 
     return true;					// Initialization Went OK
-}
+} */
 
 
 // Can't send color down as a pointer to aiColor4D because AI colors are ABGR.
@@ -365,7 +365,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
 
     // draw all meshes assigned to this node    
     printf("%s[%s].mNumMeshes=%d \n",tab.c_str(),nd->mName.C_Str(),nd->mNumMeshes);
-    print(xobj.model_m);
+    ///print(xobj.model_m);
     if (nd->mNumMeshes>1)
     {
         //error

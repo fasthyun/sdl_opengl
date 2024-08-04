@@ -21,6 +21,7 @@ uint64_t epoch_now() { // timeSinceEpochMillisec
   using namespace std::chrono;
   return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
 }
+
 extern vector<xObject* > objects;
 xObject* findObject(char *_name)
 {
@@ -49,6 +50,7 @@ xObject::xObject()
     set(force,0,0,0);
     //make_circle();
     loadIdentity(model_m);
+    name="None";
 }
 
 void xObject::update(float dt)
@@ -174,6 +176,12 @@ void xObject::draw()
         else
             set(_m,model_m);
 
+        if(name=="Sphere")
+        {
+            printf("_m=\n");
+            print(_m);
+        }
+
         GLint location;
         location = glGetUniformLocation(shader->mShaderProgram, "modelView");
         if (location >= 0)
@@ -207,6 +215,8 @@ camera::camera(): xObject() // init
     key_side_left=SDLK_a;
 
     ball=NULL;
+    d_focus=true;
+    name="camera";
 }
 
 extern bool quit;
@@ -214,7 +224,8 @@ void camera::update(float dt)
 {
     SDL_Event e; //Event handler
     xObject::update(dt);
-
+    if(d_focus==false)
+        return;
     //Handle events on queue
     while( SDL_PollEvent( &e ) != 0 )
     {
@@ -223,7 +234,9 @@ void camera::update(float dt)
         switch(e.type)
         {
             case SDL_QUIT:
-                quit = true;  // global
+                //quit = true;  // global
+                d_focus=false;
+                SDL_SetRelativeMouseMode(SDL_FALSE);
                 break;
             case SDL_MOUSEBUTTONDOWN:
                 printf("clicked! \n");
@@ -243,7 +256,20 @@ void camera::update(float dt)
             //SDL_GetMouseState( &x, &y );
             //handleKeys( e.text.text[ 0 ], x, y );
             if (key == SDLK_ESCAPE)
-                quit=true;
+            {
+               // quit=true;
+                //quit = true;  // global
+                d_focus=false;
+                SDL_SetRelativeMouseMode(SDL_FALSE);
+                break;
+            }
+            if (key == SDLK_F4)
+            {
+                quit = true;  // global
+                d_focus=false;
+                SDL_SetRelativeMouseMode(SDL_FALSE);
+                break;
+            }
             on_key_pressed(key);
             // printf("keycode=%d \n",key);
         }
