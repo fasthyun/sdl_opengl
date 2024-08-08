@@ -34,8 +34,17 @@ xObject* findObject(char *_name)
     return NULL;
 }
 
+#include <boost/uuid/uuid.hpp>            // uuid class
+#include <boost/uuid/uuid_generators.hpp> // generators
+#include <boost/uuid/uuid_io.hpp>         // streaming operators etc.  to_string()
+
+
 xObject::xObject()
 {
+    boost::uuids::uuid _uuid = boost::uuids::random_generator()();
+    uuid=to_string(_uuid);
+    //std::cout << "uuid=" << uuid << std::endl;
+
     parent=NULL;
     shader=NULL; // ***
     VBO=0;
@@ -45,8 +54,8 @@ xObject::xObject()
     //shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
     //meshes=NULL;
     set(pos,0,0,0);
-    set(up ,0,1,0); //
-    set(forward,0,0,1); //
+    set(up ,0,1,0);
+    set(forward,0,0,1);
     set(force,0,0,0);
     //make_circle();
     loadIdentity(model_m);
@@ -161,27 +170,22 @@ void xObject::draw()
     //draw_axis();
     //draw_dir_up();
     //draw_meshes();
+    translate(model_m, pos[0], pos[1], pos[2]);
+    float _m[16];
+    if (parent)
+    {
+        loadIdentity(_m);
+        //set(_m,parent->model_m);
+        multiply4x4(_m, parent->model_m, model_m);
+    }
+    else
+        set(_m,model_m);
+
+    if (texname > 0)
+        glBindTexture(GL_TEXTURE_2D, texname);
 
     if (VAO>0)
     {
-        glBindTexture(GL_TEXTURE_2D, texname);
-        translate(model_m, pos[0], pos[1], pos[2]);
-        float _m[16];
-        if (parent)
-        {
-            loadIdentity(_m);
-            //set(_m,parent->model_m);
-            multiply4x4(_m, parent->model_m, model_m);
-        }
-        else
-            set(_m,model_m);
-
-        if(name=="Sphere")
-        {
-            printf("_m=\n");
-            print(_m);
-        }
-
         GLint location;
         location = glGetUniformLocation(shader->mShaderProgram, "modelView");
         if (location >= 0)
@@ -216,7 +220,7 @@ camera::camera(): xObject() // init
 
     ball=NULL;
     d_focus=true;
-    name="camera";
+    name="camera_viewer";
 }
 
 extern bool quit;

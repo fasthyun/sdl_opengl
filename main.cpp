@@ -16,8 +16,6 @@
 #include "gltext.h"         /* https://github.com/vallentin/glText */
 //#includ "misc.h"
 
-
-
 #define NK_INCLUDE_FIXED_TYPES
 #define NK_INCLUDE_STANDARD_IO
 #define NK_INCLUDE_STANDARD_VARARGS
@@ -41,13 +39,13 @@ bool quit;
 
 
 //The window we'll be rendering to
-SDL_Window* window = NULL;
+SDL_Window* sdl_window = NULL;
 SDL_GLContext glContext; //OpenGL context
 
 
 /* GUI */
 struct nk_context *ctx;
-struct nk_colorf bg;
+// struct nk_colorf bg;
 int flag_nk=1;
 
 int width=1024;
@@ -77,7 +75,7 @@ bool init_SDL()
     SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
 
     // Create an application window with the following settings:
-    window = SDL_CreateWindow(
+    sdl_window = SDL_CreateWindow(
         "An SDL2 window for Development",                  // window title
         SDL_WINDOWPOS_UNDEFINED,           // initial x position
         SDL_WINDOWPOS_UNDEFINED,           // initial y position
@@ -88,13 +86,13 @@ bool init_SDL()
     );
 
     // Check that the window was successfully created
-    if (window == nullptr) {
+    if (sdl_window == nullptr) {
         // In the case that the window could not be made...
         printf("Could not create window: %s\n", SDL_GetError());
         return false;
     }
 
-    glContext = SDL_GL_CreateContext(window);
+    glContext = SDL_GL_CreateContext(sdl_window);
 
     // Initialize GLEW
     glewExperimental = GL_TRUE;
@@ -195,10 +193,34 @@ void nk_drawMatrix4f(struct nk_context *_ctx, float *mat)
             //mat[4],mat[5],mat[6],mat[7],
             //mat[8],mat[9],mat[10],mat[11],
             // mat[12],mat[13],mat[14],mat[15]);
+        nk_layout_row_dynamic(ctx, 10, 1);
         nk_label(_ctx, str, NK_TEXT_LEFT);
     }
 }
 
+void test_print_nk_tree_object(xObject *obj)
+{
+    if(nk_tree_push_hashed(ctx, NK_TREE_NODE , obj->name.c_str(), NK_MINIMIZED, obj->uuid.c_str(), obj->uuid.length() ,0))
+    {
+        //nk_layout_row_dynamic(ctx, 10, 1);
+        nk_drawMatrix4f(ctx,obj->model_m);
+        //nk_label(ctx, "Label aligned centered", NK_TEXT_CENTERED);
+
+        for ( size_t i=0 ; i < obj->children.size(); i++)
+        {
+            xObject *c_obj = obj->children[i];
+            //if(nk_tree_push(ctx, NK_TREE_NODE, obj->name.c_str() , NK_MINIMIZED))
+            if(nk_tree_push_hashed(ctx, NK_TREE_NODE , c_obj->name.c_str(), NK_MINIMIZED, c_obj->uuid.c_str(), c_obj->uuid.length() ,0))
+            {
+                //nk_layout_row_dynamic(ctx, 10, 1);
+                nk_drawMatrix4f(ctx,c_obj->model_m);
+                //nk_label(ctx, "Label aligned centered", NK_TEXT_CENTERED);
+                nk_tree_pop(ctx);
+            }
+        }
+        nk_tree_pop(ctx);
+    }
+}
 
 void main_loop()
 {
@@ -226,18 +248,18 @@ void main_loop()
     /* Load Fonts: if none of these are loaded a default font will be used  */
     /* Load Cursor: if you uncomment cursor loading please hide the cursor */
     if (flag_nk){
-        ctx = nk_sdl_init(window);
+        ctx = nk_sdl_init(sdl_window);
         struct nk_font_atlas *atlas;
         nk_sdl_font_stash_begin(&atlas);
-    /*struct nk_font *droid = nk_font_atlas_add_from_file(atlas, "../../../extra_font/DroidSans.ttf", 14, 0);*/
-    /*struct nk_font *roboto = nk_font_atlas_add_from_file(atlas, "../../../extra_font/Roboto-Regular.ttf", 16, 0);*/
-    /*struct nk_font *future = nk_font_atlas_add_from_file(atlas, "../../../extra_font/kenvector_future_thin.ttf", 13, 0);*/
-    /*struct nk_font *clean = nk_font_atlas_add_from_file(atlas, "../../../extra_font/ProggyClean.ttf", 12, 0);*/
-    /*struct nk_font *tiny = nk_font_atlas_add_from_file(atlas, "../../../extra_font/ProggyTiny.ttf", 10, 0);*/
-    /*struct nk_font *cousine = nk_font_atlas_add_from_file(atlas, "../../../extra_font/Cousine-Regular.ttf", 13, 0);*/
+        /*struct nk_font *droid = nk_font_atlas_add_from_file(atlas, "../../../extra_font/DroidSans.ttf", 14, 0);*/
+        /*struct nk_font *roboto = nk_font_atlas_add_from_file(atlas, "../../../extra_font/Roboto-Regular.ttf", 16, 0);*/
+        /*struct nk_font *future = nk_font_atlas_add_from_file(atlas, "../../../extra_font/kenvector_future_thin.ttf", 13, 0);*/
+        /*struct nk_font *clean = nk_font_atlas_add_from_file(atlas, "../../../extra_font/ProggyClean.ttf", 12, 0);*/
+        /*struct nk_font *tiny = nk_font_atlas_add_from_file(atlas, "../../../extra_font/ProggyTiny.ttf", 10, 0);*/
+        /*struct nk_font *cousine = nk_font_atlas_add_from_file(atlas, "../../../extra_font/Cousine-Regular.ttf", 13, 0);*/
         nk_sdl_font_stash_end();
-    /*nk_style_load_all_cursors(ctx, atlas->cursors);*/
-    /*nk_style_set_font(ctx, &roboto->handle);*/
+        /*nk_style_load_all_cursors(ctx, atlas->cursors);*/
+        /*nk_style_set_font(ctx, &roboto->handle);*/
     }
 
 
@@ -285,7 +307,7 @@ void main_loop()
             xObject *obj = objects[i];
             //glLoadIdentity();
             //glGetFloatv(GL_MODELVIEW_MATRIX, model_m);
-            //translate(model_m, obj->pos[0], obj->pos[1], obj->pos[2] );
+            //translate(model_m, obj->pos[0], obj->pos[1], obj->pos[2]);
 
             if (obj->shader != NULL)
             {
@@ -328,7 +350,7 @@ void main_loop()
                     //handleKeys( e.text.text[ 0 ], x, y );
                     if (key == SDLK_ESCAPE)
                     {
-                        camera *camera1=(camera*)findObject("camera");
+                        camera *camera1=(camera*)findObject("camera_viewer");
                         if(camera1)
                             camera1->d_focus=true;
                         SDL_SetRelativeMouseMode(SDL_TRUE);
@@ -344,19 +366,14 @@ void main_loop()
             }
             nk_input_end(ctx);
 
-            //static nk_flags window_flags = NK_WINDOW_TITLE|NK_WINDOW_SCALABLE|NK_WINDOW_MOVABLE|NK_WINDOW_MINIMIZABLE;
+            //static nk_flags window_flags = NK_WINDOW_TITLE|NK_WINDOW_MINIMIZABLE;
 
-            /* GUI */
-            if (nk_begin(ctx, "Demo_console", nk_rect(10, 10, 300, 700),
-                NK_WINDOW_MOVABLE|NK_WINDOW_SCALABLE|
-                NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE))
-            {
-                enum {EASY, HARD};
-                static int op = EASY;
-                static int property = 20;
-
-                //nk_layout_row_static(ctx, 30, 80, 1);
-                //if (nk_button_label(ctx, "button"))    printf("button pressed!\n");
+            /* nk Window ? */
+            if (nk_begin(ctx, "console", nk_rect(10, 10, 300, 700),
+                NK_WINDOW_MOVABLE|NK_WINDOW_SCALABLE|NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE))
+            {                
+                nk_layout_row_static(ctx, 30, 80, 1);
+                if (nk_button_label(ctx, "button"))    printf("button pressed!\n");
                 nk_layout_row_dynamic(ctx, 20, 1);
                 //if (nk_option_label(ctx, "easy", op == EASY)) op = EASY;
                 //if (nk_option_label(ctx, "hard", op == HARD)) op = HARD;
@@ -364,7 +381,6 @@ void main_loop()
                 //nk_property_int(ctx, "Compression:", 0, &property, 100, 10, 1);
                 sprintf(str2, "FPS: %d", fps);
                 nk_label(ctx, str2, NK_TEXT_LEFT);
-
                 //nk_layout_row_dynamic(ctx, 20, 1);
 
                 if (nk_tree_push(ctx, NK_TREE_TAB, "Objects", NK_MAXIMIZED)) {
@@ -372,28 +388,19 @@ void main_loop()
                     for ( size_t i=0 ; i < objects.size(); i++)
                     {
                         xObject *obj = objects[i];
-                        if(nk_tree_push(ctx, NK_TREE_NODE, obj->name.c_str() , NK_MAXIMIZED))
-                        {
-                            nk_layout_row_dynamic(ctx, 10, 1);
-                            nk_drawMatrix4f(ctx,obj->model_m);
-                            //nk_label(ctx, "Label aligned centered", NK_TEXT_CENTERED);
-                            nk_tree_pop(ctx);
-                        }
-
+                        test_print_nk_tree_object(obj);
                     }
                     nk_tree_pop(ctx);
                 }
-
-
             }
               nk_end(ctx);
+            nk_window_is_closed(ctx, "console");
             /* IMPORTANT: `nk_sdl_render` modifies some global OpenGL state
              * with blending, scissor, face culling, depth test and viewport and
              * defaults everything back into a default state.
              * Make sure to either a.) save and restore or b.) reset your own state after
              * rendering the UI. */
             nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);
-
         }
         else //if(true)
         {            
@@ -418,7 +425,7 @@ void main_loop()
         // printf("dt=%d \n",dt);
 
 
-        SDL_GL_SwapWindow( window );        
+        SDL_GL_SwapWindow( sdl_window );
     } // while
     //gltDeleteText(text1);
     //gltDeleteText(text2);
@@ -437,6 +444,7 @@ void init_object()
     //objects.push_back(obj);
 
     obj = new grid();
+    obj->name="grid";
     objects.push_back(obj);
 
     d_camera = new camera();
@@ -446,30 +454,29 @@ void init_object()
     objects.push_back(d_camera);
 
     obj=new console();
+    obj->name="console";
     objects.push_back(obj);
 
     xObject *texobj;//=new texture_object("check.bmp");
     //set(texobj->pos,-2,0,0);
     //objects.push_back(texobj);
 
-    texobj=new texture_object("font-map-mtl.png");
-    set(texobj->pos,2,0,0);
-    objects.push_back(texobj);
+    //texobj=new texture_object("font-map-mtl.png");
+    //set(texobj->pos,2,0,0);
+    //objects.push_back(texobj);
 
-    texobj=new texture_object("font-map.png");
-    set(texobj->pos,4,0,0);
-    objects.push_back(texobj);
+    //texobj=new texture_object("font-map.png");
+    //set(texobj->pos,4,0,0);
+    //objects.push_back(texobj);
 
     //xObject *model_obj=new model_object("./model/stage.blend");
     //set(model_obj->pos,0,-4,0);
     //objects.push_back(model_obj);
 
-
     obj=new model_object("./model/stage.fbx");
     obj->name="ground";
     set(obj->pos,0,0,0);
     objects.push_back(obj);
-
 
     obj=new model_object("./model/ball.fbx");
     obj->name="ball";
@@ -489,7 +496,7 @@ void init_object()
     //time_fps=0;
     //call_count=0;
     //time_call=0;
-    printf("init_obect())\n");
+    printf("init_obect()\n");
 }
 
 /*

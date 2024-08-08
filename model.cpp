@@ -279,10 +279,11 @@ int LoadGLTextures(const aiScene* scene) {
         for(int i=0; i<material->mNumProperties ;i++)
         {
            aiMaterialProperty *prop = material->mProperties[i];
+           string msg="material.properties[" + std::to_string(i) + "]=" + prop->mKey.C_Str() + ", ";
            //if (strcmp(material->mProperties[i]->mKey.C_Str(),"?mat.name")==0)
            if (prop->mType==aiPTI_String)
            {
-                printf(" + material.properties[%d]= %s, %s \n",i,material->mProperties[i]->mKey.C_Str(),((aiString *) material->mProperties[i]->mData)->C_Str());
+               msg += material->mProperties[i]->mData;
            }
            else if (prop->mType==aiPTI_Float)
            {
@@ -293,7 +294,7 @@ int LoadGLTextures(const aiScene* scene) {
                 for(int i=0 ; i< count ; i++ )
                     str+=" " + std::to_string(f[i]);
                 str+=" )";
-                printf(" + material.properties[%d]= %s,  %s\n",i,prop->mKey.C_Str(),str.c_str());
+                msg += str;
            }
 
            else if (prop->mType==aiPTI_Integer)
@@ -305,10 +306,10 @@ int LoadGLTextures(const aiScene* scene) {
                     for(int i=0 ; i< count ; i++ )
                         str+=" " + std::to_string(j[i]);
                     str+=" )";
-                    printf(" + material.properties[%d]= %s,  %s\n",i,prop->mKey.C_Str(),str.c_str());
+                    msg+=str;
                }
             else
-                printf(" + material.properties[%d]= |%s| \n",i,material->mProperties[i]->mKey.C_Str());
+                msg+="else";
         }
         //std::cout << " material["<< m <<"].name = " <<  << "\n";
     }
@@ -364,7 +365,10 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
     copy(xobj.model_m, &m.a1);
 
     // draw all meshes assigned to this node    
-    printf("%s[%s].mNumMeshes=%d \n",tab.c_str(),nd->mName.C_Str(),nd->mNumMeshes);
+    printf("%s[%s].mNumMeshes=%d \n", tab.c_str(), nd->mName.C_Str(),nd->mNumMeshes);
+
+    xobj.name=nd->mName.C_Str();
+
     ///print(xobj.model_m);
     if (nd->mNumMeshes>1)
     {
@@ -481,6 +485,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
         }
         printf("%sobj.children=%d \n",tab.c_str(), xobj.children.size());
     }
+    printf("%sload model obj.name = %s \n",tab.c_str(), xobj.name.c_str());
 }
 
 int DrawGLScene() //Here's where we do all the drawing

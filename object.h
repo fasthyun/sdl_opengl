@@ -51,6 +51,7 @@ public:
     GLuint texname;
     vector<xObject*> children;
     string name;
+    string uuid;
 };
 
 class camera : public xObject{
