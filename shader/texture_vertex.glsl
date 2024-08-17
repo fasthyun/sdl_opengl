@@ -28,6 +28,6 @@ out vec2 TexCoord;
 
 void main()
 {
-    gl_Position = projView * modelView* vec4(vPos, 1.0);
+    gl_Position = projView * modelView * vec4(vPos, 1.0);
     TexCoord = vTexCoord; // vec2(aTexCoord.x, aTexCoord.y);
 }

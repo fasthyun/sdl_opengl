@@ -25,7 +25,7 @@
 //to map image filenames to textureIds
 #include <string>
 #include <map>
-
+#include <list>
 // assimp include files. These three are usually needed.
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
@@ -33,7 +33,7 @@
 #include <assimp/DefaultLogger.hpp>
 #include <assimp/LogStream.hpp>
 
-int LoadGLTextures(const aiScene* scene) ;
+int loadMaterials(const aiScene* scene) ;
 void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale,xObject &obj,int level=0);
 
 // images / texture
@@ -69,42 +69,6 @@ void logDebug(const char* logString) {
 	Assimp::DefaultLogger::get()->debug(logString);
 }
 
-
-bool Import3DFromFile(const std::string &filename,xObject &obj)
-{
-    const aiScene* g_scene = nullptr;
-
-    createAILogger();
-	// Check if file exists
-    std::ifstream fin(filename.c_str());
-	if(fin.fail()) {
-        std::string message = "Couldn't open file: " + filename;
-        std::cout << message << "\n";
-        logInfo(importer.GetErrorString());
-        return false;
-    }
-	fin.close();
-	
-    g_scene = importer.ReadFile(filename,aiProcess_Triangulate ); //, aiProcessPreset_TargetRealtime_MaxQuality);
-                                            //aiProcessPreset_TargetRealtime_MaxQuality
-
-	// If the import failed, report it
-	if (g_scene == nullptr) {
-        std::string message = "Couldn't open file: " + filename + "," + importer.GetErrorString();
-        std::cout << message << "\n";
-		logInfo( importer.GetErrorString());
-        return false;
-    }
-
-	// Now we can access the file's contents.
-    logInfo("Import of scene " + filename + " succeeded.");
-    std::cout << "Import of scene " + filename + " succeeded.\n";
-    // We're done. Everything will be cleaned up by the importer destructor
-
-    LoadGLTextures(g_scene);
-    loadToObject(g_scene, g_scene->mRootNode, 1.0, obj);
-    return true;
-}
 
 std::string getBasePath(const std::string& path) {
 	size_t pos = path.find_last_of("\\/");
@@ -243,101 +207,108 @@ void apply_material(const aiMaterial *mtl)
 		glDisable(GL_CULL_FACE);
 }
 
+std::map<string, GLuint> MaterialTexture;	// map Material name to texid
 
-int LoadGLTextures(const aiScene* scene) {
+
+int loadMaterials(const aiScene* scene) {
     freeTextureIds();
 
     if (scene->HasTextures() == true)
     {
-        printf("============> internal texture!!\n");
+        printf("============> this means internal texture ! \n");
         return 1;
     }
 
-    /* getTexture Filenames and Numb of Textures */
+    //list<string> _paths;
+
+    /* getTexture Filenames and num of Textures */
     for (unsigned int m=0; m < scene->mNumMaterials; m++)
-    {
-        int texIndex = 0;
-        aiReturn texFound = AI_SUCCESS;
+    {        
         aiString path;	// filename
         aiMaterial *material=scene->mMaterials[m];
 
-        while (texFound == AI_SUCCESS)
-        {
-            texFound = material->GetTexture(aiTextureType_DIFFUSE, texIndex, &path);
-            textureIdMap[path.data] = nullptr; //fill map with textures, pointers still NULL yet
-            texIndex++;
-        }
-        printf("material[%d]= %s, %d\n", m, material->GetName().C_Str() ,material->mNumProperties);
+        printf("material[%d]: name= %s, props= %d\n", m, material->GetName().C_Str() ,material->mNumProperties);
         int count;
-        for(int i=0; i<22 ;i++)
+        string textypes[]={"NONE", "DIFFUSE", "SPECULA", "ABIENT", "EMISSIVE",
+                           "HEIGHT", "NORMAL", "SHINESS", "OPACITY", "DISPLACEMENT",
+                           "LIGHTMAP", "RELECTION", "BASE_COLOR", "NORMAL_CAMERA", "EMISSION_COLOR",
+                           "METALNESS","DIFFUSE_ROUGHNESS", "AMBIENT_OCCLUSION","UNKNOWN", "SHEEN",
+                           "CLEARCOART","TRANSMISSION"};
+        int found_texture=0;
+        for(int type_i=0; type_i<22 ; type_i++) // type_max = 22
         {
-            count = material->GetTextureCount((aiTextureType)i);
-            //count = material->GetTextureCount(aiTextureType_DIFFUSE);
-            if (count !=0)
-                printf(" + texture_type[%d]= %d\n",i,count);
+            string textype="";
+            //string _path;
+            count = material->GetTextureCount((aiTextureType)type_i);
+            if (count >0)
+                printf(" + texture_type[%s]= %d\n", textypes[type_i].c_str(), count);
+            for (int j =0 ; j< count ; j++){
+                int texIndex=j;
+                bool exFound = material->GetTexture((aiTextureType)type_i, texIndex, &path);
+                ///_paths.push_back(string(path.C_Str()));
+                std::cout << " + load_texture() = " << path.C_Str() << "\n";
+                texture *_tex = new texture(path.C_Str()); //
+                if (_tex->d_tex_glname > 0)
+                {
+                    MaterialTexture.insert({material->GetName().C_Str(), _tex->d_tex_glname}); // c++11
+                    found_texture++;
+                }
+            }
         }
+
+        string msgs="";
         for(int i=0; i<material->mNumProperties ;i++)
         {
            aiMaterialProperty *prop = material->mProperties[i];
-           string msg="material.properties[" + std::to_string(i) + "]=" + prop->mKey.C_Str() + ", ";
-           //if (strcmp(material->mProperties[i]->mKey.C_Str(),"?mat.name")==0)
+           string keyname=prop->mKey.C_Str();
+           string msg=" + properties[" + std::to_string(i) + "]=" +keyname + ", ";
+           float colorf[5];
            if (prop->mType==aiPTI_String)
-           {
-               msg += material->mProperties[i]->mData;
+           {               
+               msg += ((aiString *) prop->mData)->C_Str();
            }
            else if (prop->mType==aiPTI_Float)
            {
-
-                int count = prop->mDataLength/4;
-                float *f = (float *) prop->mData;
-                string str="(";
-                for(int i=0 ; i< count ; i++ )
-                    str+=" " + std::to_string(f[i]);
-                str+=" )";
-                msg += str;
-           }
-
-           else if (prop->mType==aiPTI_Integer)
+               int count = prop->mDataLength/4;
+               float *f = (float *) prop->mData;
+               string str="(";
+               for(int i=0 ; i< count ; i++ )
                {
-
-                    int count = prop->mDataLength/4;
-                    int *j = (int *) prop->mData;
-                    string str="(";
-                    for(int i=0 ; i< count ; i++ )
-                        str+=" " + std::to_string(j[i]);
-                    str+=" )";
-                    msg+=str;
+                   str+=" " + std::to_string(f[i]);
+                   colorf[i]=f[i];
                }
-            else
-                msg+="else";
+               str+=" )";
+               msg += str;
+           }
+           else if (prop->mType==aiPTI_Integer)
+           {
+               int count = prop->mDataLength/4;
+               int *j = (int *) prop->mData;
+               string str="(";
+               for(int i=0 ; i< count ; i++ )
+                   str+=" " + std::to_string(j[i]);
+               str+=" )";
+               msg+=str;
+           }
+           else if (prop->mType==aiPTI_Buffer)
+           {
+               msg+="|buffer|";
+           }
+           else
+               msg+="|else|";
+           msgs += msg + "\n";
+
+           if(found_texture > 0 and keyname=="$clr.diffuse")
+           {
+                texture *_tex = new texture(5,5); //
+                if (_tex->d_tex_glname > 0)
+                {
+                    MaterialTexture.insert({material->GetName().C_Str(), _tex->d_tex_glname}); // c++11
+                }
+           }
         }
-        //std::cout << " material["<< m <<"].name = " <<  << "\n";
+        std::cout << msgs ;
     }
-
-    const size_t numTextures = textureIdMap.size();
-
-    /* create and fill array with GL texture ids */
-    textureIds = new GLuint[numTextures];
-    //glGenTextures(static_cast<GLsizei>(numTextures), textureIds); /* Texture name generation */
-
-    /* get iterator */
-    std::map<std::string, GLuint*>::iterator itr = textureIdMap.begin();
-
-    for (size_t i=0; i<numTextures; i++)
-    {
-        std::string path = (*itr).first;  // get filename
-        (*itr).second =  &textureIds[i];	  // save texture id for filename in map
-        itr++;								  // next texture
-
-        //boost::replace_all(filename, "\", "/");
-        //filename=getBasePath(filename);
-        std::cout << "loadGLTextures() = " + path  << "\n";
-        texture *_tex = new texture(path); //
-        if (_tex->d_tex_glname > 0)
-            textureIds[i]=_tex->d_tex_glname;
-
-    }
-
     return true;
 }
 
@@ -356,44 +327,41 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
 
     string tab="";
 
-    for (int i=0;i<level;i++)
+    for (int i=0; i<level; i++)
     {
-        tab= tab + '\t';
+        tab = tab + '\t';
     }
 
     m.Transpose();  // transpose for OpenGL
     copy(xobj.model_m, &m.a1);
 
-    // draw all meshes assigned to this node    
+    xobj.name = nd->mName.C_Str(); // object name
+
     printf("%s[%s].mNumMeshes=%d \n", tab.c_str(), nd->mName.C_Str(),nd->mNumMeshes);
-
-    xobj.name=nd->mName.C_Str();
-
-    ///print(xobj.model_m);
-    if (nd->mNumMeshes>1)
-    {
-        //error
-    }
 
     for (n=0 ; n < nd->mNumMeshes; ++n)
     {
-        int mesh_idx=nd->mMeshes[n];  // mesh index
+        int mesh_idx = nd->mMeshes[n];  // mesh index
         const struct aiMesh* mesh = sc->mMeshes[mesh_idx];
 
         //apply_material(sc->mMaterials[mesh->mMaterialIndex]);
+        std::cout << tab << "mesh->mMaterialIndex = " <<mesh->mMaterialIndex <<"\n";
         const aiMaterial *mtl=sc->mMaterials[mesh->mMaterialIndex];
 
         int texIndex = 0;
         aiString texPath;	//contains filename of texture
-
-        if(AI_SUCCESS == mtl->GetTexture(aiTextureType_DIFFUSE, texIndex, &texPath))
+        //auto search;
+        if ( auto search = MaterialTexture.find(mtl->GetName().C_Str()) ; search != MaterialTexture.end())
         {
-            //bind texture
-            unsigned int texId = *textureIdMap[texPath.data];
-            printf("%s texId=%d\n",tab.c_str(),texId);
-            xobj.set_texture(texId);
+            //std::cout << "Found " << search->first << ' ' << search->second << '\n';
+            xobj.set_texture(search->second);
         }
+        else
+        {
+            std::cout << tab << "+ texture Not found\n";
+            //mtl->
 
+        }
         /*
         if(mesh->mNormals == nullptr)
            glDisable(GL_LIGHTING);
@@ -403,13 +371,11 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
 
         if(mesh->mColors[0] != nullptr)
         {
-            printf("%s color!!! \n",tab.c_str());
-            glEnable(GL_COLOR_MATERIAL);
+            printf("%s COLOR !!! \n",tab.c_str());            
         }
-        else
-        {  glDisable(GL_COLOR_MATERIAL);
-        }
-        printf("%s[%d].mNumvertices=%d \n",tab.c_str(), n,mesh->mNumVertices);
+        //glDisable(GL_COLOR_MATERIAL);
+
+        /// printf("%s[%d].mNumvertices=%d \n",tab.c_str(), n,mesh->mNumVertices);
         vertex vert;
         for (i = 0; i < mesh->mNumVertices ; ++i) {
             //mesh->mVertices[i].x;
@@ -418,7 +384,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
             if(mesh->mColors[0] != nullptr)
             {
                 mesh->mColors[0][i];     //Color4f(&mesh->mColors[0][vertexIndex]);
-                /// printf("%s vertice color!!! \n",tab.c_str());
+                printf("%s vertice color!!! \n",tab.c_str());
             }
             float tu=0,tv=0;
             if(mesh->HasTextureCoords(0))	//HasTextureCoords(texture_coordinates_set)
@@ -433,7 +399,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
             xobj.vertexes.push_back(vert);
         }
 
-        printf("%s[%d].mNumFaces=%d \n",tab.c_str(), n,mesh->mNumFaces);
+        // printf("%s[%d].mNumFaces=%d \n",tab.c_str(), n,mesh->mNumFaces);
         for (t = 0; t < mesh->mNumFaces; ++t) {
             const struct aiFace* face = &mesh->mFaces[t];
             GLenum face_mode;
@@ -466,12 +432,11 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
     if (xobj.triangles.size()>0 )
     {
         xobj.make_glVertexArray(); // make_glVertexArray
-        std::cout << tab << " +--> OK : make_glVertexArray() " << xobj.VAO << "\n";
+        ///std::cout << tab << " +--> OK : make_glVertexArray() " << xobj.VAO << "\n";
     }
     if (nd->mNumChildren > 0)
     {
         printf("%snd->mNumChildren=%d \n",tab.c_str(),nd->mNumChildren);
-
         //from child object
         for (n = 0; n < nd->mNumChildren; ++n)
         {
@@ -479,7 +444,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
             xObject *child=new xObject();
             child->set_parent(&xobj); //
             child->set_shader(xobj.shader); // from parent's shader
-            ///child->set_texture(obj.texname);  // 삭제예쩡
+            ///child->set_texture(obj.texname);  // 삭제예정
             xobj.children.push_back(child);
             loadToObject(sc, nd->mChildren[n], scale, *child, level+1);
         }
@@ -488,22 +453,55 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
     printf("%sload model obj.name = %s \n",tab.c_str(), xobj.name.c_str());
 }
 
+/*
 int DrawGLScene() //Here's where we do all the drawing
 {
 
     GLfloat		xrot;
     GLfloat		yrot;
     GLfloat		zrot;
-
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	// Clear The Screen And The Depth Buffer
 	glLoadIdentity();				// Reset MV Matrix
-
     glTranslatef(0.0f, -10.0f, -40.0f);
     glRotatef(xrot, 1.0f, 0.0f, 0.0f);
 	glRotatef(yrot, 0.0f, 1.0f, 0.0f);
 	glRotatef(zrot, 0.0f, 0.0f, 1.0f);
-
-    logInfo("drawing objects");
     yrot += 0.2f;
     return true;					// okay
+}
+*/
+bool Import3DFromFile(const std::string &filename,xObject &obj)
+{
+    const aiScene* g_scene = nullptr;
+
+    createAILogger();
+    // Check if file exists
+    std::ifstream fin(filename.c_str());
+    if(fin.fail()) {
+        std::string message = "Couldn't open file: " + filename;
+        std::cout << message << "\n";
+        logInfo(importer.GetErrorString());
+        return false;
+    }
+    fin.close();
+
+    g_scene = importer.ReadFile(filename,aiProcess_Triangulate );
+        //aiProcessPreset_TargetRealtime_MaxQuality
+
+    // If the import failed, report it
+    if (g_scene == nullptr) {
+        std::string message = "Couldn't open file: " + filename + "," + importer.GetErrorString();
+        std::cout << message << "\n";
+        logInfo( importer.GetErrorString());
+        return false;
+    }
+
+    // Now we can access the file's contents.
+    logInfo("Import of scene " + filename + " succeeded.");
+    std::cout << "Import of scene " + filename + " succeeded.\n";
+    // We're done. Everything will be cleaned up by the importer destructor
+
+    loadMaterials(g_scene);
+    loadToObject(g_scene, g_scene->mRootNode, 1.0, obj);
+    return true;
 }
