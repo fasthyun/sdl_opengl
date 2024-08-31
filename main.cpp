@@ -13,7 +13,6 @@
 #include "Shader.h"
 #include "model.h"
 
-#include "gltext.h"         /* https://github.com/vallentin/glText */
 //#includ "misc.h"
 
 #define NK_INCLUDE_FIXED_TYPES
@@ -172,11 +171,6 @@ bool init_GL()
         success = false;
     }   
 
-    if (!gltInit()) // glText font init!
-    {
-        printf("ERROR : Failed to initialize glText\n");
-        success = false;
-    }
 
     printf("init_GL() finish...\n");
     return success;
@@ -234,11 +228,6 @@ void main_loop()
     prevTime=SDL_GetTicks(); // init
     float dt=0;
 
-    GLTtext *text1 = gltCreateText();
-    GLTtext *text2 = gltCreateText();
-    GLTtext *text3 = gltCreateText();
-    GLTtext *text4 = gltCreateText();
-
     char str1[30];
     char str2[30];
 
@@ -264,7 +253,7 @@ void main_loop()
 
 
     //SDL_GL_MakeCurrent(window,glContext);    
-    while( !quit ) //While application is running
+    while( !quit )
     {
         _now = SDL_GetTicks();
         dt = ( _now - prevTime)/1000.0;
@@ -293,7 +282,7 @@ void main_loop()
         glLoadIdentity();
         // draw console? or push pop?
         glFrustum(-0.5,0.5,-0.5,0.5,0.5,500*3);
-        LookAt(d_camera->pos, d_camera->forward , d_camera->up);
+        LookAt(d_camera->pos, d_camera->forward , d_camera->up); // test
         /* gluLookAt(d_camera->pos[0],d_camera->pos[1],d_camera->pos[2],
                   d_camera->pos[0]+d_camera->forward[0]*3,d_camera->pos[1]+d_camera->forward[1]*3 ,
                   d_camera->pos[2]+d_camera->forward[2]*3,
@@ -401,26 +390,6 @@ void main_loop()
              * Make sure to either a.) save and restore or b.) reset your own state after
              * rendering the UI. */
             nk_sdl_render(NK_ANTI_ALIASING_ON, MAX_VERTEX_MEMORY, MAX_ELEMENT_MEMORY);
-        }
-        else //if(true)
-        {            
-            gltBeginDraw();
-            /*
-            gltSetText(text1, "Hello World!");
-            gltColor(1.0f, 1.0f, 1.0f, 1.0f);
-            gltDrawText2D(text1, 0.0f, 0.0f, 1.0f); // x=0.0, y=0.0, scale=1.0
-            gltDrawText2DAligned(text1,(GLfloat)(10),(GLfloat)(20),
-                                 3.0f,  GLT_CENTER, GLT_CENTER);
-            */            
-            sprintf(str2, "FPS: %d", fps);
-            gltSetText(text2, str2);
-            gltDrawText2DAligned(text2, 10.0f, 20, 1.0f, GLT_LEFT, GLT_BOTTOM);
-
-            gltSetText(text1, str1);
-            gltDrawText2DAligned(text1, 10.0f, 40, 1.0f, GLT_LEFT, GLT_BOTTOM);
-
-            gltDrawMatrix4f(text3 ,proj_m , 10, 60);
-            gltEndDraw();
         }
         // printf("dt=%d \n",dt);
 

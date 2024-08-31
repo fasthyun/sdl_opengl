@@ -351,7 +351,8 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
         int texIndex = 0;
         aiString texPath;	//contains filename of texture
         //auto search;
-        if ( auto search = MaterialTexture.find(mtl->GetName().C_Str()) ; search != MaterialTexture.end())
+        auto search = MaterialTexture.find(mtl->GetName().C_Str()) ;
+        if ( search != MaterialTexture.end())
         {
             //std::cout << "Found " << search->first << ' ' << search->second << '\n';
             xobj.set_texture(search->second);
