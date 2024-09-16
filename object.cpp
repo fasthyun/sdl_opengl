@@ -38,7 +38,6 @@ xObject* findObject(char *_name)
 #include <boost/uuid/uuid_generators.hpp> // generators
 #include <boost/uuid/uuid_io.hpp>         // streaming operators etc.  to_string()
 
-
 xObject::xObject()
 {
     boost::uuids::uuid _uuid = boost::uuids::random_generator()();
@@ -433,5 +432,36 @@ void grid::draw()
 
 void grid::update(float dt)
 {
+
+}
+
+
+extern vector<xObject* > objects;
+
+
+CollisionDetector::CollisionDetector()
+{
+
+}
+
+void CollisionDetector::update(float dt)
+{
+
+    for ( size_t i=0 ; i < objects.size(); i++)
+    {
+        xObject *obj = objects[i];
+        xObject *other;
+        for ( size_t j=0 ; j < objects.size(); j++)
+        {
+            other = objects[i];
+            if (obj != other )
+            {
+
+
+            }
+
+        }
+
+    }
 
 }

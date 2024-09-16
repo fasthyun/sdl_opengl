@@ -14,6 +14,16 @@
 
 //typedef vector<vertex*> vec_vertex;
 
+#define TYPE_STATIC     0x01
+#define TYPE_DYNAMIC    0x02
+#define TYPE_CUBE       0x05
+#define TYPE_SPHERE     0x06
+
+#define TYPE_GROUND     0xF0
+#define TYPE_SKY        0xF1
+#define TYPE_PARTICLE   0xF2
+
+
 using namespace  std;
 
 class xObject {
@@ -47,6 +57,7 @@ public:
     uint64_t prev_time;
     Shader *shader;
 
+    // OpenGL element
     GLuint VBO, VAO, EBO;
     GLuint texname;
     vector<xObject*> children;
@@ -80,6 +91,17 @@ public:
     grid();
     virtual void update(float dt=0);
     virtual void draw();
+};
+
+
+class CollisionDetector : public xObject{
+    GLuint buffer;
+    GLuint vertex_array;
+    int grid_n;
+public:
+    CollisionDetector();
+    virtual void update(float dt=0);
+    virtual void draw(){};
 };
 
 

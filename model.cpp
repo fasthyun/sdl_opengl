@@ -441,7 +441,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
         //from child object
         for (n = 0; n < nd->mNumChildren; ++n)
         {
-            // 임시
+            //a. 임시
             xObject *child=new xObject();
             child->set_parent(&xobj); //
             child->set_shader(xobj.shader); // from parent's shader
