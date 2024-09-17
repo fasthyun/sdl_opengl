@@ -313,14 +313,13 @@ int loadMaterials(const aiScene* scene) {
 }
 
 
-int loadMetadata(const aiScene* scene) {
-    if (scene->mMetaData == NULL)
+int loadMetadata(aiMetadata *md) {
+    if (md == NULL)
     {
         return 0;
     }
-    aiMetadata *md=scene->mMetaData;
 
-    printf("scene %s metadata_n =%d \n", scene->mName.C_Str(),md->mNumProperties);
+    printf(" metadata_n =%d \n", md->mNumProperties);
 
     string msgs="";
     for(size_t i=0; i<md->mNumProperties ;i++)
@@ -336,17 +335,56 @@ int loadMetadata(const aiScene* scene) {
             string keyname = key->C_Str();
             msg +=" + meta_datas["  + std::to_string(i) + "]=" +keyname + ", ";
 
-            //printf("meta key = %s\n",key->C_Str());
-
-            if (prop->mType==aiPTI_String)
+            if (prop->mType==aiMetadataType::AI_AISTRING)
             {
-              // msg += ((aiString *) prop->mData)->C_Str();
+               msg += ((aiString *) prop->mData)->C_Str();
             }
-            else if (prop->mType==aiPTI_Float)
+            else if (prop->mType==aiMetadataType::AI_FLOAT)
             {
+                int count = 1;
+                float *f = (float *) prop->mData;
+                string str="(";
+
+                str+=" " + std::to_string(*f);
+                str+=" )";
+                msg += str;
+            }
+            else if (prop->mType==aiMetadataType::AI_DOUBLE)
+            {
+                double *f = (double *) prop->mData;
+                string str="(";
+                str+=" " + std::to_string(*f);
+                str+=" )";
+                msg += str;
+            }
+
+            else if (prop->mType==aiMetadataType::AI_INT32)
+            {
+                int count = 1;
+                int *j = (int *) prop->mData;
+                string str="(";
+                str+=" " + std::to_string(*j);
+                str+=" )";
+                msg+=str;
+            }
+            else if (prop->mType==aiMetadataType::AI_UINT64)
+            {
+                u_int64_t *j = (u_int64_t *) prop->mData;
+                string str="(";
+                str+=" " + std::to_string(*j);
+                str+=" )";
+                msg+=str;
+            }
+            else if (prop->mType==aiMetadataType::AI_AIVECTOR3D)
+            {
+                u_int64_t *j = (u_int64_t *) prop->mData;
+                string str="(AIVECTOR3D";
+                //str+=" " + std::to_string(*j);
+                str+=" )";
+                msg+=str;
             }
             else
-                msg +="else!";
+                msg +="else!" + std::to_string(prop->mType);
 
             std::cout << msg << "\n" ;
         }
@@ -375,7 +413,10 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
     m.Transpose();  // transpose for OpenGL
     copy(xobj.model_m, &m.a1);
 
-    xobj.name = nd->mName.C_Str(); // object name
+    if (level==0 )
+        xobj.name = nd->mName.C_Str(); // object name
+
+    loadMetadata(nd->mMetaData);
 
     printf("%s[%s].mNumMeshes=%d \n", tab.c_str(), nd->mName.C_Str(),nd->mNumMeshes);
 
@@ -543,7 +584,7 @@ bool Import3DFromFile(const std::string &filename,xObject &obj)
     // We're done. Everything will be cleaned up by the importer destructor
 
     loadMaterials(g_scene);
-    loadMetadata(g_scene);
+    loadMetadata(g_scene->mMetaData);
     loadToObject(g_scene, g_scene->mRootNode, 1.0, obj);
     return true;
 }
