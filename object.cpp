@@ -12,9 +12,8 @@
 
 
 using namespace std::chrono;
-milliseconds ms = duration_cast< milliseconds >(
-    system_clock::now().time_since_epoch()
-);
+// 이걸 왜 작성했지????
+milliseconds ms = duration_cast< milliseconds >(system_clock::now().time_since_epoch() );
 
 uint64_t epoch_now() { // timeSinceEpochMillisec
     // 좀 느릴거 같은뎅..(hyun)

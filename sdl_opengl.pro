@@ -3,7 +3,7 @@ CONFIG  += c++11 warn_off
 CONFIG  -= qml_debug debug
 
 QMAKE_CXXFLAGS += -H -Wno-unused-parameter -Wno-unused-variable -Wwrite-strings -Wunused-but-set-variable -Wunused-function
-QMAKE_CFLAGS += -Wunused-function
+QMAKE_CFLAGS += -H -Wunused-function
 
 #INCLUDEPATH += /usr/include/freetype2
 LIBS +=  -lSDL2 -lSDL2_image -lassimp -lboost_filesystem -lboost_system  -lGL -lGLU -lGLEW

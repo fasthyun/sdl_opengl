@@ -4,7 +4,7 @@
 void make_cube(vector<vertex> &verts, vector<triangle> &tris, float size)
 {
     // move to element3d.cpp  3d_element, element_3d
-    // blender로  아니면 이렇게 ... 둘 다 필요?
+    // blender로  아니면 이렇게 ... 둘 다 필요? 둘다 필요할듯...(2024.9)
     vertex vert;
     vertex_set(vert,-1.f, 1.f, 1.f,  0.,1.);    verts.push_back(vert); // 0  upper left
     vertex_set(vert, 1.f, 1.f, 1.f,  1.0,1.0);  verts.push_back(vert); // 1  upper right

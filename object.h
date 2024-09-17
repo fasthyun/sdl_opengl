@@ -14,11 +14,11 @@
 
 //typedef vector<vertex*> vec_vertex;
 
-#define TYPE_STATIC     0x01
-#define TYPE_DYNAMIC    0x02
-#define TYPE_CUBE       0x05
-#define TYPE_SPHERE     0x06
-
+#define TYPE_STATIC         0x01
+#define TYPE_DYNAMIC        0x02
+#define TYPE_CUBE           0x05
+#define TYPE_SPHERE         0x06
+#define TYPE_ANTIGRAVITY    0b00000011
 #define TYPE_GROUND     0xF0
 #define TYPE_SKY        0xF1
 #define TYPE_PARTICLE   0xF2

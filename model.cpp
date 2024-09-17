@@ -313,6 +313,46 @@ int loadMaterials(const aiScene* scene) {
 }
 
 
+int loadMetadata(const aiScene* scene) {
+    if (scene->mMetaData == NULL)
+    {
+        return 0;
+    }
+    aiMetadata *md=scene->mMetaData;
+
+    printf("scene %s metadata_n =%d \n", scene->mName.C_Str(),md->mNumProperties);
+
+    string msgs="";
+    for(size_t i=0; i<md->mNumProperties ;i++)
+    {
+        const aiMetadataEntry *prop;
+        const aiString *key;
+
+        //string msg;
+        string msg;
+
+        if (md->Get(i,key,prop))
+        {
+            string keyname = key->C_Str();
+            msg +=" + meta_datas["  + std::to_string(i) + "]=" +keyname + ", ";
+
+            //printf("meta key = %s\n",key->C_Str());
+
+            if (prop->mType==aiPTI_String)
+            {
+              // msg += ((aiString *) prop->mData)->C_Str();
+            }
+            else if (prop->mType==aiPTI_Float)
+            {
+            }
+            else
+                msg +="else!";
+
+            std::cout << msg << "\n" ;
+        }
+    }
+}
+
 void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale, xObject &xobj, int level)
 {    
     /*
@@ -339,7 +379,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
 
     printf("%s[%s].mNumMeshes=%d \n", tab.c_str(), nd->mName.C_Str(),nd->mNumMeshes);
 
-    for (n=0 ; n < nd->mNumMeshes; ++n)
+    for ( n=0 ; n < nd->mNumMeshes; ++n)
     {
         int mesh_idx = nd->mMeshes[n];  // mesh index
         const struct aiMesh* mesh = sc->mMeshes[mesh_idx];
@@ -503,6 +543,7 @@ bool Import3DFromFile(const std::string &filename,xObject &obj)
     // We're done. Everything will be cleaned up by the importer destructor
 
     loadMaterials(g_scene);
+    loadMetadata(g_scene);
     loadToObject(g_scene, g_scene->mRootNode, 1.0, obj);
     return true;
 }
