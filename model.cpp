@@ -313,13 +313,13 @@ int loadMaterials(const aiScene* scene) {
 }
 
 
-int loadMetadata(aiMetadata *md) {
+int loadMetadata(aiMetadata *md, string name="") {
     if (md == NULL)
     {
         return 0;
     }
 
-    printf(" metadata_n =%d \n", md->mNumProperties);
+    printf("[%s] metadata_n = %d \n",name.c_str(), md->mNumProperties);
 
     string msgs="";
     for(size_t i=0; i<md->mNumProperties ;i++)
@@ -333,9 +333,17 @@ int loadMetadata(aiMetadata *md) {
         if (md->Get(i,key,prop))
         {
             string keyname = key->C_Str();
-            msg +=" + meta_datas["  + std::to_string(i) + "]=" +keyname + ", ";
+            msg +=" + data["  + std::to_string(i) + "]=" +keyname + ", ";
 
-            if (prop->mType==aiMetadataType::AI_AISTRING)
+            if (prop->mType==aiMetadataType::AI_BOOL)
+            {
+               bool *b= (bool*)prop->mData;
+               if ( *b == true )
+                   msg += "True"  ;
+               else
+                   msg += "False"  ;
+            }
+            else if (prop->mType==aiMetadataType::AI_AISTRING)
             {
                msg += ((aiString *) prop->mData)->C_Str();
             }
@@ -416,7 +424,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
     if (level==0 )
         xobj.name = nd->mName.C_Str(); // object name
 
-    loadMetadata(nd->mMetaData);
+    loadMetadata(nd->mMetaData,nd->mName.C_Str());
 
     printf("%s[%s].mNumMeshes=%d \n", tab.c_str(), nd->mName.C_Str(),nd->mNumMeshes);
 
@@ -584,7 +592,7 @@ bool Import3DFromFile(const std::string &filename,xObject &obj)
     // We're done. Everything will be cleaned up by the importer destructor
 
     loadMaterials(g_scene);
-    loadMetadata(g_scene->mMetaData);
+    loadMetadata(g_scene->mMetaData, g_scene->mName.C_Str());
     loadToObject(g_scene, g_scene->mRootNode, 1.0, obj);
     return true;
 }
