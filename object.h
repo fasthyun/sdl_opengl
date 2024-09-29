@@ -9,7 +9,7 @@
 #include "./support/material.h"
 
 /* TODO:
-   * naming to xObject , object_x , x_object, object3d.h
+   * naming to xObject object3d.h
 */
 
 //typedef vector<vertex*> vec_vertex;
@@ -18,10 +18,10 @@
 #define TYPE_DYNAMIC        0x02
 #define TYPE_CUBE           0x05
 #define TYPE_SPHERE         0x06
-#define TYPE_ANTIGRAVITY    0b00000011
-#define TYPE_GROUND     0xF0
-#define TYPE_SKY        0xF1
-#define TYPE_PARTICLE   0xF2
+#define TYPE_ANTIGRAVITY    0b00000001  // weight
+#define TYPE_GROUND         0xF0
+#define TYPE_SKY            0xF1
+#define TYPE_PARTICLE       0xF2
 
 
 using namespace  std;
@@ -38,7 +38,7 @@ public:
     void draw_meshes();
     void draw_axis();
     void draw_dir_up();
-    void load_gltf(string name);
+    void load_gltf(string name); // remove
     void make_glVertexArray();
     vector<vertex>  vertexes; // verts
     vector<triangle> triangles; // tris
@@ -52,7 +52,7 @@ public:
     float forward[3]; //
     float up[3];
     float force[3];
-    float weight;
+    float weight = 0.0 ;  // kg
     float model_m[16];
     uint64_t prev_time;
     Shader *shader;
@@ -63,6 +63,8 @@ public:
     vector<xObject*> children;
     string name;
     string uuid;
+    int type;
+    bool xobject_found=false;
 };
 
 class camera : public xObject{

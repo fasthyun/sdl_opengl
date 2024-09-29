@@ -7,7 +7,7 @@
 #include <stdio.h>
 /*
  *  TODO:
- *  zmath 이름 바꿔야할듯... 별로임 (hyun)
+ *  zmath 이름 바꿔야할듯... (hyun)
  *  xmath
  */
 float IDENTITY_MATRIX[]={1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1};
@@ -95,7 +95,7 @@ void normalize(float v[3])
 /*
 ** Make m an identity matrix
 */
-void gluMakeIdentityf(float m[16])
+void makeIdentityf(float m[16])
 {
     // m[16] == m[4][4] same? (hyun)
     m[0+4*0] = 1; m[0+4*1] = 0; m[0+4*2] = 0; m[0+4*3] = 0;
@@ -184,7 +184,7 @@ void quat_rotate(float r[3], float angle,float v[3],float result[3])
     float w = cos(angle/2);
 
     float m[4][4];
-    gluMakeIdentityf(&m[0][0]);
+    makeIdentityf(&m[0][0]);
 
     m[0][0] = 1-2*y*y -2*z*z;
     m[1][0] = 2*x*y + 2*w*z;
@@ -213,13 +213,12 @@ void LookAt(float eye[3], float forward[3], float up[3])
     /* Side = forward x up */
     cross(forward, up, side); // ok
     normalize(side);
-    // up을 왜 다시 계산하는가? (hyun)
-    // --> up 크기가 1이 아닐수 있음??
+    // up을 왜 다시 계산하는가?   up 크기가 1이 아닐수 있음?? (hyun)
 
     /* Recompute up as: up = side x forward */
     cross(side, forward, new_up);
 
-    gluMakeIdentityf(&m[0][0]);
+    makeIdentityf(&m[0][0]);
     m[0][0] = side[0];
     m[1][0] = side[1];
     m[2][0] = side[2];

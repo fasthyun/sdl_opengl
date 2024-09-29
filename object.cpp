@@ -60,6 +60,8 @@ xObject::xObject()
     name="None";
 }
 
+
+
 void xObject::update(float dt)
 {
     float t[3];
@@ -438,6 +440,14 @@ void grid::update(float dt)
 extern vector<xObject* > objects;
 
 
+void apply_gravity(xObject *obj)
+{
+    //obj->
+    //set(obj->force,0,-9.8,0);
+    if(obj->type!=TYPE_GROUND)
+        obj->force[1]=-9.8;
+}
+
 CollisionDetector::CollisionDetector()
 {
 
@@ -449,6 +459,9 @@ void CollisionDetector::update(float dt)
     for ( size_t i=0 ; i < objects.size(); i++)
     {
         xObject *obj = objects[i];
+
+        apply_gravity(obj);
+
         xObject *other;
         for ( size_t j=0 ; j < objects.size(); j++)
         {

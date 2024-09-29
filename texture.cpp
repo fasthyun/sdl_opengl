@@ -281,13 +281,13 @@ void texture_object::draw()
     xObject::draw();
 }
 
-model_object::model_object(char *str): texture_object()
+model_object::model_object(char *path): texture_object()
 {
     //texname=texture_manager::get_glname("check.bmp");
-    printf("model_object=%s \n", str);
+    printf("model_object=%s \n", path);
     shader=new Shader();
     shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
-    Import3DFromFile(str, *this);
+    Import3DFromFile(path, *this);
 }
 
 model_object::model_object(string str): texture_object()

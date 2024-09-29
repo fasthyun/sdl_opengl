@@ -401,6 +401,7 @@ void main_loop()
     //gltTerminate();
 }
 
+#include<cstdlib> // rand()
 void init_object()
 {
     //texture *_tex = new texture("font-map.bmp"); // 16x6
@@ -447,11 +448,18 @@ void init_object()
     set(obj->pos,0,0,0);
     objects.push_back(obj);
 
-    obj=new model_object("./model/ball.fbx");
-    obj->name="ball";
-    set(obj->pos,2,2,0);
-    objects.push_back(obj);
 
+    for ( int i=0 ; i < 30 ; i++)
+    {
+        obj=new model_object("./model/ball.fbx");
+        obj->name="ball";
+        float x,y,z;
+        x=rand()%30;
+        y=rand()%10;
+        z=rand()%30;
+        set(obj->pos,x,y,z);
+        objects.push_back(obj);
+    }
     //xObject *model_obj=new model_object("./model/box.fbx");
     //set(model_obj->pos,0,10,0);
     //objects.push_back(model_obj);

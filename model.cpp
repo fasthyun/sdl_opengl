@@ -34,7 +34,7 @@
 #include <assimp/LogStream.hpp>
 
 int loadMaterials(const aiScene* scene) ;
-void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale,xObject &obj,int level=0);
+void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale, xObject &obj, int tab_level=0);
 
 // images / texture
 std::map<std::string, GLuint*> textureIdMap;	// map image filenames to textureIds
@@ -307,19 +307,26 @@ int loadMaterials(const aiScene* scene) {
                 }
            }
         }
-        std::cout << msgs ;
+       /// std::cout << msgs ;
     }
     return true;
 }
 
 
-int loadMetadata(aiMetadata *md, string name="") {
+int loadMetadata(aiMetadata *md, string name="", int level=0) {
     if (md == NULL)
     {
         return 0;
     }
+    bool xobject_found=0;
 
-    printf("[%s] metadata_n = %d \n",name.c_str(), md->mNumProperties);
+    string tab="";
+    for (int i=0; i<level; i++)
+    {
+        tab = tab + '\t';
+    }
+
+    printf("%s[%s] metadata_n = %d \n",tab.c_str(), name.c_str(), md->mNumProperties);
 
     string msgs="";
     for(size_t i=0; i<md->mNumProperties ;i++)
@@ -333,8 +340,15 @@ int loadMetadata(aiMetadata *md, string name="") {
         if (md->Get(i,key,prop))
         {
             string keyname = key->C_Str();
-            msg +=" + data["  + std::to_string(i) + "]=" +keyname + ", ";
+            msg += tab + " + data["  + std::to_string(i) + "]=" +keyname + " : ";
 
+            if (keyname=="xobject_type")
+            {
+                string value=((aiString *) prop->mData)->C_Str();
+                xobject_found=true;
+                if (value=="ground")
+                    ;
+            }
             if (prop->mType==aiMetadataType::AI_BOOL)
             {
                bool *b= (bool*)prop->mData;
@@ -365,7 +379,6 @@ int loadMetadata(aiMetadata *md, string name="") {
                 str+=" )";
                 msg += str;
             }
-
             else if (prop->mType==aiMetadataType::AI_INT32)
             {
                 int count = 1;
@@ -392,14 +405,15 @@ int loadMetadata(aiMetadata *md, string name="") {
                 msg+=str;
             }
             else
-                msg +="else!" + std::to_string(prop->mType);
+                msg +="else! unknown metadata type " + std::to_string(prop->mType);
 
             std::cout << msg << "\n" ;
         }
     }
+    return xobject_found;
 }
 
-void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale, xObject &xobj, int level)
+void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale, xObject &xobj, int tab_level)
 {    
     /*
      *  30%
@@ -411,20 +425,20 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
     aiMatrix4x4::Scaling(aiVector3D(scale, scale, scale), m2);
     m = m * m2;
 
-    string tab="";
-
-    for (int i=0; i<level; i++)
+    string tab="";  // tab tricks. have a fun!
+    for (int i=0; i<tab_level; i++)
     {
         tab = tab + '\t';
     }
 
-    m.Transpose();  // transpose for OpenGL
+    if(loadMetadata(nd->mMetaData,nd->mName.C_Str(),tab_level)==true)
+        xobj.xobject_found=true;
+
+    m.Transpose();  // transpose for OpenGL (???)
     copy(xobj.model_m, &m.a1);
 
-    if (level==0 )
-        xobj.name = nd->mName.C_Str(); // object name
-
-    loadMetadata(nd->mMetaData,nd->mName.C_Str());
+    //if (tab_level==0 )
+    xobj.name = nd->mName.C_Str(); // object name
 
     printf("%s[%s].mNumMeshes=%d \n", tab.c_str(), nd->mName.C_Str(),nd->mNumMeshes);
 
@@ -434,7 +448,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
         const struct aiMesh* mesh = sc->mMeshes[mesh_idx];
 
         //apply_material(sc->mMaterials[mesh->mMaterialIndex]);
-        std::cout << tab << "mesh->mMaterialIndex = " <<mesh->mMaterialIndex <<"\n";
+        std::cout << tab << " + mesh->mMaterialIndex = " <<mesh->mMaterialIndex <<"\n";
         const aiMaterial *mtl=sc->mMaterials[mesh->mMaterialIndex];
 
         int texIndex = 0;
@@ -450,7 +464,6 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
         {
             std::cout << tab << "+ texture Not found\n";
             //mtl->
-
         }
         /*
         if(mesh->mNormals == nullptr)
@@ -465,7 +478,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
         }
         //glDisable(GL_COLOR_MATERIAL);
 
-        /// printf("%s[%d].mNumvertices=%d \n",tab.c_str(), n,mesh->mNumVertices);
+        printf("%s + [%d].mNumvertices=%d \n",tab.c_str(), n,mesh->mNumVertices);
         vertex vert;
         for (i = 0; i < mesh->mNumVertices ; ++i) {
             //mesh->mVertices[i].x;
@@ -489,7 +502,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
             xobj.vertexes.push_back(vert);
         }
 
-        // printf("%s[%d].mNumFaces=%d \n",tab.c_str(), n,mesh->mNumFaces);
+        printf("%s + [%d].mNumFaces = %d \n",tab.c_str(), n,mesh->mNumFaces);
         for (t = 0; t < mesh->mNumFaces; ++t) {
             const struct aiFace* face = &mesh->mFaces[t];
             GLenum face_mode;
@@ -524,22 +537,22 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
         xobj.make_glVertexArray(); // make_glVertexArray
         ///std::cout << tab << " +--> OK : make_glVertexArray() " << xobj.VAO << "\n";
     }
-    if (nd->mNumChildren > 0)
+
+    printf("%s + nd->mNumChildren=%d \n",tab.c_str(),nd->mNumChildren);
+    //from child object
+    for (n = 0; n < nd->mNumChildren; ++n)
     {
-        printf("%snd->mNumChildren=%d \n",tab.c_str(),nd->mNumChildren);
-        //from child object
-        for (n = 0; n < nd->mNumChildren; ++n)
-        {
-            //a. 임시
-            xObject *child=new xObject();
-            child->set_parent(&xobj); //
-            child->set_shader(xobj.shader); // from parent's shader
-            ///child->set_texture(obj.texname);  // 삭제예정
-            xobj.children.push_back(child);
-            loadToObject(sc, nd->mChildren[n], scale, *child, level+1);
-        }
-        printf("%sobj.children=%d \n",tab.c_str(), xobj.children.size());
+        // tempolarily needvmore time and works later!!!
+        xObject *child=new xObject();
+        child->set_parent(&xobj); //
+        child->set_shader(xobj.shader); // from parent's shader
+        ///child->set_texture(obj.texname);  // 삭제예정
+        xobj.children.push_back(child);
+        //if (xobj.xobject_found==true)
+        loadToObject(sc, nd->mChildren[n], scale, *child, tab_level+1);
     }
+    // printf("%sobj.children=%d \n",tab.c_str(), xobj.children.size());
+
     printf("%sload model obj.name = %s \n",tab.c_str(), xobj.name.c_str());
 }
 
@@ -560,6 +573,9 @@ int DrawGLScene() //Here's where we do all the drawing
     return true;					// okay
 }
 */
+
+// std::vector<texture *> models;
+
 bool Import3DFromFile(const std::string &filename,xObject &obj)
 {
     const aiScene* g_scene = nullptr;
@@ -575,8 +591,7 @@ bool Import3DFromFile(const std::string &filename,xObject &obj)
     }
     fin.close();
 
-    g_scene = importer.ReadFile(filename,aiProcess_Triangulate );
-        //aiProcessPreset_TargetRealtime_MaxQuality
+    g_scene = importer.ReadFile(filename, aiProcess_Triangulate ); //aiProcessPreset_TargetRealtime_MaxQuality
 
     // If the import failed, report it
     if (g_scene == nullptr) {
@@ -592,7 +607,7 @@ bool Import3DFromFile(const std::string &filename,xObject &obj)
     // We're done. Everything will be cleaned up by the importer destructor
 
     loadMaterials(g_scene);
-    loadMetadata(g_scene->mMetaData, g_scene->mName.C_Str());
+    loadMetadata(g_scene->mMetaData, g_scene->mName.C_Str()); // scene's metadata
     loadToObject(g_scene, g_scene->mRootNode, 1.0, obj);
     return true;
 }
