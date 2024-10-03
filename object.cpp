@@ -230,7 +230,7 @@ camera::camera(): xObject() // init
     key_side_right=SDLK_d;
     key_side_left=SDLK_a;
 
-    ball=NULL;
+    d_ball=NULL;
     d_focus=true;
     name="camera_viewer";
 }
@@ -239,9 +239,12 @@ extern bool quit;
 void camera::update(float dt)
 {
     SDL_Event e; //Event handler
-    xObject::update(dt);
+
+    /// xObject::update(dt);
+
     if(d_focus==false)
         return;
+
     //Handle events on queue
     while( SDL_PollEvent( &e ) != 0 )
     {
@@ -256,9 +259,9 @@ void camera::update(float dt)
                 break;
             case SDL_MOUSEBUTTONDOWN:
                 printf("clicked! \n");
-                if (ball==NULL)
-                    ball=findObject("ball");
-                set(ball->pos, pos);
+                if (d_ball==NULL)
+                    d_ball=findObject("ball"); // how lagg ?
+                set(d_ball->pos, pos);
                 break;
             default :;
 
@@ -313,7 +316,7 @@ void camera::on_key_pressed(uint key)
 {
     /*
      *  right_side,
-     *  혹은 dir 성분만  zero해야하는거 아닐까?
+     o.  혹은 dir 성분만  zero해야하는거 아닐까?
      */
     float right[3],t[3];
     //fprintf(stderr,"camera.onkey\n");
@@ -322,21 +325,24 @@ void camera::on_key_pressed(uint key)
     {
         multiply(forward,speed,force);
     }
-    if(key==key_backward) //s
+    else if(key==key_backward)
+    {
+        //s
         multiply(forward,-speed,force);
-
+    } else
     if(key==key_side_right) //d
     {
         cross(forward,up,right);
         multiply(right,speed,force);
-    }
+    } else
     if(key==key_side_left) // a
     {
         //float right[3];
         cross(forward,up,right);
         multiply(right,-speed,force);
+    } else
+       printf("pressed key %d \n", key);
 
-    }
     //fprintf(stderr," pressed! %f %f %f \n",force[0],force[1],force[2]);
     //fprintf(stderr," pressed! %f %f %f \n",forward[0],forward[1],forward[2]);
     //fprintf(stderr," pressed! pos %f %f %f \n",pos[0],pos[1],pos[2]);
@@ -471,11 +477,12 @@ void CollisionDetector::update(float dt)
     for ( size_t i=0 ; i < objects.size(); i++)
     {
         xObject *obj = objects[i];
+        float new_pos[3];
         //apply_gravity(obj);
         if(obj->d_type==TYPE_CONTROLLER) continue;
         if(obj->d_type==TYPE_GROUND)
         {
-
+            continue;
         }
         if(obj->d_type==TYPE_SPHERE)
         {

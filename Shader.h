@@ -8,8 +8,7 @@
 
 #pragma once
 #define GL_GLEXT_PROTOTYPES
-#include <GL/gl.h>
-#include <string>
+#include "stable.h"
 #include "Math.h"
 
 class Shader

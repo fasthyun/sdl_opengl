@@ -15,7 +15,7 @@
 #include <GL/glew.h>  // why?
 
 #include "element3d.h"
-#include "object.h"
+#include "model.h"
 #include "texture.h"
 #include "xmath.h"
 
@@ -645,4 +645,38 @@ bool Import3DFromFile(const std::string &filename,xObject &obj)
           std::cout << "Error !!!!!!!!!!!!!!!!!!!!!  can't find xObject in metadata! \n";
 
     return true;
+}
+
+
+std::vector<xObject> models;
+
+model_object::model_object(string path): xObject()
+{
+    //texname=texture_manager::get_glname("check.bmp");
+    printf("model_object=%s \n", path.c_str());
+    shader=new Shader();
+    shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
+
+    for ( size_t i=0 ; i < models.size(); i++)
+    {
+        if(models[i].path==path)
+        {
+            //obj=models[i];
+            //return true;
+        }
+    }
+    Import3DFromFile(path, *this);
+    //obj.path=filename; //tmp
+    //models.push_back( obj);
+}
+
+
+void model_object::update(float dt)
+{
+    xObject::update(dt);
+}
+
+void model_object::draw()
+{
+   xObject::draw();
 }

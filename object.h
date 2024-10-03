@@ -1,15 +1,13 @@
 #ifndef OBJECT_H
 #define OBJECT_H
-#include <vector>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_opengl.h>
+#include "stable.h"
 #include "Shader.h"
 #include "element3d.h"
 #include "./support/mesh.h"
 #include "./support/material.h"
 
 /* TODO:
-   * naming to xObject object3d.h
+   * naming to xObject.h
 */
 
 //typedef vector<vertex*> vec_vertex;
@@ -31,6 +29,7 @@ class xObject {
 
 public:
     xObject();
+    ~xObject(){ }
     virtual void update(float dt=0);
     virtual void draw();
     void set_parent(xObject *p){ parent=p;}
@@ -85,7 +84,7 @@ public:
     uint key_backward;
     uint key_side_right;
     uint key_side_left;
-    xObject *ball;
+    xObject *d_ball;
 };
 
 

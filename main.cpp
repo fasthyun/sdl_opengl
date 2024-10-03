@@ -1,10 +1,5 @@
-#include <iostream>
-#include <vector>
-#include <string>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
 //don't need ! #include <SDL2/SDL_opengl.h>
-#include <GL/glew.h>
+#include "stable.h"
 #include "object.h"
 #include "console.h"
 #include "xmath.h"
@@ -14,6 +9,7 @@
 #include "model.h"
 
 //#includ "misc.h"
+
 
 #define NK_INCLUDE_FIXED_TYPES
 #define NK_INCLUDE_STANDARD_IO
@@ -30,11 +26,13 @@
 #define MAX_ELEMENT_MEMORY 128 * 1024
 
 
+
 using namespace std;
 vector<xObject* > objects; 
 camera *d_camera;
 console *d_console;
 bool quit;
+
 
 
 //The window we'll be rendering to
@@ -312,7 +310,7 @@ void main_loop()
                 obj->shader->SetActive();
                 GLint location=glGetUniformLocation(obj->shader->mShaderProgram, "projView");
                 if (location>=0)
-                    glUniformMatrix4fv(location, 1, GL_FALSE, proj_m); // GLint location,GLsizei count, GLboolean transpose, const GLfloat *value
+                    glUniformMatrix4fv(location, 1, GL_FALSE, proj_m); // ( location,count,  transpose, float *value )
 
                 /*location=glGetUniformLocation(obj->shader->mShaderProgram, "modelView");
                 //sprintf(str1, "location: %d", location);
@@ -364,11 +362,10 @@ void main_loop()
             }
             nk_input_end(ctx);
 
-            //static nk_flags window_flags = NK_WINDOW_TITLE|NK_WINDOW_MINIMIZABLE;
+            static nk_flags window_flags =NK_WINDOW_MOVABLE|NK_WINDOW_SCALABLE|NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE;
 
             /* nk Window ? */
-            if (nk_begin(ctx, "console", nk_rect(10, 10, 300, 700),
-                NK_WINDOW_MOVABLE|NK_WINDOW_SCALABLE|NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE))
+            if (nk_begin(ctx, "console", nk_rect(10, 10, 300, 130), window_flags ))
             {                
                 nk_layout_row_static(ctx, 30, 80, 1);
                 if (nk_button_label(ctx, "button"))    printf("button pressed!\n");
@@ -391,8 +388,8 @@ void main_loop()
                     nk_tree_pop(ctx);
                 }
             }
-              nk_end(ctx);
-            nk_window_is_closed(ctx, "console");
+            nk_end(ctx);
+            //nk_window_is_closed(ctx, "console");
             /* IMPORTANT: `nk_sdl_render` modifies some global OpenGL state
              * with blending, scissor, face culling, depth test and viewport and
              * defaults everything back into a default state.
@@ -405,9 +402,7 @@ void main_loop()
 
         SDL_GL_SwapWindow( sdl_window );
     } // while
-    //gltDeleteText(text1);
-    //gltDeleteText(text2);
-    //gltTerminate();
+
 }
 
 #include<cstdlib> // rand()
@@ -480,9 +475,6 @@ void init_object()
     //obj=new texture_manager();
     //objects.push_back(obj);
 
-    //obj= new xObject();
-    //obj->load_gltf("/home/hyun/works/sdl_opengl/data/DamagedHelmet.gltf");
-    //objects.push_back(obj);
     //time_fps=0;
     //call_count=0;
     //time_call=0;
@@ -492,13 +484,12 @@ void init_object()
 /*
 void init_shader()
 {
-
     shader=new Shader();
     shader->Load("./shader/basic_vertex.glsl","./shader/basic_fragment.glsl");
-
 }*/
 
 #include <complex>
+
 
 int main(int argc, char *argv[])
 {

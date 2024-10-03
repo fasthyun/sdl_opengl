@@ -1,9 +1,7 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
 
-#include <SDL2/SDL.h>
-//#include <SDL2/SDL_opengl.h>
-#include <string>
+#include "stable.h"
 #include "object.h"
 
 /*
@@ -32,15 +30,6 @@ public:
     texture_object();
     texture_object(char *texture_filename);
     //void make_glVertexArray();
-    virtual void update(float dt=0);
-    virtual void draw();
-};
-
-class model_object : public xObject{
-public:
-    //model_object(){};
-    model_object(string  str);
-
     virtual void update(float dt=0);
     virtual void draw();
 };

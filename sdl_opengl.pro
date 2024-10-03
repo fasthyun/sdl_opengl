@@ -2,6 +2,8 @@ QT      -= gui core qtwidget
 CONFIG  += c++11 #warn_off
 CONFIG  -= qml_debug debug
 
+PRECOMPILED_HEADER = stable.h
+
 QMAKE_CXXFLAGS += -H -Wno-sign-compare -Wno-unused-parameter -Wno-unused-variable -Wno-unused-value -Wwrite-strings -Wno-unused-but-set-variable -Wunused-function
 QMAKE_CFLAGS += -H -Wunused-function -Wno-unused-variable
 
@@ -9,6 +11,11 @@ QMAKE_CFLAGS += -H -Wunused-function -Wno-unused-variable
 LIBS +=  -lSDL2 -lSDL2_image -lassimp -lboost_filesystem -lboost_system  -lGL -lGLU -lGLEW
 #QMAKE_LIBDIR += ./
 # -lfreetype
+
+precompile_header:!isEmpty(PRECOMPILED_HEADER) {
+DEFINES += USING_PCH
+}
+
 DEFINES +=  #Qt5 #되네
 
 #QMAKE_PRE_LINK = gcc -shared -o libgltext.so gltext.o
@@ -37,7 +44,8 @@ HEADERS += \
     model.h \
     object.h \
     texture.h \
-    xmath.h
+    xmath.h \
+    stable.h
 
 DISTFILES += \
     shader/Sprite.frag \

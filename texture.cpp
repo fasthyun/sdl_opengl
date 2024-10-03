@@ -1,8 +1,4 @@
-#include <GL/glew.h>  // why?
 #include "texture.h"
-#include <vector>
-#include <iostream>
-#include <SDL2/SDL_image.h>
 #include "model.h"
 
 std::vector<texture *> textures;
@@ -26,6 +22,7 @@ SDL_Texture *loadTexture(const char *file){
 
     return texture;
 } */
+
 
 SDL_Surface* texture::LoadImage(std::string file)
 {
@@ -281,35 +278,3 @@ void texture_object::draw()
     xObject::draw();
 }
 
-std::vector<xObject> models;
-
-model_object::model_object(string path): xObject()
-{
-    //texname=texture_manager::get_glname("check.bmp");
-    printf("model_object=%s \n", path.c_str());
-    shader=new Shader();
-    shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
-
-    for ( size_t i=0 ; i < models.size(); i++)
-    {
-        if(models[i].path==path)
-        {
-            //obj=models[i];
-            //return true;
-        }
-    }
-    Import3DFromFile(path, *this);
-    //obj.path=filename; //tmp
-    //models.push_back( obj);
-}
-
-
-void model_object::update(float dt)
-{
-    xObject::update(dt);
-}
-
-void model_object::draw()
-{
-   xObject::draw();
-}
