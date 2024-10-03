@@ -65,8 +65,8 @@ xObject::xObject()
 void xObject::update(float dt)
 {
     float v[3];
-    multiply(force, dt, v);
-    add(pos, v, pos);
+  //  multiply(force, dt, v);
+  //  add(pos, v, pos);
 }
 
 
@@ -456,13 +456,13 @@ void apply_gravity(xObject *obj)
 {
     //obj->
     //set(obj->force,0,-9.8,0);
-    if(obj->type!=TYPE_GROUND)
+    if(obj->d_type!=TYPE_GROUND)
         obj->force[1]=-9.8;
 }
 
 CollisionDetector::CollisionDetector()
 {
-
+    d_type=TYPE_CONTROLLER;
 }
 
 void CollisionDetector::update(float dt)
@@ -471,7 +471,18 @@ void CollisionDetector::update(float dt)
     for ( size_t i=0 ; i < objects.size(); i++)
     {
         xObject *obj = objects[i];
-        apply_gravity(obj);
+        //apply_gravity(obj);
+        if(obj->d_type==TYPE_CONTROLLER) continue;
+        if(obj->d_type==TYPE_GROUND)
+        {
+
+        }
+        if(obj->d_type==TYPE_SPHERE)
+        {
+            float v[3];
+            multiply(obj->force, dt*0.1, v);
+            add(obj->pos, v, obj->pos);
+        }
 
         xObject *other;
         for ( size_t j=0 ; j < objects.size(); j++)

@@ -349,13 +349,13 @@ int loadMetadata(aiMetadata *md, xObject *obj, string name="", int level=0) {
                 xobject_found=true;
                 if (value=="ground")
                 {
-                    obj->type=TYPE_GROUND;
+                    obj->d_type=TYPE_GROUND;
                     set(obj->force,0,0,0);
                 }
                 else if (value=="sphere")
                 {
                     /// printf("sphere!!!!!!!!----------------------\n");
-                    obj->type=TYPE_SPHERE;
+                    obj->d_type=TYPE_SPHERE;
                     set(obj->force,0,-9.8,0);
                 }
             }

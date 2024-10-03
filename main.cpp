@@ -457,18 +457,22 @@ void init_object()
     set(obj->pos,0,0,0);
     objects.push_back(obj);
 
-
-    for ( int i=0 ; i < 3 ; i++)
+    for ( int i=0 ; i < 70 ; i++)
     {
         obj=new model_object("./model/ball.fbx");
         obj->name="ball";
         float x,y,z;
-        x=(rand()%30 - 60);
-        y=rand()%10;
-        z=rand()%30 - 60 ;
+        x=(rand()%60) - 30;
+        y=rand()%30;
+        z=rand()%60 - 30 ;
         set(obj->pos,x,y,z);
         objects.push_back(obj);
+        printf("x=%f  y=%f  z=%f \n",x,y,z);
     }
+
+    obj=new CollisionDetector();
+    objects.push_back(obj);
+
     //xObject *model_obj=new model_object("./model/box.fbx");
     //set(model_obj->pos,0,10,0);
     //objects.push_back(model_obj);

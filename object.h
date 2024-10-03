@@ -22,6 +22,7 @@
 #define TYPE_GROUND         0xF0
 #define TYPE_SKY            0xF1
 #define TYPE_PARTICLE       0xF2
+#define TYPE_CONTROLLER     0xF3
 
 
 using namespace  std;
@@ -64,7 +65,7 @@ public:
     vector<xObject*> children;
     string name;
     string uuid;
-    int type;
+    int d_type;
     bool xobject_found=false;
     string path; // tmp
     float radius; // tmp
@@ -106,7 +107,7 @@ class CollisionDetector : public xObject{
 public:
     CollisionDetector();
     virtual void update(float dt=0);
-    virtual void draw(){};
+    virtual void draw(){}
 };
 
 
