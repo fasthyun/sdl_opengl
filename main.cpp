@@ -7,7 +7,7 @@
 #include <GL/glew.h>
 #include "object.h"
 #include "console.h"
-#include "zmath.h"
+#include "xmath.h"
 #include "font.h"
 #include "texture.h"
 #include "Shader.h"
@@ -192,10 +192,19 @@ void nk_drawMatrix4f(struct nk_context *_ctx, float *mat)
     }
 }
 
+void nk_draw_vector3f(struct nk_context *_ctx, string name, float v[3])
+{
+    char str[128];
+    sprintf(str,"%s : %8.4f,%8.4f,%8.4f",name.c_str(),v[0],v[1],v[2]);
+    nk_layout_row_dynamic(ctx, 10, 1);
+    nk_label(_ctx, str, NK_TEXT_LEFT);
+}
+
 void test_print_nk_tree_object(xObject *obj)
 {
     if(nk_tree_push_hashed(ctx, NK_TREE_NODE , obj->name.c_str(), NK_MINIMIZED, obj->uuid.c_str(), obj->uuid.length() ,0))
     {
+        nk_draw_vector3f(ctx,"force",obj->force);
         //nk_layout_row_dynamic(ctx, 10, 1);
         nk_drawMatrix4f(ctx,obj->model_m);
         //nk_label(ctx, "Label aligned centered", NK_TEXT_CENTERED);
@@ -339,7 +348,7 @@ void main_loop()
                     //handleKeys( e.text.text[ 0 ], x, y );
                     if (key == SDLK_ESCAPE)
                     {
-                        camera *camera1=(camera*)findObject("camera_viewer");
+                        camera *camera1= (camera *) findObject( "camera_viewer");
                         if(camera1)
                             camera1->d_focus=true;
                         SDL_SetRelativeMouseMode(SDL_TRUE);
@@ -449,14 +458,14 @@ void init_object()
     objects.push_back(obj);
 
 
-    for ( int i=0 ; i < 30 ; i++)
+    for ( int i=0 ; i < 3 ; i++)
     {
         obj=new model_object("./model/ball.fbx");
         obj->name="ball";
         float x,y,z;
-        x=rand()%30;
+        x=(rand()%30 - 60);
         y=rand()%10;
-        z=rand()%30;
+        z=rand()%30 - 60 ;
         set(obj->pos,x,y,z);
         objects.push_back(obj);
     }

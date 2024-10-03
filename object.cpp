@@ -1,7 +1,7 @@
 #include <GL/glew.h>
 #include "object.h"
 #include <chrono>
-#include "zmath.h"
+#include "xmath.h"
 #include <iostream>
 #include "model.h"
 
@@ -22,12 +22,12 @@ uint64_t epoch_now() { // timeSinceEpochMillisec
 }
 
 extern vector<xObject* > objects;
-xObject* findObject(char *_name)
+xObject* findObject(string _name)
 {
     for ( size_t i=0 ; i < objects.size(); i++)
     {
         xObject *obj = objects[i];
-        if (obj->name==_name)
+        if (obj->name == _name)
             return obj;
     }
     return NULL;
@@ -64,9 +64,9 @@ xObject::xObject()
 
 void xObject::update(float dt)
 {
-    float t[3];
-    multiply(force, dt, t);
-    add(pos, t, pos);
+    float v[3];
+    multiply(force, dt, v);
+    add(pos, v, pos);
 }
 
 
@@ -116,6 +116,18 @@ void xObject::make_glVertexArray()
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
     glBindVertexArray(-1);
+}
+
+void xObject::make_radius()
+{
+    vertex t;
+    vertex orig={0,0,0,0,0};
+    //float r;
+    for ( int i =0 ;i < vertexes.size() ; i++)
+    {
+        t=vertexes[i];
+        radius=vect3f_distance(t.v,orig.v);
+    }
 }
 
 void xObject::draw_axis()
@@ -170,16 +182,16 @@ void xObject::draw()
     //draw_axis();
     //draw_dir_up();
     //draw_meshes();
-    translate(model_m, pos[0], pos[1], pos[2]);
+    mat4x4_translate(model_m, pos[0], pos[1], pos[2]);
     float _m[16];
     if (parent)
     {
         loadIdentity(_m);
         //set(_m,parent->model_m);
-        multiply4x4(_m, parent->model_m, model_m);
+        mat4x4_mult(_m, parent->model_m, model_m);
     }
     else
-        set(_m,model_m);
+        mat4x4_set(_m,model_m);
 
     if (texname > 0)
         glBindTexture(GL_TEXTURE_2D, texname);
@@ -459,7 +471,6 @@ void CollisionDetector::update(float dt)
     for ( size_t i=0 ; i < objects.size(); i++)
     {
         xObject *obj = objects[i];
-
         apply_gravity(obj);
 
         xObject *other;
@@ -471,9 +482,6 @@ void CollisionDetector::update(float dt)
 
 
             }
-
         }
-
     }
-
 }

@@ -1,9 +1,9 @@
 QT      -= gui core qtwidget
-CONFIG  += c++11 warn_off
+CONFIG  += c++11 #warn_off
 CONFIG  -= qml_debug debug
 
-QMAKE_CXXFLAGS += -H -Wno-unused-parameter -Wno-unused-variable -Wwrite-strings -Wunused-but-set-variable -Wunused-function
-QMAKE_CFLAGS += -H -Wunused-function
+QMAKE_CXXFLAGS += -H -Wno-sign-compare -Wno-unused-parameter -Wno-unused-variable -Wno-unused-value -Wwrite-strings -Wno-unused-but-set-variable -Wunused-function
+QMAKE_CFLAGS += -H -Wunused-function -Wno-unused-variable
 
 #INCLUDEPATH += /usr/include/freetype2
 LIBS +=  -lSDL2 -lSDL2_image -lassimp -lboost_filesystem -lboost_system  -lGL -lGLU -lGLEW
@@ -27,7 +27,7 @@ SOURCES += \
     object.cpp \
     particle.cpp \
     texture.cpp \
-    zmath.cpp
+    xmath.cpp
 
 HEADERS += \
     Shader.h \
@@ -37,7 +37,7 @@ HEADERS += \
     model.h \
     object.h \
     texture.h \
-    zmath.h
+    xmath.h
 
 DISTFILES += \
     shader/Sprite.frag \

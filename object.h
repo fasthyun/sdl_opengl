@@ -40,6 +40,7 @@ public:
     void draw_dir_up();
     void load_gltf(string name); // remove
     void make_glVertexArray();
+    void make_radius(); // tmp
     vector<vertex>  vertexes; // verts
     vector<triangle> triangles; // tris
     vector<MeshFloat> meshes;
@@ -65,6 +66,8 @@ public:
     string uuid;
     int type;
     bool xobject_found=false;
+    string path; // tmp
+    float radius; // tmp
 };
 
 class camera : public xObject{
@@ -107,7 +110,7 @@ public:
 };
 
 
-xObject* findObject(char *_name);
+xObject* findObject(string _name);
 
 
 

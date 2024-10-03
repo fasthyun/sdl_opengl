@@ -268,7 +268,7 @@ texture_object::texture_object(char *filename): xObject()
     make_cube(vertexes,triangles,1);
     make_glVertexArray(); // works!!!    
     texname=texture_manager::get_glname(filename);
-    printf("VAO=%d, texname = %d , sizeof(vertex)= %d, data=%x\n",VAO, texname, sizeof(vertex), vertexes.data());
+    /// printf("VAO=%d, texname = %d , sizeof(vertex)= %d, data=%x\n",VAO, texname, sizeof(vertex), vertexes.data());
 }
 
 void texture_object::update(float dt)
@@ -281,24 +281,32 @@ void texture_object::draw()
     xObject::draw();
 }
 
-model_object::model_object(char *path): texture_object()
+std::vector<xObject> models;
+
+model_object::model_object(string path): xObject()
 {
     //texname=texture_manager::get_glname("check.bmp");
-    printf("model_object=%s \n", path);
+    printf("model_object=%s \n", path.c_str());
     shader=new Shader();
     shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
-    Import3DFromFile(path, *this);
-}
 
-model_object::model_object(string str): texture_object()
-{
-    model_object(str.c_str());
+    for ( size_t i=0 ; i < models.size(); i++)
+    {
+        if(models[i].path==path)
+        {
+            //obj=models[i];
+            //return true;
+        }
+    }
+    Import3DFromFile(path, *this);
+    //obj.path=filename; //tmp
+    //models.push_back( obj);
 }
 
 
 void model_object::update(float dt)
 {
-
+    xObject::update(dt);
 }
 
 void model_object::draw()

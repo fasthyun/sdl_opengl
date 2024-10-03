@@ -1,13 +1,14 @@
 /*
+ *
  * it's need to change zmath.h to something better !
  *
  */
-#include <cmath>
+#include "xmath.h"
+#include <cmath> // sqrt()
 #include <GL/gl.h>
 #include <stdio.h>
 /*
  *  TODO:
- *  zmath 이름 바꿔야할듯... (hyun)
  *  xmath
  */
 float IDENTITY_MATRIX[]={1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1};
@@ -43,10 +44,10 @@ void copy(float dest[], float src[])
         dest[c] = src[c];
 }
 
-
-void translate(float *dest, float x, float y, float z)
+// mat4x4_translate(
+void mat4x4_translate(float *dest, float x, float y, float z)
 {
-       /* dest[0] = 1;  dest[4] = 0;  dest[8] = 0; */  dest[12]= x;
+       /* dest[0] = 1;  dest[4] = 0;  dest[8] = 0; */ dest[12]= x;
        /* dest[1] = 0;  dest[5] = 1;  dest[9] = 0; */ dest[13]= y;
        /* dest[2] = 0;  dest[6] = 0;  dest[10]= 1; */ dest[14]= z;
       /*  dest[3] = 0;  dest[7] = 0;  dest[11]= 0; */ dest[15]= 1;
@@ -82,6 +83,14 @@ void rotMatZ(float * dest, float a)
     dest[5]= cos(a);
 }
 
+float vect3f_distance(float v1[3], float v2[3])
+{
+    float v[3];
+    float r;
+    sub(v1,v2,v);
+    r = sqrt( v[0]*v[0] + v[1]*v[1] + v[2]*v[2] );
+    return r;
+}
 
 void normalize(float v[3])
 {
@@ -92,6 +101,7 @@ void normalize(float v[3])
     v[1] /= r;
     v[2] /= r;
 }
+
 /*
 ** Make m an identity matrix
 */
@@ -133,12 +143,21 @@ void set(float v[3], float x,float y, float z)
     v[2]=z;
 }
 
+// vec3_set
 void set(float dst[3], float src[3])
 {
     // TODO: macro
     dst[0]=src[0];
     dst[1]=src[1];
     dst[2]=src[2];
+}
+
+
+void mat4x4_set(float dst[16], float src[16])
+{
+    // TODO: macro
+    for (int i=0 ; i<16; i++)
+        dst[i]=src[i];
 }
 
 void multiply(float v[3], float c,float result[3])
@@ -148,6 +167,7 @@ void multiply(float v[3], float c,float result[3])
     result[2]= v[2]*c;
 }
 
+// mat4x4_mult
 void multiply(float m[4][4], float v[3],float result[3])
 {
     result[0]=m[0][0]*v[0] + m[0][1]*v[1] + m[0][2]*v[2];
@@ -156,7 +176,7 @@ void multiply(float m[4][4], float v[3],float result[3])
     //result[3]= 0 + 0 + 0 + 1;
 }
 
-void multiply4x4(float *matDest, float *matA, float *matB) // column
+void mat4x4_mult(float *matDest, float *matA, float *matB) // column
 {
     float dest[16];
     int c, d, e;
