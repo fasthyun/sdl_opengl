@@ -29,7 +29,7 @@ class xObject {
 
 public:
     xObject();
-    ~xObject(){ }
+    //~xObject(){ }
     virtual void update(float dt=0);
     virtual void draw();
     void set_parent(xObject *p){ parent=p;}

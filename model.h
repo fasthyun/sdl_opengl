@@ -5,7 +5,7 @@
 #include "object.h"
 
 //bool Import3DFromFile( const std::string &filename);
-bool Import3DFromFile(const std::string &filename, xObject &obj);
+bool Import3DFromFile(const std::string filename, xObject *obj);
 
 
 class model_object : public xObject{
