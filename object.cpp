@@ -10,7 +10,6 @@
 #include <SDL2/SDL_opengl.h>
 // ...
 
-
 using namespace std::chrono;
 // 이걸 왜 작성했지????
 milliseconds ms = duration_cast< milliseconds >(system_clock::now().time_since_epoch() );
@@ -115,7 +114,7 @@ void xObject::make_glVertexArray()
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
-    glBindVertexArray(-1);
+    glBindVertexArray(-1); //?
 }
 
 void xObject::make_radius()
@@ -131,6 +130,11 @@ void xObject::make_radius()
         if ( r > max_r )
             radius=r;
     }
+
+    glGenBuffers(1, &boundShpere_VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, boundShpere_VBO);
+    // make sphere
+
 }
 
 void xObject::draw_axis()
@@ -180,10 +184,16 @@ void xObject::draw_meshes()
     }
 }
 
+void xObject::draw_boundShere()
+{
+
+}
+
 void xObject::draw()
 {
+    //
     //draw_axis();
-    //draw_dir_up();
+    draw_dir_up();
     //draw_meshes();
     mat4x4_translate(model_m, pos[0], pos[1], pos[2]);
     float _m[16];
@@ -400,7 +410,7 @@ grid::grid()
     float *vertexData = (float*)malloc(sizeof(float)*2000*4*2);
     if (vertexData==NULL)
     {
-        SDL_Log("ERROR: Faile to malloc !!!!");
+        SDL_Log("ERROR: Fail to malloc !!!!");
         return;
     }
     int i=0;
@@ -500,9 +510,27 @@ void CollisionDetector::update(float dt)
             other = objects[i];
             if (obj != other )
             {
+                if (obj->radius !=0  && other->radius!=0 )
+                {
+                    float dist= vect3f_distance(obj->pos,other->pos);
+                    float r= obj->radius + other->radius;
+                    if (dist < r)
+                        ;
+                }
+                if (other->radius==0)
+                {
+                    for ( int k=0 ; k < other->triangles.size() ; k++)
+                    {
 
+                    }
 
+                }
             }
         }
     }
+}
+
+void Particle::update(float dt)
+{
+
 }

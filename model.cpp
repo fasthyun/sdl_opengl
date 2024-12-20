@@ -642,7 +642,7 @@ bool Import3DFromFile(const std::string filename,xObject *obj)
     if (node!=NULL)
         loadToObject(g_scene, node, 1.0, obj);
     else
-          std::cout << "Error !!!!!!!!!!!!!!!!!!!!!  can't find xObject in metadata! \n";
+        std::cout << "Error !!!!!!!!!!!!!!!!!!!!!  can't find xObject in metadata! \n";
 
     return true;
 }

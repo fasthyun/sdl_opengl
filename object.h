@@ -36,6 +36,7 @@ public:
     void set_shader(Shader *s){ shader=s;}
     void set_texture(GLuint name){ texname=name;}
     void draw_meshes();
+    void draw_boundShere();
     void draw_axis();
     void draw_dir_up();
     void load_gltf(string name); // remove
@@ -53,6 +54,7 @@ public:
     float forward[3]; //
     float up[3];
     float force[3];
+    float velocity[3] = {0,0,0}; // speed
     float weight = 0.0 ;  // kg
     float model_m[16];
     uint64_t prev_time;
@@ -60,6 +62,7 @@ public:
 
     // OpenGL element
     GLuint VBO, VAO, EBO;
+    GLuint boundShpere_VBO;
     GLuint texname;
     vector<xObject*> children;
     string name;
@@ -67,7 +70,8 @@ public:
     int d_type;
     bool xobject_found=false;
     string path; // tmp
-    float radius; // tmp
+    float radius = 0; // tmp
+    bool flag_wireframe = false;
 };
 
 class camera : public xObject{
@@ -105,6 +109,17 @@ class CollisionDetector : public xObject{
     int grid_n;
 public:
     CollisionDetector();
+    virtual void update(float dt=0);
+    virtual void draw(){}
+};
+
+
+class Particle : public xObject{
+    GLuint buffer;
+    GLuint vertex_array;
+    int d_size;
+public:
+    Particle();
     virtual void update(float dt=0);
     virtual void draw(){}
 };

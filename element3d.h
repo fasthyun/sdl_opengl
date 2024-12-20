@@ -11,6 +11,11 @@ struct vertex {
     float tu,tv;
 };
 
+struct vertex_color {
+    float v[3];
+    float color[4];
+};
+
 //#define vertex_set(vert,x,y,z,_tu,_tv) vert->v[0]=x,vert->v[1]=y,vert->v[2]=z,vert->tu=_tu,vert->tv=_tv;
 
 struct triangle {

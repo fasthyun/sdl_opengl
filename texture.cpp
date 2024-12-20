@@ -101,7 +101,7 @@ SDL_Surface* texture::getSurface(int width, int height)
     bmask = 0x00ff0000;
     amask = 0xff000000;
 #endif
-/* or using the default masks for the depth: */
+    /* or using the default masks for the depth: */
     surface = SDL_CreateRGBSurface(0, width, height, 32,
                                    rmask, gmask, bmask, amask);
 

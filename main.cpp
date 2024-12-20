@@ -417,9 +417,9 @@ void init_object()
     //obj=new xObject();
     //objects.push_back(obj);
 
-    obj = new grid();
-    obj->name="grid";
-    objects.push_back(obj);
+    //obj = new grid();
+    //obj->name="grid";
+    //objects.push_back(obj);
 
     d_camera = new camera();
     set(d_camera->pos,0,3,7);
