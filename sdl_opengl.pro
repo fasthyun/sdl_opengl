@@ -27,7 +27,6 @@ SOURCES += \
     backup.cpp \
     console.cpp \
     element3d.cpp \
-    gltext.c \
     main.cpp \
     misc.c \
     model.cpp \

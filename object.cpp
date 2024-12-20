@@ -1,11 +1,11 @@
-#include <GL/glew.h>
+//#include <GL/glew.h>
 #include "object.h"
 #include <chrono>
 #include "xmath.h"
 #include <iostream>
 #include "model.h"
 
-#include <GL/glu.h>
+//#include <GL/glu.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_opengl.h>
 // ...
