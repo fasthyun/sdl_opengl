@@ -1,8 +1,7 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
-
-#include "stable.h"
 #include "object.h"
+#include "model.h"
 
 /*
  *  Qt나 다른 플렛폼에 들어갈수있게 ..할수 있을듯...

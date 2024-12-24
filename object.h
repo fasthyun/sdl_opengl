@@ -1,6 +1,5 @@
 #ifndef OBJECT_H
 #define OBJECT_H
-#include "stable.h"
 #include "Shader.h"
 #include "element3d.h"
 #include "./support/mesh.h"
@@ -29,7 +28,7 @@ class xObject {
 
 public:
     xObject();
-    //~xObject(){ }
+    ~xObject();
     virtual void update(float dt=0);
     virtual void draw();
     void set_parent(xObject *p){ parent=p;}

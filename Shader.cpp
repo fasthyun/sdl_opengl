@@ -5,12 +5,15 @@
 // Released under the BSD License
 // See LICENSE in root directory for full details.
 // ----------------------------------------------------------------
-
+//#include "stable.h"
 #include "Shader.h"
-#include <fstream>
+//#include <vector>
+//#include <fstream>
 #include <sstream>
-#include <iostream>
-#include <vector>
+//#include <iostream>
+
+
+
 
 Shader::Shader()
 	: mShaderProgram(0)

@@ -1,7 +1,9 @@
+#include "stable.h"
 #include "texture.h"
-#include "model.h"
 
 std::vector<texture *> textures;
+
+
 
 /*
 SDL_Texture *loadTexture(const char *file){
@@ -22,6 +24,8 @@ SDL_Texture *loadTexture(const char *file){
 
     return texture;
 } */
+
+
 
 
 SDL_Surface* texture::LoadImage(std::string file)
@@ -267,6 +271,7 @@ texture_object::texture_object(char *filename): xObject()
     texname=texture_manager::get_glname(filename);
     /// printf("VAO=%d, texname = %d , sizeof(vertex)= %d, data=%x\n",VAO, texname, sizeof(vertex), vertexes.data());
 }
+
 
 void texture_object::update(float dt)
 {

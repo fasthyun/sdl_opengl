@@ -3,14 +3,17 @@
 #include "object.h"
 #include "console.h"
 #include "xmath.h"
-#include "font.h"
+//#include "font.h"
 #include "texture.h"
 #include "Shader.h"
 #include "model.h"
 
-//#includ "misc.h"
+#include <cstdlib> // rand()
+//#include <complex>
 
+///#includ "misc.h"
 
+//#include "nukclear_pre.h"
 #define NK_INCLUDE_FIXED_TYPES
 #define NK_INCLUDE_STANDARD_IO
 #define NK_INCLUDE_STANDARD_VARARGS
@@ -25,20 +28,15 @@
 #define MAX_VERTEX_MEMORY 512 * 1024
 #define MAX_ELEMENT_MEMORY 128 * 1024
 
-
-
 using namespace std;
 vector<xObject* > objects; 
 camera *d_camera;
 console *d_console;
 bool quit;
 
-
-
 //The window we'll be rendering to
 SDL_Window* sdl_window = NULL;
 SDL_GLContext glContext; //OpenGL context
-
 
 /* GUI */
 struct nk_context *ctx;
@@ -405,7 +403,6 @@ void main_loop()
 
 }
 
-#include<cstdlib> // rand()
 void init_object()
 {
     //texture *_tex = new texture("font-map.bmp"); // 16x6
@@ -452,7 +449,7 @@ void init_object()
     set(obj->pos,0,0,0);
     objects.push_back(obj);
 
-    for ( int i=0 ; i < 70 ; i++)
+    for ( int i=0 ; i < 1 ; i++)
     {
         obj=new model_object("./model/ball.fbx");
         obj->name="ball";
@@ -487,8 +484,6 @@ void init_shader()
     shader=new Shader();
     shader->Load("./shader/basic_vertex.glsl","./shader/basic_fragment.glsl");
 }*/
-
-#include <complex>
 
 
 int main(int argc, char *argv[])

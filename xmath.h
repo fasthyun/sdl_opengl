@@ -1,10 +1,11 @@
 #ifndef ZMATH_H
 #define ZMATH_H
 
-//#include <cmath>
-// TODO:
-// * naming... xmath x_math, mathx, math3d.h
-//
+
+#include "stable.h"
+//#include <cmath> // sqrt()
+//#include <GL/gl.h>
+//#include <stdio.h>
 
 class x_vector {
     float v[3];

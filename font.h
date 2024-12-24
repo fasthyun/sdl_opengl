@@ -1,7 +1,7 @@
 #ifndef FONT_H
 #define FONT_H
 
-#include <string>
+//#include <string>
 
 void render_text_texture();
 void render_text_texture_vb();

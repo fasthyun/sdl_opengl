@@ -12,18 +12,14 @@
 // Thanks to NeHe on whose OpenGL tutorials this one's based on! :)
 // http://nehe.gamedev.net/
 // ----------------------------------------------------------------------------
-#include <GL/glew.h>  // why?
-
+#include "stable.h"
 #include "element3d.h"
+#include "object.h"
 #include "model.h"
 #include "texture.h"
 #include "xmath.h"
 
-#include <iostream>
-#include <fstream>
-
 //to map image filenames to textureIds
-#include <string>
 #include <map>
 #include <list>
 // assimp include files. These three are usually needed.
@@ -32,6 +28,7 @@
 #include <assimp/scene.h>
 #include <assimp/DefaultLogger.hpp>
 #include <assimp/LogStream.hpp>
+
 
 int loadMaterials(const aiScene* scene) ;
 void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale, xObject *obj, int tab_level=0);
@@ -409,9 +406,7 @@ int loadMetadata(aiMetadata *md, xObject *obj, string name="", int level=0) {
             else if (prop->mType==aiMetadataType::AI_AIVECTOR3D)
             {
                 u_int64_t *j = (u_int64_t *) prop->mData;
-                string str="(AIVECTOR3D";
-                //str+=" " + std::to_string(*j);
-                str+=" )";
+                string str="(AIVECTOR3D)";
                 msg+=str;
             }
             else
@@ -424,15 +419,80 @@ int loadMetadata(aiMetadata *md, xObject *obj, string name="", int level=0) {
     }
     return xobject_found;
 }
+/*
+
+[] metadata_n = 18
+ + data[0]=UpAxis : ( 1 )
+ + data[1]=UpAxisSign : ( 1 )
+ + data[2]=FrontAxis : ( 2 )
+ + data[3]=FrontAxisSign : ( 1 )
+ + data[4]=CoordAxis : ( 0 )
+ + data[5]=CoordAxisSign : ( 1 )
+ + data[6]=OriginalUpAxis : ( -1 )
+ + data[7]=OriginalUpAxisSign : ( 1 )
+ + data[8]=UnitScaleFactor : ( 1.000000 )
+ + data[9]=OriginalUnitScaleFactor : ( 1.000000 )
+ + data[10]=AmbientColor : (AIVECTOR3D)
+ + data[11]=FrameRate : ( 11 )
+ + data[12]=TimeSpanStart : ( 0 )
+ + data[13]=TimeSpanStop : ( 0 )
+ + data[14]=CustomFrameRate : ( 24.000000 )
+ + data[15]=SourceAsset_FormatVersion : 7400
+ + data[16]=SourceAsset_Generator : Blender (stable FBX IO) - 2.93.18 - 4.23.1
+ + data[17]=SourceAsset_Format : Autodesk FBX Importer
+
+[RootNode].mNumMeshes=0
+ + nd->mNumChildren = 3
+    [Camera] metadata_n = 10
+     + data[0]=UserProperties :
+     + data[1]=IsNull : False
+     + data[2]=AspectH : ( 1080.000000 )
+     + data[3]=AspectW : ( 1920.000000 )
+     + data[4]=BackgroundMode : ( 0 )
+     + data[5]=DefaultAttributeIndex : ( 0 )
+     + data[6]=ForegroundTransparent : True
+     + data[7]=InheritType : ( 1 )
+     + data[8]=ResolutionMode : ( 0 )
+     + data[9]=ViewFrustum : True
+    [Camera].mNumMeshes=0
+     + nd->mNumChildren = 0
+    load model obj.name = Camera
+    [Lamp] metadata_n = 4
+     + data[0]=UserProperties :
+     + data[1]=IsNull : False
+     + data[2]=DefaultAttributeIndex : ( 0 )
+     + data[3]=InheritType : ( 1 )
+    [Lamp].mNumMeshes=0
+     + nd->mNumChildren = 0
+    load model obj.name = Lamp
+    [Sphere] metadata_n = 4
+     + data[0]=UserProperties :
+     + data[1]=IsNull : False
+     + data[2]=DefaultAttributeIndex : ( 0 )
+     + data[3]=InheritType : ( 1 )
+    [Sphere].mNumMeshes=1
+     + mesh->mMaterialIndex = 0
+     + [0].mNumvertices=1984
+     + [0].mNumFaces = 960
+     +--> OK : make_glVertexArray() 19
+     + nd->mNumChildren = 0
+    load model obj.name = Sphere
+*/
 
 aiNode *findxObject(const struct aiNode* nd, int level=-1)
 {
+    /*
+     *위에서 보듯이 root node는 메쉬가 없다. 카메라, 램프 기타 등등
+      root 노드 자식노드중에 실제 메쉬가 있기때문에
+      찾아서 object에 넣어줘야한다 */
+
+    /* tempolarily need more time and works later!!! */
+
     aiNode * node = NULL ;
     for (int n = 0; n < nd->mNumChildren; ++n)
     {
         xObject *tmp_obj=new xObject();
         aiNode * tn = nd->mChildren[n] ;
-        // tempolarily need more time and works later!!!
         //if (xobj.xobject_found==true)
         //findxObject(nd->mChildren[n], level+1);
         if(loadMetadata(tn->mMetaData, tmp_obj, nd->mName.C_Str(), level)==true)
@@ -584,6 +644,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
     printf("%sload model obj.name = %s \n",tab.c_str(), xobj->name.c_str());
 }
 
+
 /*
 int DrawGLScene() //Here's where we do all the drawing
 {
@@ -629,20 +690,23 @@ bool Import3DFromFile(const std::string filename,xObject *obj)
     }
 
     // Now we can access the file's contents.
+    // metadata는 child 개수에 포함 안되는듯!
+
     logInfo("Import of scene " + filename + " succeeded.");
     std::cout << "Import of scene " + filename + " succeeded.\n";
     // We're done. Everything will be cleaned up by the importer destructor
 
-    loadMaterials(g_scene);
-    //loadMetadata(g_scene->mMetaData, &obj, g_scene->mName.C_Str()); // scene's metadata
+    loadMaterials(g_scene);  // 1. load material
 
-    //loadToObject(g_scene, g_scene->mRootNode, 1.0, obj);
+
+    //loadMetadata(g_scene->mMetaData, obj, g_scene->mName.C_Str()); // 2. scene's metadata
+    loadToObject(g_scene, g_scene->mRootNode, 1.0, obj); // 3. load object ?
 
     aiNode *node= findxObject(g_scene->mRootNode);
     if (node!=NULL)
         loadToObject(g_scene, node, 1.0, obj);
     else
-          std::cout << "Error !!!!!!!!!!!!!!!!!!!!!  can't find xObject in metadata! \n";
+        std::cout << "Error !!!!!!!!!!!!!!!!!!!!!  can't find xObject in metadata! \n";
 
     return true;
 }
@@ -670,7 +734,6 @@ model_object::model_object(string path): xObject()
     //obj.path=filename; //tmp
     //models.push_back( obj);
 }
-
 
 void model_object::update(float dt)
 {

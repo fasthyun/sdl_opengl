@@ -1,11 +1,12 @@
 #ifndef EXAMPLE_MESH_H_
 #define EXAMPLE_MESH_H_
 
-#include <vector>
-#include <algorithm>
-#include <cmath>
+//#include <vector>
+//#include <cmath>
+//#include <string>
+//#include <algorithm>
+
 #include <limits>
-#include <string>
 
 using namespace std;
 

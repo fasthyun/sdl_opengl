@@ -2,7 +2,7 @@
 #define MODEL_H
 
 
-#include "object.h"
+//#include "object.h"
 
 //bool Import3DFromFile( const std::string &filename);
 bool Import3DFromFile(const std::string filename, xObject *obj);

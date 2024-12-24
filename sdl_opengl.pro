@@ -1,16 +1,18 @@
 QT      -= gui core qtwidget
-CONFIG  += c++11 #warn_off
+CONFIG  += c++11 precompile_header #warn_off
 CONFIG  -= qml_debug debug
-
-PRECOMPILED_HEADER = stable.h
+#LANGUAGE = C++
 
 QMAKE_CXXFLAGS += -H -Wno-sign-compare -Wno-unused-parameter -Wno-unused-variable -Wno-unused-value -Wwrite-strings -Wno-unused-but-set-variable -Wunused-function
-QMAKE_CFLAGS += -H -Wunused-function -Wno-unused-variable
+#QMAKE_CFLAGS += -H -Wunused-function -Wno-unused-variable
 
 #INCLUDEPATH += /usr/include/freetype2
 LIBS +=  -lSDL2 -lSDL2_image -lassimp -lboost_filesystem -lboost_system  -lGL -lGLU -lGLEW
 #QMAKE_LIBDIR += ./
 # -lfreetype
+
+PRECOMPILED_HEADER = stable.h
+#nuklear.h nuklear_sdl_gl3.h
 
 precompile_header:!isEmpty(PRECOMPILED_HEADER) {
 DEFINES += USING_PCH
@@ -27,20 +29,20 @@ SOURCES += \
     backup.cpp \
     console.cpp \
     element3d.cpp \
-    gltext.c \
-    main.cpp \
-    misc.c \
+    nuklear.cpp \
+    main.cpp \    
     model.cpp \
     object.cpp \
     particle.cpp \
     texture.cpp \
     xmath.cpp
+# gltext.c misc.c
 
 HEADERS += \
     Shader.h \
     console.h \
     element3d.h \
-    font.h \    
+    font.h \
     model.h \
     object.h \
     texture.h \

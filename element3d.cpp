@@ -1,5 +1,4 @@
 #include "element3d.h"
-#include <cmath>
 
 
 void make_cube(vector<vertex> &verts, vector<triangle> &tris, float size)

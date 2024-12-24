@@ -1,14 +1,10 @@
-#include <GL/glew.h>
+#include "stable.h"
 #include "object.h"
-#include <chrono>
 #include "xmath.h"
-#include <iostream>
-#include "model.h"
 
-#include <GL/glu.h>
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_opengl.h>
-// ...
+#include <boost/uuid/uuid.hpp>            // uuid class
+#include <boost/uuid/uuid_generators.hpp> // generators
+#include <boost/uuid/uuid_io.hpp>         // streaming operators etc.  to_string()
 
 
 using namespace std::chrono;
@@ -33,10 +29,6 @@ xObject* findObject(string _name)
     return NULL;
 }
 
-#include <boost/uuid/uuid.hpp>            // uuid class
-#include <boost/uuid/uuid_generators.hpp> // generators
-#include <boost/uuid/uuid_io.hpp>         // streaming operators etc.  to_string()
-
 xObject::xObject()
 {
     boost::uuids::uuid _uuid = boost::uuids::random_generator()();
@@ -58,6 +50,14 @@ xObject::xObject()
     //make_circle();
     loadIdentity(model_m);
     name="None";
+}
+
+xObject::~xObject(){
+    if (parent !=NULL)
+        delete parent;
+    if (shader !=NULL)
+        delete shader;
+
 }
 
 

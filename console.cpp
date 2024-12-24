@@ -1,3 +1,4 @@
+#include "stable.h" //
 #include "console.h"
 
 console::console()
@@ -9,6 +10,7 @@ void console::update(float dt)
 {
 
 }
+
 
 void console::draw()
 {

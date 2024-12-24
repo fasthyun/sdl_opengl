@@ -2,11 +2,16 @@
  *
  * it's need to change zmath.h to something better !
  *
+ * -O2 -std=gnu++11
+ g++ -Wno-sign-compare -Wno-unused-parameter -Wno-unused-variable -Wno-unused-value -Wwrite-strings -Wno-unused-but-set-variable -Wunused-function -O2 -std=gnu++11 -Wall -Wextra -D_REENTRANT -fPIC -DQT_NO_DEBUG
+
+g++  -D_REENTRANT -fPIC -O2 -std=gnu++11 xmath.h
+ *
  */
-#include "xmath.h"
-#include <cmath> // sqrt()
-#include <GL/gl.h>
-#include <stdio.h>
+//#include "xmath.h"
+
+#include "test.h"
+
 /*
  *  TODO:
  *  xmath
@@ -24,6 +29,7 @@ void print(float mat[16])
         mat[8],mat[9],mat[10],mat[11],
         mat[12],mat[13],mat[14],mat[15]);
 }
+
 
 void load(float dst[16], float src[16])
 {
