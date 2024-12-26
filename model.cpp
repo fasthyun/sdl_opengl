@@ -310,6 +310,8 @@ int loadMaterials(const aiScene* scene) {
 }
 
 
+// blender에서 각 object는 properties를 갖는다. 이 properties가 FBX에서는 metadata임
+// xobject key를 찾으면...
 int loadMetadata(aiMetadata *md, xObject *obj, string name="", int level=0) {
     if (md == NULL)
     {
@@ -508,6 +510,7 @@ aiNode *findxObject(const struct aiNode* nd, int level=-1)
 void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale, xObject *xobj, int tab_level)
 {    
     /*
+     *  Object들을 xObject로 ...
      *  30%
      */
     unsigned int i;
@@ -522,6 +525,14 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
     {
         tab = tab + '\t';
     }
+
+    if(strcmp(nd->mName.C_Str(),"Lamp")==0 ||
+            strcmp(nd->mName.C_Str(),"Camera")==0 )
+    {
+        printf("%s[%s] skipped \n", tab.c_str(), nd->mName.C_Str());
+        return;
+    }
+
 
     if(loadMetadata(nd->mMetaData, xobj, nd->mName.C_Str(), tab_level)==true)
         xobj->xobject_found=true;
@@ -666,6 +677,23 @@ int DrawGLScene() //Here's where we do all the drawing
 
 bool Import3DFromFile(const std::string filename,xObject *obj)
 {
+    /*
+        * Scene에는 여러개의 Object가 있다
+        * 즉, 3d파일 1개에 여러개 Object가 있을수 있음.
+        * 게다가 object들이 child를 갖을수 있음
+
+        -blender에서 각 object는 properties를 갖는다.
+        -이 properties가 FBX에서는 metadata임
+        -xobject key를 찾으면...
+
+        1. 각 OBject중 LAMP , Camera는 제외하고 등록하자...
+        2. 지금은 level==0 일때는 전부 다 개별 object로 등록하자
+        3. tree-child로 등록해야할지 , 개별 Object로 등록할지는... 조금더
+        해보고 결정
+
+        참고: metadata는 child 개수에 포함 안되는듯!
+    */
+
     const aiScene* g_scene = nullptr;
 
     createAILogger();
@@ -689,27 +717,29 @@ bool Import3DFromFile(const std::string filename,xObject *obj)
         return false;
     }
 
-    // Now we can access the file's contents.
-    // metadata는 child 개수에 포함 안되는듯!
-
     logInfo("Import of scene " + filename + " succeeded.");
     std::cout << "Import of scene " + filename + " succeeded.\n";
     // We're done. Everything will be cleaned up by the importer destructor
 
-    loadMaterials(g_scene);  // 1. load material
+    // 1. load material
+    // 2. scene's metadata
+    loadMaterials(g_scene);
+    //loadMetadata(g_scene->mMetaData, obj, g_scene->mName.C_Str());
+    loadToObject(g_scene, g_scene->mRootNode, 1.0, obj, 0); // 3. load object ?
 
-
-    //loadMetadata(g_scene->mMetaData, obj, g_scene->mName.C_Str()); // 2. scene's metadata
-    loadToObject(g_scene, g_scene->mRootNode, 1.0, obj); // 3. load object ?
-
+    /*
     aiNode *node= findxObject(g_scene->mRootNode);
     if (node!=NULL)
+    {
         loadToObject(g_scene, node, 1.0, obj);
+    }
     else
         std::cout << "Error !!!!!!!!!!!!!!!!!!!!!  can't find xObject in metadata! \n";
+    */
 
     return true;
 }
+
 
 
 std::vector<xObject> models;

@@ -65,7 +65,7 @@ bool init_SDL()
     SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
     // Enable double buffering
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1); // required
     // Force OpenGL to use hardware acceleration
     SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
 
@@ -344,9 +344,9 @@ void main_loop()
                     //handleKeys( e.text.text[ 0 ], x, y );
                     if (key == SDLK_ESCAPE)
                     {
-                        camera *camera1= (camera *) findObject( "camera_viewer");
-                        if(camera1)
-                            camera1->d_focus=true;
+                        camera *_camera= (camera *) findObject( "camera_viewer");
+                        if(_camera)
+                            _camera->d_focus=true;
                         SDL_SetRelativeMouseMode(SDL_TRUE);
                     }
                     if (key == SDLK_F4)

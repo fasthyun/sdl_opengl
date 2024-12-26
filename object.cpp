@@ -65,8 +65,8 @@ xObject::~xObject(){
 void xObject::update(float dt)
 {
     float v[3];
-  //  multiply(force, dt, v);
-  //  add(pos, v, pos);
+    multiply(force, dt, v);
+    add(pos, v, pos);
 }
 
 
@@ -346,7 +346,7 @@ void camera::on_key_pressed(uint key)
     } else
        printf("pressed key %d \n", key);
 
-    //fprintf(stderr," pressed! %f %f %f \n",force[0],force[1],force[2]);
+    fprintf(stderr," pressed! %f %f %f \n",force[0],force[1],force[2]);
     //fprintf(stderr," pressed! %f %f %f \n",forward[0],forward[1],forward[2]);
     //fprintf(stderr," pressed! pos %f %f %f \n",pos[0],pos[1],pos[2]);
 }
