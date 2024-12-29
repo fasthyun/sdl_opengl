@@ -303,6 +303,7 @@ void main_loop()
             //glGetFloatv(GL_MODELVIEW_MATRIX, model_m);
             //translate(model_m, obj->pos[0], obj->pos[1], obj->pos[2]);
 
+            obj->update(dt);  //update objects
             if (obj->shader != NULL)
             {
                 obj->shader->SetActive();
@@ -314,9 +315,8 @@ void main_loop()
                 //sprintf(str1, "location: %d", location);
                 if (location>=0)
                     glUniformMatrix4fv(location, 1, GL_FALSE, model_m); */
+                obj->draw(); //temp
             }
-            obj->update(dt);  //update objects
-            obj->draw();
         }
 
         // Draw top layer : FPS etc

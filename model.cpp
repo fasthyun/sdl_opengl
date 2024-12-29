@@ -511,6 +511,12 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
 {    
     /*
      *  model object들을 xObject로 ...
+     *  1. process meta_data
+     *  2. process meshes
+     *      - vertexes
+     *      - triangles
+     *      - (already materials)
+     *  3. process children
      *  30%
      */
     unsigned int i;
@@ -533,7 +539,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
         return;
     }
 
-
+    // process meta_data
     if(loadMetadata(nd->mMetaData, xobj, nd->mName.C_Str(), tab_level)==true)
         xobj->xobject_found=true;
 
@@ -792,14 +798,31 @@ shader_object::shader_object(string _type)
     } */
 
 }
+
+void shader_object::update(float dt)
+{
+    xObject::update(dt);
+}
+
+void shader_object::draw()
+{
+   xObject::draw();
+}
+
 extern vector<xObject* > objects;
 
 void init_models()
 {
 
+
     //xObject *obj;
     xObject *dummy;
     dummy = new xObject();
+    Shader *_shader;
+    _shader=new Shader();
+    _shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
+
+
     //objects.push_back(obj);
 
     //xObject *texobj = new texture_object("check.bmp");
@@ -828,10 +851,12 @@ void init_models()
     for ( size_t i=0 ; i < dummy->children.size(); i++)
      {
          xObject *obj = dummy->children[i];
-         // obj->draw();
+         obj->parent=NULL;
+         obj->shader=_shader;
          // printf("obj.children()=%d  %d\n",i,obj->VAO);
          objects.push_back(obj);
      }
+
 
     /*
     for ( int i=0 ; i < 1 ; i++)

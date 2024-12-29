@@ -21,7 +21,6 @@ class shader_object : public xObject{
 public:
     //shader_object(){};
     shader_object(string _type);
-
     virtual void update(float dt=0);
     virtual void draw();
 };
