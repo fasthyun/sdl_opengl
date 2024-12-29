@@ -426,48 +426,10 @@ void init_object()
 
     obj=new console();
     obj->name="console";
-    objects.push_back(obj);
-
-    xObject *texobj;//=new texture_object("check.bmp");
-    //set(texobj->pos,-2,0,0);
-    //objects.push_back(texobj);
-
-    //texobj=new texture_object("font-map-mtl.png");
-    //set(texobj->pos,2,0,0);
-    //objects.push_back(texobj);
-
-    //texobj=new texture_object("font-map.png");
-    //set(texobj->pos,4,0,0);
-    //objects.push_back(texobj);
-
-    //xObject *model_obj=new model_object("./model/stage.blend");
-    //set(model_obj->pos,0,-4,0);
-    //objects.push_back(model_obj);
-
-    obj=new model_object("./model/stage.fbx");
-    obj->name="ground";
-    set(obj->pos,0,0,0);
-    objects.push_back(obj);
-
-    for ( int i=0 ; i < 1 ; i++)
-    {
-        obj=new model_object("./model/ball.fbx");
-        obj->name="ball";
-        float x,y,z;
-        x=(rand()%60) - 30;
-        y=rand()%30;
-        z=rand()%60 - 30 ;
-        set(obj->pos,x,y,z);
-        objects.push_back(obj);
-        printf("x=%f  y=%f  z=%f \n",x,y,z);
-    }
+    objects.push_back(obj);  
 
     obj=new CollisionDetector();
     objects.push_back(obj);
-
-    //xObject *model_obj=new model_object("./model/box.fbx");
-    //set(model_obj->pos,0,10,0);
-    //objects.push_back(model_obj);
 
     //obj=new texture_manager();
     //objects.push_back(obj);
@@ -475,7 +437,7 @@ void init_object()
     //time_fps=0;
     //call_count=0;
     //time_call=0;
-    printf("init_obect()\n");
+    printf("init_object()\n");
 }
 
 /*
@@ -498,6 +460,7 @@ int main(int argc, char *argv[])
     //init_font();
     //init_font_freetype();
     init_object(); 
+    init_models();
     main_loop();
     return 0;
 }

@@ -510,7 +510,7 @@ aiNode *findxObject(const struct aiNode* nd, int level=-1)
 void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale, xObject *xobj, int tab_level)
 {    
     /*
-     *  Object들을 xObject로 ...
+     *  model object들을 xObject로 ...
      *  30%
      */
     unsigned int i;
@@ -646,7 +646,6 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
         xObject *child=new xObject();
         child->set_parent(xobj); //
         child->set_shader(xobj->shader); // from parent's shader
-        ///child->set_texture(obj.texname);  // 삭제예정
         xobj->children.push_back(child);
         //if (xobj.xobject_found==true)
         loadToObject(sc, nd->mChildren[n], scale, child, tab_level+1);
@@ -742,24 +741,24 @@ bool Import3DFromFile(const std::string filename,xObject *obj)
 
 
 
-std::vector<xObject> models;
+std::vector<xObject> models; // cached 3D models
 
-model_object::model_object(string path): xObject()
+model_object::model_object(string _path): xObject()
 {
     //texname=texture_manager::get_glname("check.bmp");
-    printf("model_object=%s \n", path.c_str());
+    printf("model_object=%s \n", _path.c_str());
     shader=new Shader();
     shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
 
     for ( size_t i=0 ; i < models.size(); i++)
     {
-        if(models[i].path==path)
+        if(models[i].path==_path)
         {
             //obj=models[i];
             //return true;
         }
     }
-    Import3DFromFile(path, this);
+    Import3DFromFile(_path, this);
     make_radius();
     //obj.path=filename; //tmp
     //models.push_back( obj);
@@ -773,4 +772,88 @@ void model_object::update(float dt)
 void model_object::draw()
 {
    xObject::draw();
+}
+
+
+shader_object::shader_object(string _type)
+{
+    printf("shader_object=%s \n", path.c_str());
+    shader=new Shader();
+    shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
+
+    /*
+    for ( size_t i=0 ; i < models.size(); i++)
+    {
+        if(models[i].path==path)
+        {
+            //obj=models[i];
+            //return true;
+        }
+    } */
+
+}
+extern vector<xObject* > objects;
+
+void init_models()
+{
+
+    //xObject *obj;
+    xObject *dummy;
+    dummy = new xObject();
+    //objects.push_back(obj);
+
+    //xObject *texobj = new texture_object("check.bmp");
+    //set(texobj->pos,-2,0,0);
+    //objects.push_back(texobj);
+
+    //texobj=new texture_object("font-map-mtl.png");
+    //set(texobj->pos,2,0,0);
+    //objects.push_back(texobj);
+
+    //texobj=new texture_object("font-map.png");
+    //set(texobj->pos,4,0,0);
+    //objects.push_back(texobj);
+
+    //xObject *model_obj=new model_object("./model/stage.blend");
+    //set(model_obj->pos,0,-4,0);
+    //objects.push_back(model_obj);
+
+    //obj=new model_object("./model/stage.fbx");
+    //obj->name="ground";
+    //set(obj->pos,0,0,0);
+    //objects.push_back(obj);
+
+    Import3DFromFile("./model/stage.fbx", dummy);
+
+    for ( size_t i=0 ; i < dummy->children.size(); i++)
+     {
+         xObject *obj = dummy->children[i];
+         // obj->draw();
+         // printf("obj.children()=%d  %d\n",i,obj->VAO);
+         objects.push_back(obj);
+     }
+
+    /*
+    for ( int i=0 ; i < 1 ; i++)
+    {
+        obj=new model_object("./model/ball.fbx");
+        obj->name="ball";
+        float x,y,z;
+        x=(rand()%60) - 30;
+        y=rand()%30;
+        z=rand()%60 - 30 ;
+        set(obj->pos,x,y,z);
+        objects.push_back(obj);
+        printf("x=%f  y=%f  z=%f \n",x,y,z);
+    }
+    */
+
+    //xObject *model_obj=new model_object("./model/box.fbx");
+    //set(model_obj->pos,0,10,0);
+    //objects.push_back(model_obj);
+
+    //obj=new texture_manager();
+    //objects.push_back(obj);
+
+      printf("init_models()\n");
 }
