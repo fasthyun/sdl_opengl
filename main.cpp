@@ -165,8 +165,7 @@ bool init_GL()
        // printf( "Error initializing OpenGL! %s\n", gluErrorString( error ) );
         printf( "Error initializing OpenGL! %d\n",  error  );
         success = false;
-    }   
-
+    }
 
     printf("init_GL() finish...\n");
     return success;

@@ -811,18 +811,31 @@ void shader_object::draw()
 
 extern vector<xObject* > objects;
 
-void init_models()
+
+void loadObjectFrom3Dfile(string _path)
 {
-
-
     //xObject *obj;
     xObject *dummy;
     dummy = new xObject();
     Shader *_shader;
     _shader=new Shader();
     _shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
+    Import3DFromFile(_path, dummy);
+
+    for ( size_t i=0 ; i < dummy->children.size(); i++)
+     {
+         xObject *obj = dummy->children[i];
+         obj->parent=NULL;
+         obj->shader=_shader;
+         // printf("obj.children()=%d  %d\n",i,obj->VAO);
+         objects.push_back(obj);
+     }
+    delete dummy;
+}
 
 
+void init_models()
+{
     //objects.push_back(obj);
 
     //xObject *texobj = new texture_object("check.bmp");
@@ -846,17 +859,7 @@ void init_models()
     //set(obj->pos,0,0,0);
     //objects.push_back(obj);
 
-    Import3DFromFile("./model/stage.fbx", dummy);
-
-    for ( size_t i=0 ; i < dummy->children.size(); i++)
-     {
-         xObject *obj = dummy->children[i];
-         obj->parent=NULL;
-         obj->shader=_shader;
-         // printf("obj.children()=%d  %d\n",i,obj->VAO);
-         objects.push_back(obj);
-     }
-
+    loadObjectFrom3Dfile("./model/stage.fbx");
 
     /*
     for ( int i=0 ; i < 1 ; i++)
@@ -880,5 +883,5 @@ void init_models()
     //obj=new texture_manager();
     //objects.push_back(obj);
 
-      printf("init_models()\n");
+    printf("init_models()\n");
 }
