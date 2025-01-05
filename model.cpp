@@ -879,9 +879,7 @@ void init_models()
     //xObject *model_obj=new model_object("./model/box.fbx");
     //set(model_obj->pos,0,10,0);
     //objects.push_back(model_obj);
-
     //obj=new texture_manager();
     //objects.push_back(obj);
-
     printf("init_models()\n");
 }

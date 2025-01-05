@@ -8,9 +8,9 @@
 g++  -D_REENTRANT -fPIC -O2 -std=gnu++11 xmath.h
  *
  */
-//#include "xmath.h"
+#include "xmath.h"
 
-#include "test.h"
+//#include "test.h"
 
 /*
  *  TODO:
