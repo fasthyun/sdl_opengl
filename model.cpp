@@ -227,19 +227,20 @@ int loadMaterials(const aiScene* scene) {
 
         printf("material[%d]: name= %s, props= %d\n", m, material->GetName().C_Str() ,material->mNumProperties);
         int count;
-        string textypes[]={"NONE", "DIFFUSE", "SPECULA", "ABIENT", "EMISSIVE",
+        string textypes[]={"NONE", "DIFFUSE", "SPECULA", "AMBIENT", "EMISSIVE",
                            "HEIGHT", "NORMAL", "SHINESS", "OPACITY", "DISPLACEMENT",
                            "LIGHTMAP", "RELECTION", "BASE_COLOR", "NORMAL_CAMERA", "EMISSION_COLOR",
                            "METALNESS","DIFFUSE_ROUGHNESS", "AMBIENT_OCCLUSION","UNKNOWN", "SHEEN",
                            "CLEARCOART","TRANSMISSION"};
         int found_texture=0;
-        for(int type_i=0; type_i<22 ; type_i++) // type_max = 22
+        for(int type_i=0; type_i < sizeof(textypes) ; type_i++) // type_max = 22
         {
             string textype="";
             //string _path;
             count = material->GetTextureCount((aiTextureType)type_i);
             if (count >0)
                 printf(" + texture_type[%s]= %d\n", textypes[type_i].c_str(), count);
+
             for (int j =0 ; j< count ; j++){
                 int texIndex=j;
                 bool exFound = material->GetTexture((aiTextureType)type_i, texIndex, &path);
@@ -253,6 +254,8 @@ int loadMaterials(const aiScene* scene) {
                 }
             }
         }
+        if (found_texture==0)
+            printf(" + texture None !!!!!!!!!!!!!!!! \n");
 
         string msgs="";
         for(int i=0; i < material->mNumProperties ;i++)
@@ -290,13 +293,16 @@ int loadMaterials(const aiScene* scene) {
            }
            else if (prop->mType==aiPTI_Buffer)
            {
-               msg+="|buffer|";
+               int count = prop->mDataLength;
+               string str="|buffer|";
+               str+=" size= " + std::to_string(count);
+               msg+=str;
            }
            else
                msg+="|else|";
            msgs += msg + "\n";
 
-           if(found_texture > 0 and keyname=="$clr.diffuse")
+           if(found_texture > 0 and keyname=="$clr.diffuse") //??
            {
                 texture *_tex = new texture(5,5); //
                 if (_tex->d_tex_glname > 0)
@@ -305,7 +311,7 @@ int loadMaterials(const aiScene* scene) {
                 }
            }
         }
-       /// std::cout << msgs ;
+        std::cout << msgs ;
     }
     return true;
 }
@@ -573,8 +579,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
         }
         else
         {
-            std::cout << tab << "+ texture Not found\n";
-            //mtl->
+            std::cout << tab << "+ texture Not found\n";            
         }
         /*
         if(mesh->mNormals == nullptr)
@@ -585,7 +590,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
 
         if(mesh->mColors[0] != nullptr)
         {
-            printf("%s COLOR !!! \n",tab.c_str());            
+            printf("%s  >>>>>>>>>>>>>>>>>>>> mesh->color found!!! !!! \n",tab.c_str());
         }
         //glDisable(GL_COLOR_MATERIAL);
 
@@ -598,7 +603,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
             if(mesh->mColors[0] != nullptr)
             {
                 mesh->mColors[0][i];     //Color4f(&mesh->mColors[0][vertexIndex]);
-                printf("%s vertice color!!! \n",tab.c_str());
+                ///printf("%s vertice color!!! \n",tab.c_str());
             }
             float tu=0,tv=0;
             if(mesh->HasTextureCoords(0))	//HasTextureCoords(texture_coordinates_set)
@@ -841,6 +846,7 @@ void loadObjectsFrom3Dfile(string _path)
 
 void init_models()
 {
+      xObject *obj;
     //objects.push_back(obj);
 
     //xObject *texobj = new texture_object("check.bmp");
@@ -855,21 +861,28 @@ void init_models()
     //set(texobj->pos,4,0,0);
     //objects.push_back(texobj);
 
-    //xObject *model_obj=new model_object("./model/stage.blend");
-    //set(model_obj->pos,0,-4,0);
-    //objects.push_back(model_obj);
+      /*
+    xObject *model_obj=new model_object("./model/stage.blend"); // Fail to load textures!!!
+    set(model_obj->pos,0,-4,0);
+    objects.push_back(model_obj);
+    */
+    /*
     xObject *obj;
-    obj=new model_object("./model/stage.fbx");
+    obj=new model_object("./model/Bob.fbx");
     obj->name="ground";
     set(obj->pos,0,0,0);
     objects.push_back(obj);
+    */
 
-    //loadObjectsFrom3Dfile("./model/stage.fbx");
+     xObject *model_obj=new model_object("./model/teapot.fbx");
+     set(model_obj->pos,0,0,0);
+     objects.push_back(model_obj);
+     //loadObjectsFrom3Dfile("./model/stage.fbx");
 
     //loadObjectFrom3Dfile("./model/ball.fbx");
 
 
-    for ( int i=0 ; i < 1 ; i++)
+    for ( int i=0 ; i < 0 ; i++)
     {
         xObject *obj;
         obj = new xObject();
@@ -892,10 +905,9 @@ void init_models()
     set(obj->pos,0,10,0);
     objects.push_back(obj);
 
-
-    xObject *model_obj=new model_object("./model/Bob.fbx");
-    set(model_obj->pos,0,10,0);
-    objects.push_back(model_obj);
+    //xObject *model_obj=new model_object("./model/Bob.fbx");
+    //set(model_obj->pos,0,10,0);
+    //objects.push_back(model_obj);
 
     //obj=new texture_manager();
     //objects.push_back(obj);
