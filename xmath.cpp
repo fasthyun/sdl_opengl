@@ -149,6 +149,15 @@ void set(float v[3], float x,float y, float z)
     v[2]=z;
 }
 
+void set4f(float v[4], float x,float y, float z, float u)
+{
+    // TODO: macro
+    v[0]=x;
+    v[1]=y;
+    v[2]=z;
+    v[3]=u;
+}
+
 // vec3_set
 void set(float dst[3], float src[3])
 {

@@ -134,7 +134,7 @@ void color4_to_float4(const aiColor4D *c, float f[4])
 }
 
 // TODO: rename
-void apply_material(const aiMaterial *mtl)
+void reference_apply_material(const aiMaterial *mtl)
 {
 	float c[4];
 
@@ -227,19 +227,21 @@ int loadMaterials(const aiScene* scene) {
 
         printf("material[%d]: name= %s, props= %d\n", m, material->GetName().C_Str() ,material->mNumProperties);
         int count;
-        string textypes[]={"NONE", "DIFFUSE", "SPECULA", "AMBIENT", "EMISSIVE",
+        string tex_types[]={"NONE", "DIFFUSE", "SPECULA", "AMBIENT", "EMISSIVE",
                            "HEIGHT", "NORMAL", "SHINESS", "OPACITY", "DISPLACEMENT",
                            "LIGHTMAP", "RELECTION", "BASE_COLOR", "NORMAL_CAMERA", "EMISSION_COLOR",
                            "METALNESS","DIFFUSE_ROUGHNESS", "AMBIENT_OCCLUSION","UNKNOWN", "SHEEN",
                            "CLEARCOART","TRANSMISSION"};
         int found_texture=0;
-        for(int type_i=0; type_i < sizeof(textypes) ; type_i++) // type_max = 22
+        for(int type_i=0; type_i < sizeof(tex_types) ; type_i++) // type_max = 22
         {
+            /*
+             *  to get texture , must GetTextureCount() !
+             */
             string textype="";
-            //string _path;
             count = material->GetTextureCount((aiTextureType)type_i);
             if (count >0)
-                printf(" + texture_type[%s]= %d\n", textypes[type_i].c_str(), count);
+                printf(" + texture_type[%s]= %d\n", tex_types[type_i].c_str(), count);
 
             for (int j =0 ; j< count ; j++){
                 int texIndex=j;
@@ -255,8 +257,15 @@ int loadMaterials(const aiScene* scene) {
             }
         }
         if (found_texture==0)
-            printf(" + texture None !!!!!!!!!!!!!!!! \n");
+            printf(" + ===============> texture None material !!!!!!!!!!!!!!!! \n");
 
+        /*
+         *
+         + properties[2]=$clr.diffuse, ( 0.800000 0.746561 0.052616 )
+         + properties[3]=$clr.emissive, ( 0.000000 0.000000 0.000000 )
+         + properties[4]=$clr.ambient, ( 0.000000 0.000000 0.000000 )
+         + properties[5]=$clr.specular, ( 0.800000 0.746561 0.052616 )
+        */
         string msgs="";
         for(int i=0; i < material->mNumProperties ;i++)
         {
@@ -911,4 +920,13 @@ void init_models()
     //obj=new texture_manager();
     //objects.push_back(obj);
     printf("init_models()\n");
+}
+
+material::material(string _name)
+{
+    name=_name;
+    set4f(diffuse,0.0,0.0,0.0,0.0);
+    set4f(specular,0.0,0.0,0.0,0.0);
+    set4f(ambient,0.0,0.0,0.0,0.0);
+    set4f(emission, 0.0, 0.0, 0.0, 0.0);
 }

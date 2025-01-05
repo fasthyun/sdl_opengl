@@ -55,7 +55,7 @@ bool init_SDL()
     }
     // Set OpenGL attributes
     // Use the core OpenGL profile
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE); //works
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE); //works , no legacy!
     //SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY); // maybe better
     //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4); //fail
     //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
@@ -287,7 +287,7 @@ void main_loop()
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
         // draw console? or push pop?
-        glFrustum(-0.5,0.5,-0.5,0.5,0.5,500*3);
+        glFrustum(-0.5,0.5,-0.5,0.5,0.5,500*3); // legacy !
         LookAt(d_camera->pos, d_camera->forward , d_camera->up); // test
         /* gluLookAt(d_camera->pos[0],d_camera->pos[1],d_camera->pos[2],
                   d_camera->pos[0]+d_camera->forward[0]*3,d_camera->pos[1]+d_camera->forward[1]*3 ,
@@ -310,7 +310,7 @@ void main_loop()
                 obj->shader->SetActive();
                 GLint location=glGetUniformLocation(obj->shader->mShaderProgram, "projView");
                 if (location>=0)
-                    glUniformMatrix4fv(location, 1, GL_FALSE, proj_m); // ( location,count,  transpose, float *value )
+                    glUniformMatrix4fv(location, 1, GL_FALSE, proj_m); // ( location, count,  transpose, float *value )
 
                 /*location=glGetUniformLocation(obj->shader->mShaderProgram, "modelView");
                 //sprintf(str1, "location: %d", location);
