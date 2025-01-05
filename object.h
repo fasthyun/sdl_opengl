@@ -53,7 +53,7 @@ public:
     float up[3];
     float force[3];
     float weight = 0.0 ;  // kg
-    float model_m[16];
+    float model_mat[16];
     uint64_t prev_time;
     Shader *shader;
 
@@ -98,6 +98,7 @@ public:
 };
 
 
+
 class CollisionDetector : public xObject{
     GLuint buffer;
     GLuint vertex_array;
@@ -108,6 +109,16 @@ public:
     virtual void draw(){}
 };
 
+
+class particle : public xObject{
+    GLuint buffer;
+    GLuint vertex_array;
+    int grid_n;
+public:
+    particle();
+    virtual void update(float dt=0);
+    virtual void draw();
+};
 
 xObject* findObject(string _name);
 

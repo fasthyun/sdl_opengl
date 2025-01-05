@@ -1,8 +1,9 @@
 # This file is used to ignore files which are generated
 # ----------------------------------------------------------------------------
 
-/model/*
-/texture/*
+*.gch
+#/model/*
+#/texture/*
 *~
 *.autosave
 *.a

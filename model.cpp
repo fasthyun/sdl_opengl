@@ -133,6 +133,7 @@ void color4_to_float4(const aiColor4D *c, float f[4])
 	f[3] = c->a;
 }
 
+// TODO: rename
 void apply_material(const aiMaterial *mtl)
 {
 	float c[4];
@@ -313,7 +314,7 @@ int loadMaterials(const aiScene* scene) {
 // blender에서 각 object는 properties를 갖는다. 이 properties가 FBX에서는 metadata임
 // xobject key를 찾으면...
 int loadMetadata(aiMetadata *md, xObject *obj, string name="", int level=0) {
-    if (md == NULL)
+    if (md == nullptr)
     {
         return 0;
     }
@@ -490,7 +491,7 @@ aiNode *findxObject(const struct aiNode* nd, int level=-1)
 
     /* tempolarily need more time and works later!!! */
 
-    aiNode * node = NULL ;
+    aiNode * node = nullptr ;
     for (int n = 0; n < nd->mNumChildren; ++n)
     {
         xObject *tmp_obj=new xObject();
@@ -502,29 +503,33 @@ aiNode *findxObject(const struct aiNode* nd, int level=-1)
             //tmp_obj->xobject_found=true;
             node = nd->mChildren[n];
         }
-        delete tmp_obj;
+        //delete tmp_obj;
     }
     return node;
 }
 
+// TODO : scale remove
 void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale, xObject *xobj, int tab_level)
 {    
     /*
-     *  model object들을 xObject로 ...
-     *  1. process meta_data
-     *  2. process meshes
-     *      - vertexes
-     *      - triangles
-     *      - (already materials)
-     *  3. process children
-     *  30%
+       1. process meta_data
+       2. process meshes
+           - vertexes
+           - triangles
+           - (already materials)
+       3. process children
+       30%
+
+       1. 재귀함수
+       2. object들을 xObject로 바꿔줘야한다.
      */
+
     unsigned int i;
     unsigned int n=0, t;
     aiMatrix4x4 m = nd->mTransformation;
-    aiMatrix4x4 m2;
-    aiMatrix4x4::Scaling(aiVector3D(scale, scale, scale), m2);
-    m = m * m2;
+    //aiMatrix4x4 m2;
+    //aiMatrix4x4::Scaling(aiVector3D(scale, scale, scale), m2);
+    //m = m * m2;
 
     string tab="";  // tab tricks. have a fun!
     for (int i=0; i<tab_level; i++)
@@ -532,8 +537,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
         tab = tab + '\t';
     }
 
-    if(strcmp(nd->mName.C_Str(),"Lamp")==0 ||
-            strcmp(nd->mName.C_Str(),"Camera")==0 )
+    if(nd->mName==aiString("Lamp") || nd->mName==aiString("Camera"))
     {
         printf("%s[%s] skipped \n", tab.c_str(), nd->mName.C_Str());
         return;
@@ -543,8 +547,9 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
     if(loadMetadata(nd->mMetaData, xobj, nd->mName.C_Str(), tab_level)==true)
         xobj->xobject_found=true;
 
-    m.Transpose();  // transpose for OpenGL?
-    copy(xobj->model_m, &m.a1);
+    m.Transpose();  // Q: transpose for OpenGL?   A: ...
+
+    copy(xobj->model_mat, &m.a1);
 
     //if (tab_level==0 )
     xobj->name = nd->mName.C_Str(); // object name
@@ -560,7 +565,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
         std::cout << tab << " + mesh->mMaterialIndex = " <<mesh->mMaterialIndex <<"\n";
         const aiMaterial *mtl=sc->mMaterials[mesh->mMaterialIndex];
 
-        auto search = MaterialTexture.find(mtl->GetName().C_Str()) ;
+        auto search = MaterialTexture.find(mtl->GetName().C_Str());
         if ( search != MaterialTexture.end())
         {
             //std::cout << "Found " << search->first << ' ' << search->second << '\n';
@@ -683,20 +688,19 @@ int DrawGLScene() //Here's where we do all the drawing
 bool Import3DFromFile(const std::string filename,xObject *obj)
 {
     /*
-        * Scene에는 여러개의 Object가 있다
+        * Scene에는 여러개의 Object가 있을수 있다. 카메라, 라이트 등등
         * 즉, 3d파일 1개에 여러개 Object가 있을수 있음.
-        * 게다가 object들이 child를 갖을수 있음
+        * 게다가 각 Object들이 child를 갖을수 있음
 
-        -blender에서 각 object는 properties를 갖는다.
-        -이 properties가 FBX에서는 metadata임
-        -xobject key를 찾으면...
+        - blender에서 각 object는 properties를 갖는다.
+        - 이 properties가 FBX에서는 metadata임
+        - xobject key를 찾으면...
 
         1. 각 OBject중 LAMP , Camera는 제외하고 등록하자...
         2. 지금은 level==0 일때는 전부 다 개별 object로 등록하자
-        3. tree-child로 등록해야할지 , 개별 Object로 등록할지는... 조금더
-        해보고 결정
+        3. tree-child로 등록해야할지 , 개별 Object로 등록할지는... 조금더 해보고 결정
 
-        참고: metadata는 child 개수에 포함 안되는듯!
+        4. metadata는 child 개수에 포함 안되는듯!
     */
 
     const aiScene* g_scene = nullptr;
@@ -812,7 +816,7 @@ void shader_object::draw()
 extern vector<xObject* > objects;
 
 
-void loadObjectFrom3Dfile(string _path)
+void loadObjectsFrom3Dfile(string _path)
 {
     //xObject *obj;
     xObject *dummy;
@@ -825,12 +829,13 @@ void loadObjectFrom3Dfile(string _path)
     for ( size_t i=0 ; i < dummy->children.size(); i++)
      {
          xObject *obj = dummy->children[i];
-         obj->parent=NULL;
+         obj->parent=nullptr;
          obj->shader=_shader;
          // printf("obj.children()=%d  %d\n",i,obj->VAO);
          objects.push_back(obj);
      }
-    delete dummy;
+
+    //delete dummy;
 }
 
 
@@ -853,18 +858,26 @@ void init_models()
     //xObject *model_obj=new model_object("./model/stage.blend");
     //set(model_obj->pos,0,-4,0);
     //objects.push_back(model_obj);
+    xObject *obj;
+    obj=new model_object("./model/stage.fbx");
+    obj->name="ground";
+    set(obj->pos,0,0,0);
+    objects.push_back(obj);
 
-    //obj=new model_object("./model/stage.fbx");
-    //obj->name="ground";
-    //set(obj->pos,0,0,0);
-    //objects.push_back(obj);
+    //loadObjectsFrom3Dfile("./model/stage.fbx");
 
-    loadObjectFrom3Dfile("./model/stage.fbx");
+    //loadObjectFrom3Dfile("./model/ball.fbx");
 
-    /*
+
     for ( int i=0 ; i < 1 ; i++)
     {
-        obj=new model_object("./model/ball.fbx");
+        xObject *obj;
+        obj = new xObject();
+        Shader *_shader;
+        _shader=new Shader();
+        _shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
+        Import3DFromFile("./model/ball.fbx" , obj);
+        // obj=new model_object("./model/ball.fbx"); // hmmm...
         obj->name="ball";
         float x,y,z;
         x=(rand()%60) - 30;
@@ -874,11 +887,15 @@ void init_models()
         objects.push_back(obj);
         printf("x=%f  y=%f  z=%f \n",x,y,z);
     }
-    */
 
-    //xObject *model_obj=new model_object("./model/box.fbx");
-    //set(model_obj->pos,0,10,0);
-    //objects.push_back(model_obj);
+    obj=new particle();
+    set(obj->pos,0,10,0);
+    objects.push_back(obj);
+
+
+    xObject *model_obj=new model_object("./model/Bob.fbx");
+    set(model_obj->pos,0,10,0);
+    objects.push_back(model_obj);
 
     //obj=new texture_manager();
     //objects.push_back(obj);

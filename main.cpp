@@ -35,7 +35,7 @@ console *d_console;
 bool quit;
 
 //The window we'll be rendering to
-SDL_Window* sdl_window = NULL;
+SDL_Window* sdl_window = nullptr;
 SDL_GLContext glContext; //OpenGL context
 
 /* GUI */
@@ -59,6 +59,7 @@ bool init_SDL()
     //SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY); // maybe better
     //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4); //fail
     //SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+
     // Request a color buffer with 8-bits per RGBA channel
     SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
@@ -172,9 +173,11 @@ bool init_GL()
 }
 
 
-void nk_drawMatrix4f(struct nk_context *_ctx, float *mat)
+void nk_drawMatrix4f(struct nk_context *_ctx, string _label, float *mat)
 {
     char str[128];
+    nk_layout_row_dynamic(ctx, 10, 1); // ctx, height, cols
+    nk_label(_ctx, _label.c_str() , NK_TEXT_LEFT);
     for(int i=0;i < 13;i+=4)
     {
         sprintf(str,"%8.4f,%8.4f,%8.4f,%8.4f",
@@ -182,16 +185,16 @@ void nk_drawMatrix4f(struct nk_context *_ctx, float *mat)
             //mat[4],mat[5],mat[6],mat[7],
             //mat[8],mat[9],mat[10],mat[11],
             // mat[12],mat[13],mat[14],mat[15]);
-        nk_layout_row_dynamic(ctx, 10, 1);
+        nk_layout_row_dynamic(ctx, 10, 1); // ctx, height, cols
         nk_label(_ctx, str, NK_TEXT_LEFT);
     }
 }
 
-void nk_draw_vector3f(struct nk_context *_ctx, string name, float v[3])
+void nk_draw_vector3f(struct nk_context *_ctx, string _label, float v[3])
 {
     char str[128];
-    sprintf(str,"%s : %8.4f,%8.4f,%8.4f",name.c_str(),v[0],v[1],v[2]);
-    nk_layout_row_dynamic(ctx, 10, 1);
+    sprintf(str,"%s : %8.4f,%8.4f,%8.4f",_label.c_str(),v[0],v[1],v[2]);
+    nk_layout_row_dynamic(ctx, 10, 1); // ctx, height, cols
     nk_label(_ctx, str, NK_TEXT_LEFT);
 }
 
@@ -201,7 +204,7 @@ void test_print_nk_tree_object(xObject *obj)
     {
         nk_draw_vector3f(ctx,"force",obj->force);
         //nk_layout_row_dynamic(ctx, 10, 1);
-        nk_drawMatrix4f(ctx,obj->model_m);
+        nk_drawMatrix4f(ctx,"model_mat",obj->model_mat);
         //nk_label(ctx, "Label aligned centered", NK_TEXT_CENTERED);
 
         for ( size_t i=0 ; i < obj->children.size(); i++)
@@ -211,8 +214,7 @@ void test_print_nk_tree_object(xObject *obj)
             if(nk_tree_push_hashed(ctx, NK_TREE_NODE , c_obj->name.c_str(), NK_MINIMIZED, c_obj->uuid.c_str(), c_obj->uuid.length() ,0))
             {
                 //nk_layout_row_dynamic(ctx, 10, 1);
-                nk_drawMatrix4f(ctx,c_obj->model_m);
-                //nk_label(ctx, "Label aligned centered", NK_TEXT_CENTERED);
+                nk_drawMatrix4f(ctx,"model_mat",obj->model_mat);
                 nk_tree_pop(ctx);
             }
         }
@@ -303,7 +305,7 @@ void main_loop()
             //translate(model_m, obj->pos[0], obj->pos[1], obj->pos[2]);
 
             obj->update(dt);  //update objects
-            if (obj->shader != NULL)
+            if (obj->shader != nullptr)
             {
                 obj->shader->SetActive();
                 GLint location=glGetUniformLocation(obj->shader->mShaderProgram, "projView");

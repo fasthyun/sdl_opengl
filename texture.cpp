@@ -62,7 +62,7 @@ texture::texture(std::string _path)
     auto path="./texture/"+_filename;
     std::cout << "texture(): " << path  << "\n";
     SDL_Surface *surface = IMG_Load(path.c_str()); //SDL_Surface *surface=LoadImage(path);
-    if (surface == NULL) {
+    if (surface == nullptr) {
         std::cout << "Error: fail read " << path  << "\n";
         return;
     }
@@ -110,7 +110,7 @@ SDL_Surface* texture::getSurface(int width, int height)
                                    rmask, gmask, bmask, amask);
 
     //surface = SDL_CreateRGBSurface(0, width, height, 32, 0, 0, 0, 0);
-    if (surface == NULL) {
+    if (surface == nullptr) {
            SDL_Log("SDL_CreateRGBSurface() failed: %s", SDL_GetError());
            return 0;
     }

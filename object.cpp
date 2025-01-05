@@ -26,7 +26,7 @@ xObject* findObject(string _name)
         if (obj->name == _name)
             return obj;
     }
-    return NULL;
+    return nullptr;
 }
 
 xObject::xObject()
@@ -35,8 +35,8 @@ xObject::xObject()
     uuid=to_string(_uuid);
     //std::cout << "uuid=" << uuid << std::endl;
 
-    parent=NULL;
-    shader=NULL; // ***
+    parent=nullptr;
+    shader=nullptr; // ***
     VBO=0;
     VAO=0;
     EBO=0;
@@ -48,16 +48,21 @@ xObject::xObject()
     set(forward,0,0,1);
     set(force,0,0,0);
     //make_circle();
-    loadIdentity(model_m);
+    loadIdentity(model_mat);
     name="None";
 }
 
 xObject::~xObject(){
-    if (parent !=NULL)
+    if (parent !=nullptr)
+    {
         delete parent;
-    if (shader !=NULL)
+        parent = nullptr;
+    }
+    if (shader !=nullptr)
+    {
         delete shader;
-
+        shader = nullptr;
+    }
 }
 
 
@@ -185,16 +190,16 @@ void xObject::draw()
     //draw_axis();
     //draw_dir_up();
     //draw_meshes();
-    mat4x4_translate(model_m, pos[0], pos[1], pos[2]);
+    mat4x4_translate(model_mat, pos[0], pos[1], pos[2]);
     float _m[16];
     if (parent)
     {
         loadIdentity(_m);
         //set(_m,parent->model_m);
-        mat4x4_mult(_m, parent->model_m, model_m);
+        mat4x4_mult(_m, parent->model_mat, model_mat);
     }
     else
-        mat4x4_set(_m,model_m);
+        mat4x4_set(_m,model_mat); // copy
 
     if (texname > 0)
         glBindTexture(GL_TEXTURE_2D, texname);
@@ -233,7 +238,7 @@ camera::camera(): xObject() // init
     key_side_right=SDLK_d;
     key_side_left=SDLK_a;
 
-    d_ball=NULL;
+    d_ball=nullptr;
     d_focus=true;
     name="camera_viewer";
 }
@@ -262,7 +267,7 @@ void camera::update(float dt)
                 break;
             case SDL_MOUSEBUTTONDOWN:
                 printf("clicked! \n");
-                if (d_ball==NULL)
+                if (d_ball==nullptr)
                     d_ball=findObject("ball"); // how lagg ?
                 set(d_ball->pos, pos);
                 break;
@@ -398,7 +403,7 @@ grid::grid()
     shader->Load("./shader/grid_vertex.glsl","./shader/grid_fragment.glsl");
 
     float *vertexData = (float*)malloc(sizeof(float)*2000*4*2);
-    if (vertexData==NULL)
+    if (vertexData==nullptr)
     {
         SDL_Log("ERROR: Faile to malloc !!!!");
         return;
@@ -505,4 +510,60 @@ void CollisionDetector::update(float dt)
             }
         }
     }
+}
+
+particle::particle()
+{
+    name="partile";
+    grid_n=100;
+    shader=new Shader();
+    shader->Load("./shader/grid_vertex.glsl","./shader/grid_fragment.glsl");
+
+    float *vertexData = (float*)malloc(sizeof(float)*3*2000);
+
+    if (vertexData==nullptr)
+    {
+        SDL_Log("ERROR: Faile to malloc !!!!");
+        return;
+    }
+
+    for ( int i=0 ; i < 2000 ;)
+    {
+        float x,y,z;
+        x=rand()%60 - 30;
+        y=rand()%60 - 30;
+        z=rand()%60 - 30;
+//        printf("x=%f  y=%f  z=%f \n",x,y,z);
+        vertexData[i++]=x;  // x
+        vertexData[i++]=y;  // y
+        vertexData[i++]=z;// z
+    }
+
+    glGenVertexArrays(1, &vertex_array);
+    glGenBuffers(1, &buffer);
+
+    glBindVertexArray(vertex_array);
+    glBindBuffer(GL_ARRAY_BUFFER, buffer);
+    glBufferData(GL_ARRAY_BUFFER, 2000*8* sizeof(float)/* bytes */, vertexData, GL_DYNAMIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float) /* bytes */, (void*)0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+    free(vertexData);
+}
+
+void particle::draw()
+{
+    //TODO: object
+    //draw_axis();
+    glBindVertexArray(vertex_array);
+    glDrawArrays(GL_POINTS, 0, 2000); // 0~2000
+    //glDrawArrays(GL_LINES, 0, 4);
+    glBindVertexArray(0);
+    //glDisableVertexAttribArray(0);
+}
+
+void particle::update(float dt)
+{
+
 }
