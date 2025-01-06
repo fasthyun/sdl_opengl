@@ -239,8 +239,6 @@ void main_loop()
     char str1[30];
     char str2[30];
 
-    float proj_m[16];
-
     /* Load Fonts: if none of these are loaded a default font will be used  */
     /* Load Cursor: if you uncomment cursor loading please hide the cursor */
     if (flag_nk){
@@ -285,18 +283,7 @@ void main_loop()
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         //glFrontFace(GL_CCW);
         //glEnable(GL_CULL_FACE);
-        if (0){
-            glMatrixMode(GL_PROJECTION);
-            glLoadIdentity();
-            // draw console? or push pop?
-            glFrustum(-0.5,0.5,-0.5,0.5,0.5,500*3); // legacy !
-            LookAt(d_camera->pos, d_camera->forward , d_camera->up); // test
-            /* gluLookAt(d_camera->pos[0],d_camera->pos[1],d_camera->pos[2],
-                      d_camera->pos[0]+d_camera->forward[0]*3,d_camera->pos[1]+d_camera->forward[1]*3 ,
-                      d_camera->pos[2]+d_camera->forward[2]*3,
-                      d_camera->up[0],d_camera->up[1],d_camera->up[2]); */
-            glGetFloatv(GL_PROJECTION_MATRIX, proj_m);
-        }
+
         float FoV = 65. ;
         glm::mat4 projectionMatrix = glm::perspective(
             glm::radians(FoV), // The vertical Field of View, in radians: the amount of "zoom". Think "camera lens". Usually between 90° (extra wide) and 30° (quite zoomed in)
@@ -314,17 +301,12 @@ void main_loop()
 
         viewMatrix = lookAt_with_glm(d_camera->pos, d_camera->forward , d_camera->up);
         glm::mat4 tmp_mat4 = projectionMatrix * viewMatrix;
-        memcpy(proj_m, glm::value_ptr(tmp_mat4), sizeof( proj_m ));
+        //memcpy(proj_m, glm::value_ptr(tmp_mat4), sizeof( proj_m ));
 
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
 
         for ( size_t i=0 ; i < objects.size(); i++)
         {
             xObject *obj = objects[i];
-            //glLoadIdentity();
-            //glGetFloatv(GL_MODELVIEW_MATRIX, model_m);
-            //translate(model_m, obj->pos[0], obj->pos[1], obj->pos[2]);
 
             obj->update(dt);  //update objects
             if (obj->shader != nullptr)
@@ -332,7 +314,7 @@ void main_loop()
                 obj->shader->SetActive();
                 GLint location=glGetUniformLocation(obj->shader->mShaderProgram, "projView");
                 if (location>=0)
-                    glUniformMatrix4fv(location, 1, GL_FALSE, proj_m); // ( location, count,  transpose, float *value )
+                    glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(tmp_mat4)); // ( location, count,  transpose, float *value )
 
                 /*location=glGetUniformLocation(obj->shader->mShaderProgram, "modelView");
                 //sprintf(str1, "location: %d", location);
@@ -343,11 +325,12 @@ void main_loop()
         }
 
         // Draw top layer : FPS etc
-        /* glViewport(0,0,width,height);
-        //glMatrixMode(GL_PROJECTION);
-        //glLoadIdentity();
-        //glMatrixMode(GL_MODELVIEW);
-        //glLoadIdentity();
+        /*
+          glViewport(0,0,width,height);
+          glMatrixMode(GL_PROJECTION);
+          glLoadIdentity();
+          glMatrixMode(GL_MODELVIEW);
+          glLoadIdentity();
         */
 
         glDisable(GL_DEPTH_TEST);

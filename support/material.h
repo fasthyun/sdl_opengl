@@ -10,7 +10,7 @@
 #endif
 #endif
 
-struct Material {
+struct xMaterial {
   // float ambient[3];
   float diffuse[3];
   float specular[3];
@@ -25,7 +25,7 @@ struct Material {
   // int normal_texid;  // normal map
   // int alpha_texid;  // alpha map
 
-  Material() {
+  xMaterial() {
     // ambient[0] = 0.0;
     // ambient[1] = 0.0;
     // ambient[2] = 0.0;

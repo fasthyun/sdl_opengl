@@ -26,8 +26,10 @@ void gluMakeIdentityf(float m[16]);
 void cross(float v1[3], float v2[3], float result[3]);
 
 void set(float v[3], float x,float y, float z);
-void set4f(float v[4], float x,float y, float z,float u);
 void set(float dst[3], float src[3]);
+void set4f(float v[4], float x,float y, float z,float u);
+void set4f(float dst[4], float src[4]);
+
 void mat4x4_set(float dst[16], float src[16]);
 
 void add(float v1[3], float v2[3], float result[3]);

@@ -43,7 +43,7 @@ public:
     vector<vertex>  vertexes; // verts
     vector<triangle> triangles; // tris
     vector<MeshFloat> meshes;
-    vector<Material> materials;
+    ///vector<Material> materials;
     vector<Texture> xtextures;
 
     // variables

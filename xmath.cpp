@@ -157,6 +157,15 @@ void set4f(float v[4], float x,float y, float z, float u)
     v[2]=z;
     v[3]=u;
 }
+// vec4_set
+void set4f(float dst[4], float src[4])
+{
+    // TODO: macro
+    dst[0]=src[0];
+    dst[1]=src[1];
+    dst[2]=src[2];
+    dst[3]=src[3];
+}
 
 // vec3_set
 void set(float dst[3], float src[3])
@@ -294,6 +303,12 @@ void LookAt(float eye_pos[3], float forward[3], float up[3])
         Result[3][2] = dot(f, eye);
 }
 */
+float vect3f_dot(float v1[3], float v2[3])
+{
+    float r;
+    r = v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2] ;
+    return r;
+}
 
 
 glm::mat4 lookAt_with_glm(float eye_pos[3], float forward[3], float up[3])
@@ -324,11 +339,10 @@ glm::mat4 lookAt_with_glm(float eye_pos[3], float forward[3], float up[3])
     m[1][2] = -forward[1];
     m[2][2] = -forward[2];
 
-  //  glTranslatef(-eye_pos[0], -eye_pos[1], -eye_pos[2]);
-
-    m[3][0] = - vect3f_distance(side, eye_pos);
-    m[3][1] = - vect3f_distance(new_up, eye_pos);
-    m[3][2] =   vect3f_distance(forward, eye_pos);
+  //  glTranslatef(-eye_pos[0], -eye_pos[1], -eye_pos[2]);    
+    m[3][0] = - vect3f_dot(side, eye_pos);
+    m[3][1] = - vect3f_dot(new_up, eye_pos);
+    m[3][2] =   vect3f_dot(forward, eye_pos);
     return m;
 }
 

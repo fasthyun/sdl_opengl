@@ -33,7 +33,7 @@
 int loadMaterials(const aiScene* scene) ;
 void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale, xObject *obj, int tab_level=0);
 
-std::map<string, material> Materials;	// map Material name to texid
+std::map<string, Material*> Materials;	// map Material name to texid
 
 std::map<string, GLuint> MaterialTexture;	// map Material name to texid
 
@@ -225,10 +225,11 @@ int loadMaterials(const aiScene* scene) {
     for (unsigned int m=0; m < scene->mNumMaterials; m++)
     {        
         aiString path;	// filename
-        aiMaterial *material=scene->mMaterials[m];
-        string name = material->GetName().C_Str();
-        material *_material = new material(name);
-        printf("material[%d]: name= %s, props= %d\n", m, material->GetName().C_Str() ,material->mNumProperties);
+        aiMaterial *aimaterial=scene->mMaterials[m];
+        string _name = aimaterial->GetName().C_Str();
+        Material *_material = new Material(_name);
+        Materials.insert({_name, _material});
+        printf("material[%d]: name= %s, props= %d\n", m, _name.c_str() ,aimaterial->mNumProperties);
         int count;
         string tex_types[]={"NONE", "DIFFUSE", "SPECULA", "AMBIENT", "EMISSIVE",
                            "HEIGHT", "NORMAL", "SHINESS", "OPACITY", "DISPLACEMENT",
@@ -243,25 +244,25 @@ int loadMaterials(const aiScene* scene) {
              *  to get texture , must do GetTextureCount() !
              */
             string textype="";
-            count = material->GetTextureCount((aiTextureType)type_i);
+            count = aimaterial->GetTextureCount((aiTextureType)type_i);
             if (count >0)
                 printf(" + texture_type[%s]= %d\n", tex_types[type_i].c_str(), count);
 
             for (int j =0 ; j< count ; j++){
                 int texIndex=j;
-                bool exFound = material->GetTexture((aiTextureType)type_i, texIndex, &path);
+                bool exFound = aimaterial->GetTexture((aiTextureType)type_i, texIndex, &path);
                 ///_paths.push_back(string(path.C_Str()));
                 std::cout << " + load_texture() = " << path.C_Str() << "\n";
                 texture *_tex = new texture(path.C_Str()); //
                 if (_tex->d_tex_glname > 0)
                 {
-                    MaterialTexture.insert({material->GetName().C_Str(), _tex->d_tex_glname}); // c++11
+                    MaterialTexture.insert({aimaterial->GetName().C_Str(), _tex->d_tex_glname}); // c++11
                     found_texture++;
                 }
             }
         }
         if (found_texture==0)
-            printf(" + ===============> texture None material !!!!!!!!!!!!!!!! \n");
+            printf(" + ===============> texture NONE !!!!!!!!!!!!!!!!! \n");
 
         /*
          *
@@ -271,9 +272,9 @@ int loadMaterials(const aiScene* scene) {
          + properties[5]=$clr.specular, ( 0.800000 0.746561 0.052616 )
         */
         string msgs="";
-        for(int i=0; i < material->mNumProperties ;i++)
+        for(int i=0; i < aimaterial->mNumProperties ;i++)
         {
-           aiMaterialProperty *prop = material->mProperties[i];
+           aiMaterialProperty *prop = aimaterial->mProperties[i];
            string keyname=prop->mKey.C_Str();
            string msg=" + properties[" + std::to_string(i) + "]=" +keyname + ", ";
            float colorf[5];
@@ -291,6 +292,8 @@ int loadMaterials(const aiScene* scene) {
                    str+=" " + std::to_string(f[i]);
                    colorf[i]=f[i];
                }
+               if(keyname=="$clr.diffuse")
+                   set4f(_material->diffuse,colorf);
                str+=" )";
                msg += str;
            }
@@ -317,14 +320,16 @@ int loadMaterials(const aiScene* scene) {
 
            if(found_texture > 0 and keyname=="$clr.diffuse") //??
            {
+               /*
                 texture *_tex = new texture(5,5); //
                 if (_tex->d_tex_glname > 0)
                 {
-                    MaterialTexture.insert({material->GetName().C_Str(), _tex->d_tex_glname}); // c++11
+                   /// MaterialTexture.insert({aimaterial->GetName().C_Str(), _tex->d_tex_glname}); // c++11
                 }
+                */
            }
         }
-        std::cout << msgs ;
+       ///  std::cout << msgs ;
     }
     return true;
 }
@@ -926,11 +931,12 @@ void init_models()
     printf("init_models()\n");
 }
 
-material::material(string _name)
+Material::Material(string _name)
 {
     name=_name;
     set4f(diffuse,0.0,0.0,0.0,0.0);
     set4f(specular,0.0,0.0,0.0,0.0);
     set4f(ambient,0.0,0.0,0.0,0.0);
     set4f(emission, 0.0, 0.0, 0.0, 0.0);
+
 }
