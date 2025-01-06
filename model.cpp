@@ -33,8 +33,12 @@
 int loadMaterials(const aiScene* scene) ;
 void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale, xObject *obj, int tab_level=0);
 
+std::map<string, material> Materials;	// map Material name to texid
+
+std::map<string, GLuint> MaterialTexture;	// map Material name to texid
+
 // images / texture
-std::map<std::string, GLuint*> textureIdMap;	// map image filenames to textureIds
+std::map<string, GLuint*> textureIdMap;	// map image filenames to textureIds
 GLuint*		textureIds;							// pointer to texture Array
 
 // Create an instance of the Importer class
@@ -205,8 +209,6 @@ void reference_apply_material(const aiMaterial *mtl)
 		glDisable(GL_CULL_FACE);
 }
 
-std::map<string, GLuint> MaterialTexture;	// map Material name to texid
-
 
 int loadMaterials(const aiScene* scene) {
     freeTextureIds();
@@ -224,19 +226,21 @@ int loadMaterials(const aiScene* scene) {
     {        
         aiString path;	// filename
         aiMaterial *material=scene->mMaterials[m];
-
+        string name = material->GetName().C_Str();
+        material *_material = new material(name);
         printf("material[%d]: name= %s, props= %d\n", m, material->GetName().C_Str() ,material->mNumProperties);
         int count;
         string tex_types[]={"NONE", "DIFFUSE", "SPECULA", "AMBIENT", "EMISSIVE",
                            "HEIGHT", "NORMAL", "SHINESS", "OPACITY", "DISPLACEMENT",
                            "LIGHTMAP", "RELECTION", "BASE_COLOR", "NORMAL_CAMERA", "EMISSION_COLOR",
-                           "METALNESS","DIFFUSE_ROUGHNESS", "AMBIENT_OCCLUSION","UNKNOWN", "SHEEN",
-                           "CLEARCOART","TRANSMISSION"};
+                           "METALNESS","DIFFUSE_ROUGHNESS", "AMBIENT_OCCLUSION","UNKNOWN",
+                            "SHEEN", "CLEARCOART","TRANSMISSION"};
         int found_texture=0;
-        for(int type_i=0; type_i < sizeof(tex_types) ; type_i++) // type_max = 22
+
+        for(int type_i=0; type_i < sizeof(tex_types) ; type_i++) //
         {
             /*
-             *  to get texture , must GetTextureCount() !
+             *  to get texture , must do GetTextureCount() !
              */
             string textype="";
             count = material->GetTextureCount((aiTextureType)type_i);
