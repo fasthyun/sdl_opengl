@@ -9,12 +9,12 @@
 
 void makeTexture(SDL_Surface *);
 
-class texture
+class Texture
 {
 public:
-    texture(std::string file);
-    texture(int width, int height);
-    texture( SDL_Surface *surface);
+    Texture(std::string file);
+    Texture(int width, int height);
+    Texture( SDL_Surface *surface);
     SDL_Surface* getSurface(int width, int height);
     SDL_Surface* LoadImage(std::string file);
     void makeTexture(SDL_Surface *);
@@ -45,5 +45,19 @@ public:
     static GLuint load_texture(string filename);
     void render_texture(GLuint texname,float x,float y,float z,float size) ;
 };
+
+class Material
+{
+public:
+    Material(string _name);
+    string name;
+    float diffuse[4];
+    float specular[4];
+    float ambient[4];
+    float emission[4];
+    float shininess, strength;
+    Texture *texture;
+};
+
 #endif // TEXTURE_H
 

@@ -200,7 +200,7 @@ void xObject::draw()
         mat4x4_mult(_m, parent->model_mat, model_mat);
     }
     else
-        mat4x4_set(_m,model_mat); // copy
+        mat4x4_set(_m, model_mat); // copy
 
     if (texname > 0)
         glBindTexture(GL_TEXTURE_2D, texname);
@@ -211,12 +211,18 @@ void xObject::draw()
         location = glGetUniformLocation(shader->mShaderProgram, "modelView");
         if (location >= 0)
             glUniformMatrix4fv(location, 1, GL_FALSE, _m); // ( location, count,  transpose, float *value )
+        else
+            ;
+
+       /* location = glGetUniformLocation(shader->mShaderProgram, "ourTexture");
+        if (location >=0)
+            glUniform1i(location, texname); */
 
         //printf("texture draw!! %d\n",triangles.size());
         glBindVertexArray(VAO);
 
         //( mode, count, index_data_type, void * indices);
-        glDrawElements(GL_TRIANGLES, triangles.size()*3, GL_UNSIGNED_INT, 0); // ????? count why ????
+        glDrawElements(GL_TRIANGLES, triangles.size()*3 , GL_UNSIGNED_INT, 0); // ????? count why ????
         //glDrawArrays(GL_TRIANGLES, 0, vertexes.size());
     }
 

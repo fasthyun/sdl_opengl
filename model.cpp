@@ -228,7 +228,9 @@ int loadMaterials(const aiScene* scene) {
         aiMaterial *aimaterial=scene->mMaterials[m];
         string _name = aimaterial->GetName().C_Str();
         Material *_material = new Material(_name);
+
         Materials.insert({_name, _material});
+
         printf("material[%d]: name= %s, props= %d\n", m, _name.c_str() ,aimaterial->mNumProperties);
         int count;
         string tex_types[]={"NONE", "DIFFUSE", "SPECULA", "AMBIENT", "EMISSIVE",
@@ -253,11 +255,12 @@ int loadMaterials(const aiScene* scene) {
                 bool exFound = aimaterial->GetTexture((aiTextureType)type_i, texIndex, &path);
                 ///_paths.push_back(string(path.C_Str()));
                 std::cout << " + load_texture() = " << path.C_Str() << "\n";
-                texture *_tex = new texture(path.C_Str()); //
+                Texture *_tex = new Texture(path.C_Str()); //
                 if (_tex->d_tex_glname > 0)
                 {
                     MaterialTexture.insert({aimaterial->GetName().C_Str(), _tex->d_tex_glname}); // c++11
                     found_texture++;
+                    _material->texture=_tex; // testing
                 }
             }
         }
@@ -265,7 +268,6 @@ int loadMaterials(const aiScene* scene) {
             printf(" + ===============> texture NONE !!!!!!!!!!!!!!!!! \n");
 
         /*
-         *
          + properties[2]=$clr.diffuse, ( 0.800000 0.746561 0.052616 )
          + properties[3]=$clr.emissive, ( 0.000000 0.000000 0.000000 )
          + properties[4]=$clr.ambient, ( 0.000000 0.000000 0.000000 )
@@ -569,7 +571,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
 
     // process meta_data
     if(loadMetadata(nd->mMetaData, xobj, nd->mName.C_Str(), tab_level)==true)
-        xobj->xobject_found=true;
+        xobj->xobject_found=true; // test
 
     m.Transpose();  // Q: transpose for OpenGL?   A: ...
 
@@ -592,12 +594,12 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
         auto search = MaterialTexture.find(mtl->GetName().C_Str());
         if ( search != MaterialTexture.end())
         {
-            //std::cout << "Found " << search->first << ' ' << search->second << '\n';
+            std::cout << "Found " << search->first << ' ' << search->second << '\n';
             xobj->set_texture(search->second);
         }
         else
         {
-            std::cout << tab << "+ texture Not found\n";            
+            std::cout << tab << "+ NO texture ===> color object\n";
         }
         /*
         if(mesh->mNormals == nullptr)
@@ -621,7 +623,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
             if(mesh->mColors[0] != nullptr)
             {
                 mesh->mColors[0][i];     //Color4f(&mesh->mColors[0][vertexIndex]);
-                ///printf("%s vertice color!!! \n",tab.c_str());
+                printf("%s vertice color!!! \n",tab.c_str());
             }
             float tu=0,tv=0;
             if(mesh->HasTextureCoords(0))	//HasTextureCoords(texture_coordinates_set)
@@ -629,6 +631,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
                 tu=mesh->mTextureCoords[0][i].x;
                 tv= 1 - mesh->mTextureCoords[0][i].y; //mTextureCoords[channel][vertex]
             }
+            else ;
             //printf("%s %2.3f %2.3f %2.3f *tu=%.2f tv=%.2f\n",tab.c_str(),
             //       mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z,  tu,tv);
 
@@ -845,8 +848,8 @@ void loadObjectsFrom3Dfile(string _path)
     xObject *dummy;
     dummy = new xObject();
     Shader *_shader;
-    _shader=new Shader();
-    _shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
+    //_shader=new Shader();
+    //_shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
     Import3DFromFile(_path, dummy);
 
     for ( size_t i=0 ; i < dummy->children.size(); i++)
@@ -905,8 +908,8 @@ void init_models()
         xObject *obj;
         obj = new xObject();
         Shader *_shader;
-        _shader=new Shader();
-        _shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
+        //_shader=new Shader();
+        //_shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
         Import3DFromFile("./model/ball.fbx" , obj);
         // obj=new model_object("./model/ball.fbx"); // hmmm...
         obj->name="ball";
@@ -929,14 +932,4 @@ void init_models()
     //obj=new texture_manager();
     //objects.push_back(obj);
     printf("init_models()\n");
-}
-
-Material::Material(string _name)
-{
-    name=_name;
-    set4f(diffuse,0.0,0.0,0.0,0.0);
-    set4f(specular,0.0,0.0,0.0,0.0);
-    set4f(ambient,0.0,0.0,0.0,0.0);
-    set4f(emission, 0.0, 0.0, 0.0, 0.0);
-
 }

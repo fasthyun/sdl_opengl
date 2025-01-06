@@ -1,9 +1,8 @@
 #include "stable.h"
 #include "texture.h"
+#include "xmath.h"
 
-std::vector<texture *> textures;
-
-
+std::vector<Texture *> textures;
 
 /*
 SDL_Texture *loadTexture(const char *file){
@@ -28,7 +27,7 @@ SDL_Texture *loadTexture(const char *file){
 
 
 
-SDL_Surface* texture::LoadImage(std::string file)
+SDL_Surface* Texture::LoadImage(std::string file)
 {
     SDL_Surface *surface = nullptr;
     //surface = SDL_LoadBMP(file.c_str());
@@ -51,7 +50,7 @@ SDL_Surface* texture::LoadImage(std::string file)
 #include <boost/filesystem.hpp>
 //std::string base_filename = path.substr(path.find_last_of("/\\") + 1)
 
-texture::texture(std::string _path)
+Texture::Texture(std::string _path)
 {
     d_tex_glname = -1;    
 
@@ -72,7 +71,7 @@ texture::texture(std::string _path)
     d_filename=_filename;
 }
 
-texture::texture(int width, int height)
+Texture::Texture(int width, int height)
 {
     d_tex_glname = -1;
     // not a file
@@ -82,7 +81,7 @@ texture::texture(int width, int height)
     SDL_FreeSurface(surface);
 }
 
-texture::texture(SDL_Surface *surface)
+Texture::Texture(SDL_Surface *surface)
 {
     d_tex_glname=-1;
     // not a file
@@ -90,7 +89,7 @@ texture::texture(SDL_Surface *surface)
     //textures.push_back(this);
 }
 
-SDL_Surface* texture::getSurface(int width, int height)
+SDL_Surface* Texture::getSurface(int width, int height)
 {
     SDL_Surface *surface;
     Uint32 rmask, gmask, bmask, amask;
@@ -117,12 +116,12 @@ SDL_Surface* texture::getSurface(int width, int height)
     return surface;
 }
 
-GLuint texture::getTextureName()
+GLuint Texture::getTextureName()
 {
     return d_tex_glname;
 }
 
-void texture::makeTexture(SDL_Surface *surface)
+void Texture::makeTexture(SDL_Surface *surface)
 {
     /*
        * samples :
@@ -235,7 +234,7 @@ GLuint texture_manager::load_texture(string path)
     std::string basename = path.substr(path.find_last_of("/\\") + 1);
 
     cout << "load_texture "<< basename << "\n;";
-    texture *_tex = new texture(basename);
+    Texture *_tex = new Texture(basename);
     if (_tex->getTextureName()>0)
         textures.push_back(_tex);
     return _tex->getTextureName();
@@ -283,3 +282,13 @@ void texture_object::draw()
     xObject::draw();
 }
 
+
+Material::Material(string _name)
+{
+    name = _name;
+    set4f(diffuse,0.0,0.0,0.0,0.0);
+    set4f(specular,0.0,0.0,0.0,0.0);
+    set4f(ambient,0.0,0.0,0.0,0.0);
+    set4f(emission, 0.0, 0.0, 0.0, 0.0);
+    texture = nullptr;
+}

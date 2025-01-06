@@ -26,18 +26,5 @@ public:
 };
 
 
-class Material
-{
-public:
-    Material(string _name);
-    string name;
-    float diffuse[4];
-    float specular[4];
-    float ambient[4];
-    float emission[4];
-    float shininess, strength;
-    //texture *texture;
-};
-
 
 #endif // MODEL_H

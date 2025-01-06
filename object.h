@@ -44,7 +44,7 @@ public:
     vector<triangle> triangles; // tris
     vector<MeshFloat> meshes;
     ///vector<Material> materials;
-    vector<Texture> xtextures;
+    ///vector<xTexture> xtextures;
 
     // variables
     xObject *parent;

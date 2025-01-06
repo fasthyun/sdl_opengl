@@ -52,14 +52,14 @@ struct xMaterial {
   }
 };
 
-struct Texture {
+struct xTexture {
   int width;
   int height;
   int components;
   int _pad_;
   unsigned char* image;
 
-  Texture() {
+  xTexture() {
     width = -1;
     height = -1;
     components = -1;

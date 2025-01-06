@@ -316,10 +316,6 @@ void main_loop()
                 if (location>=0)
                     glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(tmp_mat4)); // ( location, count,  transpose, float *value )
 
-                /*location=glGetUniformLocation(obj->shader->mShaderProgram, "modelView");
-                //sprintf(str1, "location: %d", location);
-                if (location>=0)
-                    glUniformMatrix4fv(location, 1, GL_FALSE, model_m); */
                 obj->draw(); //temp
             }
         }
