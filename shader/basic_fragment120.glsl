@@ -6,7 +6,6 @@
 // See LICENSE in root directory for full details.
 // ----------------------------------------------------------------
 
-// Request GLSL 3.3
 #version 120
 
 // This corresponds to the output color
@@ -33,7 +32,6 @@ void main()
 
 
 /*
-
 uniform sampler2D tex;
 uniform vec2 tex_size;
 

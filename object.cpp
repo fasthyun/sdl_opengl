@@ -209,10 +209,11 @@ void xObject::draw()
         GLint location;
         location = glGetUniformLocation(shader->mShaderProgram, "modelView");
         if (location >= 0)
-            glUniformMatrix4fv(location, 1, GL_FALSE, _m);
+            glUniformMatrix4fv(location, 1, GL_FALSE, _m); //
 
         //printf("texture draw!! %d\n",triangles.size());
         glBindVertexArray(VAO);
+        //( mode, count, index_data_type, void * indices);
         glDrawElements(GL_TRIANGLES, triangles.size()*3, GL_UNSIGNED_INT, 0); // ????? count why ????
         //glDrawArrays(GL_TRIANGLES, 0, vertexes.size());
     }
