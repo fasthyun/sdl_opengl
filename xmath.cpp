@@ -236,7 +236,7 @@ void quat_rotate(float r[3], float angle,float v[3],float result[3])
     multiply(m,v,result);
 }
 
-void LookAt(float eye[3], float forward[3], float up[3])
+void LookAt(float eye_pos[3], float forward[3], float up[3])
 {
     // gluLookAt 복제품 :
     // works well, 이해 10%
@@ -267,5 +267,68 @@ void LookAt(float eye[3], float forward[3], float up[3])
     m[2][2] = -forward[2];
 
     glMultMatrixf(&m[0][0]);
-    glTranslatef(-eye[0], -eye[1], -eye[2]);
+    glTranslatef(-eye_pos[0], -eye_pos[1], -eye_pos[2]);
 }
+
+
+
+/*
+ mat<4, 4, T, Q> lookAtRH(vec<3, T, Q> const& eye, vec<3, T, Q> const& center, vec<3, T, Q> const& up)
+{    
+        vec<3, T, Q> const f(normalize(center - eye));
+        vec<3, T, Q> const s(normalize(cross(f, up)));
+        vec<3, T, Q> const u(cross(s, f));
+
+        mat<4, 4, T, Q> Result(1);
+        Result[0][0] = s.x;
+        Result[1][0] = s.y;
+        Result[2][0] = s.z;
+        Result[0][1] = u.x;
+        Result[1][1] = u.y;
+        Result[2][1] = u.z;
+        Result[0][2] =-f.x;
+        Result[1][2] =-f.y;
+        Result[2][2] =-f.z;
+        Result[3][0] =-dot(s, eye);
+        Result[3][1] =-dot(u, eye);
+        Result[3][2] = dot(f, eye);
+}
+*/
+
+
+glm::mat4 lookAt_with_glm(float eye_pos[3], float forward[3], float up[3])
+{
+    float side[3],new_up[3];
+    //float m[4][4];
+    glm::mat4 m(1);
+
+    //sub(center, eye, forward);
+    normalize(forward);
+    normalize(up);
+    /* Side = forward x up */
+    cross(forward, up, side); // ok
+    normalize(side);
+    // up을 왜 다시 계산하는가?   up 크기가 1이 아닐수 있음?? (hyun)
+    /* Recompute up as: up = side x forward */
+    cross(side, forward, new_up);
+
+    m[0][0] = side[0];
+    m[1][0] = side[1];
+    m[2][0] = side[2];
+
+    m[0][1] = new_up[0];
+    m[1][1] = new_up[1];
+    m[2][1] = new_up[2];
+
+    m[0][2] = -forward[0];
+    m[1][2] = -forward[1];
+    m[2][2] = -forward[2];
+
+  //  glTranslatef(-eye_pos[0], -eye_pos[1], -eye_pos[2]);
+
+    m[3][0] = - vect3f_distance(side, eye_pos);
+    m[3][1] = - vect3f_distance(new_up, eye_pos);
+    m[3][2] =   vect3f_distance(forward, eye_pos);
+    return m;
+}
+

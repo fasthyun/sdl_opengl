@@ -36,7 +36,7 @@ public:
     float ambient[4];
     float emission[4];
     float shininess, strength;
-    texture textures[5];
+    //texture textures[5];
 };
 
 

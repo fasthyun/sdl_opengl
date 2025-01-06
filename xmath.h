@@ -3,6 +3,8 @@
 
 
 #include "stable.h"
+#include <glm/glm.hpp>
+
 //#include <cmath> // sqrt()
 //#include <GL/gl.h>
 //#include <stdio.h>
@@ -34,6 +36,7 @@ void multiply(float v[3],float c, float result[3]);
 void multiply(float m[4][4], float v[3],float result[3]);
 void mat4x4_mult(float dest[16], float *matA, float *matB);
 void LookAt(float eye[3], float center[3], float up[3]);
+glm::mat4 lookAt_with_glm(float eye_pos[3], float forward[3], float up[3]);
 
 /* matrix */
 void load(float dst[16],float src[16]);

@@ -222,6 +222,8 @@ void test_print_nk_tree_object(xObject *obj)
     }
 }
 
+#include <glm/glm.hpp> // vec2, vec3, mat4, radians
+#include <glm/ext.hpp> // perspective, translate, rotate
 void main_loop()
 {
     //float  time_test=0;
@@ -238,7 +240,6 @@ void main_loop()
     char str2[30];
 
     float proj_m[16];
-    float model_m[16];
 
     /* Load Fonts: if none of these are loaded a default font will be used  */
     /* Load Cursor: if you uncomment cursor loading please hide the cursor */
@@ -284,19 +285,40 @@ void main_loop()
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         //glFrontFace(GL_CCW);
         //glEnable(GL_CULL_FACE);
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        // draw console? or push pop?
-        glFrustum(-0.5,0.5,-0.5,0.5,0.5,500*3); // legacy !
-        LookAt(d_camera->pos, d_camera->forward , d_camera->up); // test
-        /* gluLookAt(d_camera->pos[0],d_camera->pos[1],d_camera->pos[2],
-                  d_camera->pos[0]+d_camera->forward[0]*3,d_camera->pos[1]+d_camera->forward[1]*3 ,
-                  d_camera->pos[2]+d_camera->forward[2]*3,
-                  d_camera->up[0],d_camera->up[1],d_camera->up[2]); */
+        if (0){
+            glMatrixMode(GL_PROJECTION);
+            glLoadIdentity();
+            // draw console? or push pop?
+            glFrustum(-0.5,0.5,-0.5,0.5,0.5,500*3); // legacy !
+            LookAt(d_camera->pos, d_camera->forward , d_camera->up); // test
+            /* gluLookAt(d_camera->pos[0],d_camera->pos[1],d_camera->pos[2],
+                      d_camera->pos[0]+d_camera->forward[0]*3,d_camera->pos[1]+d_camera->forward[1]*3 ,
+                      d_camera->pos[2]+d_camera->forward[2]*3,
+                      d_camera->up[0],d_camera->up[1],d_camera->up[2]); */
+            glGetFloatv(GL_PROJECTION_MATRIX, proj_m);
+        }
+        float FoV = 65. ;
+        glm::mat4 projectionMatrix = glm::perspective(
+            glm::radians(FoV), // The vertical Field of View, in radians: the amount of "zoom". Think "camera lens". Usually between 90° (extra wide) and 30° (quite zoomed in)
+            4.0f / 3.0f,       // Aspect Ratio. Depends on the size of your window. Notice that 4/3 == 800/600 == 1280/960, sounds familiar?
+            0.1f,              // Near clipping plane. Keep as big as possible, or you'll get precision issues.
+            100.0f             // Far clipping plane. Keep as little as possible.
+        );
 
-        glGetFloatv(GL_PROJECTION_MATRIX, proj_m);
+        glm::mat4 viewMatrix ;
+                /* = glm::lookAt(
+            glm::make_vec3(d_camera->pos), // the position of your camera, in world space
+            glm::make_vec3(d_camera->forward),   // where you want to look at, in world space
+            glm::make_vec3(d_camera->up)        // probably glm::vec3(0,1,0), but (0,-1,0) would make you looking upside-down, which can be great too
+        ); */
+
+        viewMatrix = lookAt_with_glm(d_camera->pos, d_camera->forward , d_camera->up);
+        glm::mat4 tmp_mat4 = projectionMatrix * viewMatrix;
+        memcpy(proj_m, glm::value_ptr(tmp_mat4), sizeof( proj_m ));
+
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
+
         for ( size_t i=0 ; i < objects.size(); i++)
         {
             xObject *obj = objects[i];

@@ -54,6 +54,8 @@ DISTFILES += \
     shader/Sprite.vert \
     shader/basic_fragment.glsl \
     shader/basic_vertex.glsl \
+    shader/color_fragment.glsl \
+    shader/color_vertex.glsl \
     shader/fshader.glsl \
     shader/grid_fragment.glsl \
     shader/grid_vertex.glsl \

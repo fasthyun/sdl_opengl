@@ -7,12 +7,10 @@
 // ----------------------------------------------------------------
 
 // Request GLSL
-#version 130
-
+#version 330 core
 // This corresponds to the output color
 // to the color buffer
 
-//#version 330 core
 struct Material {
     vec3 ambient;
     vec3 diffuse;
@@ -20,20 +18,19 @@ struct Material {
     float shininess;
 };
 
-
-out vec4 FragColor;
-uniform sampler2D ourTexture;
-
+#uniform sampler2D ourTexture;
 uniform Material material;
 
-in vec2 TexCoord;
+in vec4 ourColor;
 
+out vec4 FragColor;
 
 
 void main()
 {
     //FragColor = texture2D(ourTexture, TexCoord); // 130
-    FragColor = texture(ourTexture, TexCoord); // 330
+    //FragColor = texture(ourTexture, TexCoord); // 330
+    FragColor = ourColor;
 }
 
 /*
