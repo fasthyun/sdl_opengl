@@ -848,8 +848,8 @@ void loadObjectsFrom3Dfile(string _path)
     xObject *dummy;
     dummy = new xObject();
     Shader *_shader;
-    //_shader=new Shader();
-    //_shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
+    _shader=new Shader();
+    _shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
     Import3DFromFile(_path, dummy);
 
     for ( size_t i=0 ; i < dummy->children.size(); i++)
@@ -923,7 +923,7 @@ void init_models()
     }
 
     obj=new particle();
-    set(obj->pos,0,10,0);
+    set(obj->pos,0,0,0);
     objects.push_back(obj);
 
     //xObject *model_obj=new model_object("./model/Bob.fbx");

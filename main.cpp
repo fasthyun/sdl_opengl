@@ -285,24 +285,23 @@ void main_loop()
         //glEnable(GL_CULL_FACE);
 
         float FoV = 65. ;
+        // The vertical Field of View, in radians: the amount of "zoom". Think "camera lens". Usually between 90° (extra wide) and 30° (quite zoomed in)
+        // Aspect Ratio. Depends on the size of your window. Notice that 4/3 == 800/600 == 1280/960, sounds familiar?
+        // Near clipping plane. Keep as big as possible, or you'll get precision issues.
+        // Far clipping plane. Keep as little as possible.
         glm::mat4 projectionMatrix = glm::perspective(
-            glm::radians(FoV), // The vertical Field of View, in radians: the amount of "zoom". Think "camera lens". Usually between 90° (extra wide) and 30° (quite zoomed in)
-            4.0f / 3.0f,       // Aspect Ratio. Depends on the size of your window. Notice that 4/3 == 800/600 == 1280/960, sounds familiar?
-            0.1f,              // Near clipping plane. Keep as big as possible, or you'll get precision issues.
-            100.0f             // Far clipping plane. Keep as little as possible.
-        );
+            glm::radians(FoV), 4.0f / 3.0f, 0.1f, 100.0f );
 
         glm::mat4 viewMatrix ;
-                /* = glm::lookAt(
+        /* = glm::lookAt(
             glm::make_vec3(d_camera->pos), // the position of your camera, in world space
             glm::make_vec3(d_camera->forward),   // where you want to look at, in world space
             glm::make_vec3(d_camera->up)        // probably glm::vec3(0,1,0), but (0,-1,0) would make you looking upside-down, which can be great too
         ); */
-
+        // TODO:
         viewMatrix = lookAt_with_glm(d_camera->pos, d_camera->forward , d_camera->up);
         glm::mat4 tmp_mat4 = projectionMatrix * viewMatrix;
         //memcpy(proj_m, glm::value_ptr(tmp_mat4), sizeof( proj_m ));
-
 
         for ( size_t i=0 ; i < objects.size(); i++)
         {

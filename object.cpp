@@ -99,8 +99,17 @@ void xObject::load_gltf(string name)
    /// LoadGLTF(name, 1, &meshes, &materials, &xtextures);
 }
 
+// TODO: name
 void xObject::make_glVertexArray()
 {
+    /*
+     vertex {
+        float v[3];
+        float tu,tv;
+    };
+    ===> 5 floats
+    */
+
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
@@ -116,11 +125,12 @@ void xObject::make_glVertexArray()
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, triangles.size()*sizeof(triangle) ,triangles.data(), GL_STATIC_DRAW);
 
     // position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)0);
-    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(0); //  first input to vertex-shader?
+    glEnableVertexAttribArray(1); //  second input to vertex-shader?
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)0);    // (idx, size, type, ? , size, offset)
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
-    glBindVertexArray(-1);
+
+    glBindVertexArray(0); // break
 }
 
 void xObject::make_radius()
@@ -223,6 +233,11 @@ void xObject::draw()
 
         //( mode, count, index_data_type, void * indices);
         glDrawElements(GL_TRIANGLES, triangles.size()*3 , GL_UNSIGNED_INT, 0); // ????? count why ????
+        /* same as
+          for(i =0 ;i < len ; i++)
+              glArrayElement(i);
+            */
+
         //glDrawArrays(GL_TRIANGLES, 0, vertexes.size());
     }
 
@@ -523,12 +538,12 @@ void CollisionDetector::update(float dt)
 
 particle::particle()
 {
-    name="partile";
-    grid_n=100;
+    name="particle";
+    d_size=5000;
     shader=new Shader();
     shader->Load("./shader/grid_vertex.glsl","./shader/grid_fragment.glsl");
 
-    float *vertexData = (float*)malloc(sizeof(float)*3*2000);
+    float *vertexData = (float*)malloc(sizeof(float)*3*d_size);
 
     if (vertexData==nullptr)
     {
@@ -536,16 +551,16 @@ particle::particle()
         return;
     }
 
-    for ( int i=0 ; i < 2000 ;)
+    for ( int i=0 ; i < d_size ;)
     {
         float x,y,z;
         x=rand()%60 - 30;
         y=rand()%60 - 30;
-        z=rand()%60 - 30;
-//        printf("x=%f  y=%f  z=%f \n",x,y,z);
+        z=rand()%60 - 30;        
         vertexData[i++]=x;  // x
         vertexData[i++]=y;  // y
-        vertexData[i++]=z;// z
+        vertexData[i++]=z;  // z
+      //  printf("x=%f  y=%f  z=%f \n",x,y,z);
     }
 
     glGenVertexArrays(1, &vertex_array);
@@ -553,22 +568,23 @@ particle::particle()
 
     glBindVertexArray(vertex_array);
     glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, 2000*8* sizeof(float)/* bytes */, vertexData, GL_DYNAMIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float) /* bytes */, (void*)0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
+    glBufferData(GL_ARRAY_BUFFER, d_size * 3 * sizeof(float)/* bytes */, vertexData, GL_DYNAMIC_DRAW);
+
+    glEnableVertexAttribArray(0); // input to vertex-shader
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float) /* bytes */, (void*)0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0); // break
+    glBindVertexArray(0); // break
+
     free(vertexData);
 }
 
 void particle::draw()
 {
-    //TODO: object
     //draw_axis();
     glBindVertexArray(vertex_array);
-    glDrawArrays(GL_POINTS, 0, 2000); // 0~2000
-    //glDrawArrays(GL_LINES, 0, 4);
-    glBindVertexArray(0);
+    glDrawArrays(GL_POINTS, 0, d_size); // 0~2000
+    glBindVertexArray(0); // break
     //glDisableVertexAttribArray(0);
 }
 

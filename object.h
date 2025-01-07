@@ -113,7 +113,7 @@ public:
 class particle : public xObject{
     GLuint buffer;
     GLuint vertex_array;
-    int grid_n;
+    int d_size;
 public:
     particle();
     virtual void update(float dt=0);

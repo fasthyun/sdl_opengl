@@ -24,11 +24,11 @@
 out vec4 FragColor;
 in vec2 TexCoord;
 uniform sampler2D ourTexture;
-
+//in int gl_SampleID;
 //uniform Material material;
 
 
-
+//gl_SampleID
 
 void main()
 {
