@@ -2,8 +2,13 @@
 #define OBJECT_H
 #include "Shader.h"
 #include "element3d.h"
+#include "texture.h"
 #include "./support/mesh.h"
 #include "./support/material.h"
+
+
+//class texture;
+//class Material;
 
 /* TODO:
    * naming to xObject.h
@@ -39,10 +44,12 @@ public:
     void draw_dir_up();
     void load_gltf(string name); // remove
     void make_glVertexArray();
+    void make_glVertexArray_for_color();
     void make_radius(); // tmp
     vector<vertex>  vertexes; // verts
     vector<triangle> triangles; // tris
-    vector<MeshFloat> meshes;
+    vector<MeshFloat> meshes; //
+    Material    *material; // test
     ///vector<Material> materials;
     ///vector<xTexture> xtextures;
 
@@ -121,6 +128,32 @@ public:
 };
 
 xObject* findObject(string _name);
+
+
+//#include "object.h"
+
+class texture_object : public xObject{
+public:
+    texture_object();
+    texture_object(char *texture_filename);
+    //void make_glVertexArray();
+    virtual void update(float dt=0);
+    virtual void draw();
+};
+
+
+class texture_manager : public xObject{
+
+    unsigned int VBO, VAO, EBO;
+public:
+    texture_manager();
+    virtual void update(float dt=0);
+    virtual void draw();
+    static GLuint get_glname(string filename);
+    static GLuint load_texture(string filename);
+    void render_texture(GLuint texname,float x,float y,float z,float size) ;
+};
+
 
 
 

@@ -13,7 +13,6 @@ void main(void)
     gl_Position = gl_ModelViewProjectionMatrix * vertex;
 //    qt_TexCoord0 = qt_MultiTexCoord0;
 }
-
 */
 #version 330
 uniform mat4 projView;  // from main.draw()
@@ -22,6 +21,8 @@ uniform mat4 modelView;  // from xObject.draw()
 //layout (location = 1) in vec2 vTexCoord;
 in vec3 vPos;       // from  xObject.draw() glDrawElements()
 in vec2 vTexCoord;  //
+in vec3 vColor;     //
+in int  vType;      // 32bit testing
 
 //out vec3 ourColor;
 out vec2 TexCoord;

@@ -260,7 +260,7 @@ int loadMaterials(const aiScene* scene) {
                 {
                     MaterialTexture.insert({aimaterial->GetName().C_Str(), _tex->d_tex_glname}); // c++11
                     found_texture++;
-                    _material->texture=_tex; // testing
+                    _material->texture=_tex; // testing texture 1개로 가정함 !!!
                 }
             }
         }
@@ -580,21 +580,23 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
     //if (tab_level==0 )
     xobj->name = nd->mName.C_Str(); // object name
 
-    printf("%s[%s].mNumMeshes=%d \n", tab.c_str(), nd->mName.C_Str(),nd->mNumMeshes);
+    printf("%s[%s].mNumMeshes=%d \n", tab.c_str(), nd->mName.C_Str(), nd->mNumMeshes);
 
     for ( n=0 ; n < nd->mNumMeshes; ++n)
     {
+        /* mesh는 material을 다르게 갖을수있다 --> 구현안함. material 동일한것을 가정함 */
+
         int mesh_idx = nd->mMeshes[n];  // mesh index
         const struct aiMesh* mesh = sc->mMeshes[mesh_idx];
 
         //apply_material(sc->mMaterials[mesh->mMaterialIndex]);
-        std::cout << tab << " + mesh->mMaterialIndex = " <<mesh->mMaterialIndex <<"\n";
+        std::cout << tab << " + mesh->mMaterialIndex = " << mesh->mMaterialIndex <<"\n";
         const aiMaterial *mtl=sc->mMaterials[mesh->mMaterialIndex];
 
         auto search = MaterialTexture.find(mtl->GetName().C_Str());
         if ( search != MaterialTexture.end())
         {
-            std::cout << "Found " << search->first << ' ' << search->second << '\n';
+            //std::cout << "DEBUG: Found " << search->first << ' ' << search->second << '\n';
             xobj->set_texture(search->second);
         }
         else
@@ -630,13 +632,22 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
             {
                 tu=mesh->mTextureCoords[0][i].x;
                 tv= 1 - mesh->mTextureCoords[0][i].y; //mTextureCoords[channel][vertex]
+                //vertex_set(vert, mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z, tu,tv);
+                vert.tu=tu;
+                vert.tv=tv;
+                vert.type=1;
             }
-            else ;
+            else
+            {
+                vert.type=0;
+            }            
+            vert.v[0]=mesh->mVertices[i].x;
+            vert.v[1]=mesh->mVertices[i].y;
+            vert.v[2]=mesh->mVertices[i].z;
+
+            xobj->vertexes.push_back(vert);
             //printf("%s %2.3f %2.3f %2.3f *tu=%.2f tv=%.2f\n",tab.c_str(),
             //       mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z,  tu,tv);
-
-            vertex_set(vert,mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z, tu,tv);
-            xobj->vertexes.push_back(vert);
         }
 
         printf("%s + [%d].mNumFaces = %d \n",tab.c_str(), n,mesh->mNumFaces);
@@ -668,12 +679,15 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
                     break;
             }
         }
-    }
+
+    } // Mesh
+
     if (xobj->triangles.size()>0 )
     {
         xobj->make_glVertexArray(); // make_glVertexArray
         std::cout << tab << " +--> OK : make_glVertexArray() " << xobj->VAO << "\n";
     }
+
 
     printf("%s + nd->mNumChildren = %d \n",tab.c_str(),nd->mNumChildren);
     //from child object

@@ -124,20 +124,28 @@ void xObject::make_glVertexArray()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, triangles.size()*sizeof(triangle) ,triangles.data(), GL_STATIC_DRAW);
 
-    // position attribute
+    // VBO버퍼에 대한 구조 설명
     glEnableVertexAttribArray(0); //  first input to vertex-shader?
     glEnableVertexAttribArray(1); //  second input to vertex-shader?
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)0);    // (idx, size, type, ? , size, offset)
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)(3 * sizeof(float)));
-
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)0);    // (idx, size, type, ? , stride-size, offset)
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)(3 * sizeof(float))); // tu,tv
+    glEnableVertexAttribArray(2); //  third input to vertex-shader?
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)(5 * sizeof(float))); // R,G,B
+    glEnableVertexAttribArray(2); //  fourth input to vertex-shader?
+    glVertexAttribPointer(3, 1, GL_INT, GL_FALSE, sizeof(vertex), (void*)(5 * sizeof(float) + sizeof(int32_t))); // type : 0 color 1 texture
     glBindVertexArray(0); // break
 }
+
+void xObject::make_glVertexArray_for_color()
+{
+}
+
 
 void xObject::make_radius()
 {
     // bound-box-radius , temporaliry
     vertex *t;
-    vertex orig={0,0,0,0,0};
+    vertex orig={0,0,0,0,0,0,0,0,0};
     float r=0,max_r=0;
     for ( int i =0 ;i < vertexes.size() ; i++)
     {
@@ -171,6 +179,7 @@ void xObject::draw_axis()
 
 void xObject::draw_meshes()
 {
+    // will not work ! (legacy)
     // if (meshes==NULL) return; // hmm...
     //   TODO: vertexbuffer
     // printf("mesesh->size()= %ld \n", meshes->size());
@@ -221,8 +230,7 @@ void xObject::draw()
         location = glGetUniformLocation(shader->mShaderProgram, "modelView");
         if (location >= 0)
             glUniformMatrix4fv(location, 1, GL_FALSE, _m); // ( location, count,  transpose, float *value )
-        else
-            ;
+        // else          ;
 
        /* location = glGetUniformLocation(shader->mShaderProgram, "ourTexture");
         if (location >=0)
@@ -230,7 +238,6 @@ void xObject::draw()
 
         //printf("texture draw!! %d\n",triangles.size());
         glBindVertexArray(VAO);
-
         //( mode, count, index_data_type, void * indices);
         glDrawElements(GL_TRIANGLES, triangles.size()*3 , GL_UNSIGNED_INT, 0); // ????? count why ????
         /* same as
@@ -539,15 +546,15 @@ void CollisionDetector::update(float dt)
 particle::particle()
 {
     name="particle";
-    d_size=5000;
+    d_size=2000;
     shader=new Shader();
-    shader->Load("./shader/grid_vertex.glsl","./shader/grid_fragment.glsl");
+    shader->Load("./shader/point_vertex.glsl","./shader/point_fragment.glsl");
 
     float *vertexData = (float*)malloc(sizeof(float)*3*d_size);
 
     if (vertexData==nullptr)
     {
-        SDL_Log("ERROR: Faile to malloc !!!!");
+        SDL_Log("ERROR: Fail to malloc() !!!!");
         return;
     }
 
@@ -556,39 +563,165 @@ particle::particle()
         float x,y,z;
         x=rand()%60 - 30;
         y=rand()%60 - 30;
-        z=rand()%60 - 30;        
+        z=rand()%60 - 30;
         vertexData[i++]=x;  // x
         vertexData[i++]=y;  // y
         vertexData[i++]=z;  // z
       //  printf("x=%f  y=%f  z=%f \n",x,y,z);
     }
 
-    glGenVertexArrays(1, &vertex_array);
-    glGenBuffers(1, &buffer);
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
 
-    glBindVertexArray(vertex_array);
-    glBindBuffer(GL_ARRAY_BUFFER, buffer);
-    glBufferData(GL_ARRAY_BUFFER, d_size * 3 * sizeof(float)/* bytes */, vertexData, GL_DYNAMIC_DRAW);
+    glBindVertexArray(VAO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 3 * d_size /* bytes */, vertexData, GL_STATIC_DRAW);
 
     glEnableVertexAttribArray(0); // input to vertex-shader
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float) /* bytes */, (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float) * 3 /* bytes */, (void*)0);
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0); // break
-    glBindVertexArray(0); // break
+    //glEnableClientState(GL_VERTEX_ARRAY);
+    //glVertexPointer(3, GL_FLOAT,sizeof(float) * 3 /* bytes */, (void*)0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0); // unbind
+    glBindVertexArray(0); // unbind
 
     free(vertexData);
 }
 
 void particle::draw()
 {
-    //draw_axis();
-    glBindVertexArray(vertex_array);
-    glDrawArrays(GL_POINTS, 0, d_size); // 0~2000
-    glBindVertexArray(0); // break
-    //glDisableVertexAttribArray(0);
+    //draw_meshes();
+    mat4x4_translate(model_mat, pos[0], pos[1], pos[2]);
+    float _m[16];
+    if (parent)
+    {
+        loadIdentity(_m);
+        //set(_m,parent->model_m);
+        mat4x4_mult(_m, parent->model_mat, model_mat);
+    }
+    else
+        mat4x4_set(_m, model_mat); // copy
+
+    if (texname > 0)
+        glBindTexture(GL_TEXTURE_2D, texname);
+
+    if (VAO>0)
+    {
+        GLint location;
+        location = glGetUniformLocation(shader->mShaderProgram, "modelView");
+        if (location >= 0)
+            glUniformMatrix4fv(location, 1, GL_FALSE, _m); // ( location, count,  transpose, float *value )
+
+        glEnable(GL_PROGRAM_POINT_SIZE);
+        glPointSize(3);
+        //draw_axis();
+        glBindVertexArray(VAO);
+        glDrawArrays(GL_POINTS, 0, d_size); // 0~2000
+        //glDrawArrays(GL_LINES, 0, d_size/2);
+        glBindVertexArray(0); // break
+        //glDisableVertexAttribArray(0);
+    }
 }
 
 void particle::update(float dt)
 {
 
+}
+
+extern std::vector<Texture *> textures;
+
+texture_manager::texture_manager()
+{
+    shader=new Shader();
+    shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
+
+}
+
+void texture_manager::update(float dt)
+{
+
+}
+
+
+// TODO
+void texture_manager::render_texture(GLuint texname,float x,float y,float z,float size)
+{
+
+}
+
+GLuint texture_manager::get_glname(string filename)
+{
+    GLuint texname = 0 ;
+    // cout << "1. get_glname => "<< filename << "," << to_string(texname) << "\n";
+    for ( size_t i=0 ; i < textures.size(); i++)
+    {
+        if(textures[i]->d_filename==filename)
+        {
+            texname=textures[i]->getTextureName();
+            cout << " texname==>" << texname << "\n";
+            break;
+        }
+    }
+    // cout << "2. get_glname => "<< filename << "," << to_string(texname)  << "\n";
+    if (texname == 0)
+    {
+        texname=load_texture(filename);
+    }
+
+    return texname;
+}
+
+GLuint texture_manager::load_texture(string path)
+{
+    std::string basename = path.substr(path.find_last_of("/\\") + 1);
+
+    cout << "load_texture "<< basename << "\n;";
+    Texture *_tex = new Texture(basename);
+    if (_tex->getTextureName()>0)
+        textures.push_back(_tex);
+    return _tex->getTextureName();
+}
+
+
+void texture_manager::draw()
+{
+   /* for ( size_t i=0 ; i < 1; i++)
+    {
+        //render_texture(texname,i*5,0,0,5);
+        GLuint texname=textures[i]->getTextureName();
+        glBindTexture(GL_TEXTURE_2D, texname);
+        glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        //glDrawArrays(GL_TRIANGLES, 0, 6);
+    }
+    */
+}
+
+
+
+texture_object::texture_object(): xObject()
+{
+
+}
+
+texture_object::texture_object(char *filename): xObject()
+{
+    shader=new Shader();
+    shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
+    make_cube(vertexes,triangles,1);
+    make_glVertexArray(); // works!!!
+    texname=texture_manager::get_glname(filename);
+    /// printf("VAO=%d, texname = %d , sizeof(vertex)= %d, data=%x\n",VAO, texname, sizeof(vertex), vertexes.data());
+}
+
+
+void texture_object::update(float dt)
+{
+
+}
+
+void texture_object::draw()
+{
+    xObject::draw();
 }

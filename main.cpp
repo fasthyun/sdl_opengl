@@ -311,7 +311,7 @@ void main_loop()
             if (obj->shader != nullptr)
             {
                 obj->shader->SetActive();
-                GLint location=glGetUniformLocation(obj->shader->mShaderProgram, "projView");
+                GLint location=glGetUniformLocation(obj->shader->mShaderProgram, "projView"); // testing!
                 if (location>=0)
                     glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(tmp_mat4)); // ( location, count,  transpose, float *value )
 
@@ -453,6 +453,7 @@ int main(int argc, char *argv[])
 {
     cout << "SDL(OpenGL) program() !" << endl;
     cout << "sizeof(complex<float>) = "  << sizeof(std::complex<float>) << "bytes" << endl;
+    cout << "sizeof(float) = "  << sizeof(float) << "bytes" << endl;
     init_SDL();
     init_GL();
 

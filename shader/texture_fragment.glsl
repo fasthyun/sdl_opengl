@@ -23,7 +23,7 @@
 
 out vec4 FragColor;
 in vec2 TexCoord;
-uniform sampler2D ourTexture;
+uniform sampler2D ourTexture; // how working???
 //in int gl_SampleID;
 //uniform Material material;
 
