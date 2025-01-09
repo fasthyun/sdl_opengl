@@ -10,7 +10,7 @@ struct vertex {
     float v[3];
     float tu,tv;
     float r,g,b;
-    int32_t type;
+    int type;
 };
 
 //#define vertex_set(vert,x,y,z,_tu,_tv) vert->v[0]=x,vert->v[1]=y,vert->v[2]=z,vert->tu=_tu,vert->tv=_tv;

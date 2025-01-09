@@ -100,16 +100,9 @@ void xObject::load_gltf(string name)
 }
 
 // TODO: name
-void xObject::make_glVertexArray()
+void xObject::
+make_glVertexArray()
 {
-    /*
-     vertex {
-        float v[3];
-        float tu,tv;
-    };
-    ===> 5 floats
-    */
-
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
@@ -131,8 +124,8 @@ void xObject::make_glVertexArray()
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)(3 * sizeof(float))); // tu,tv
     glEnableVertexAttribArray(2); //  third input to vertex-shader?
     glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)(5 * sizeof(float))); // R,G,B
-    glEnableVertexAttribArray(2); //  fourth input to vertex-shader?
-    glVertexAttribPointer(3, 1, GL_INT, GL_FALSE, sizeof(vertex), (void*)(5 * sizeof(float) + sizeof(int32_t))); // type : 0 color 1 texture
+    glEnableVertexAttribArray(3); //  fourth input to vertex-shader?
+    glVertexAttribPointer(3, 1, GL_INT, GL_FALSE, sizeof(vertex), (void*)(8 * sizeof(float))); // type : 1 color 0 texture
     glBindVertexArray(0); // break
 }
 

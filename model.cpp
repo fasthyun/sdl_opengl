@@ -35,7 +35,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
 
 std::map<string, Material*> Materials;	// map Material name to texid
 
-std::map<string, GLuint> MaterialTexture;	// map Material name to texid
+std::map<string, GLuint> Textures;	// map Material name to texid
 
 // images / texture
 std::map<string, GLuint*> textureIdMap;	// map image filenames to textureIds
@@ -229,7 +229,7 @@ int loadMaterials(const aiScene* scene) {
         string _name = aimaterial->GetName().C_Str();
         Material *_material = new Material(_name);
 
-        Materials.insert({_name, _material});
+        Materials.insert({_name, _material}); // ok
 
         printf("material[%d]: name= %s, props= %d\n", m, _name.c_str() ,aimaterial->mNumProperties);
         int count;
@@ -258,7 +258,7 @@ int loadMaterials(const aiScene* scene) {
                 Texture *_tex = new Texture(path.C_Str()); //
                 if (_tex->d_tex_glname > 0)
                 {
-                    MaterialTexture.insert({aimaterial->GetName().C_Str(), _tex->d_tex_glname}); // c++11
+                    Textures.insert({aimaterial->GetName().C_Str(), _tex->d_tex_glname}); // c++11
                     found_texture++;
                     _material->texture=_tex; // testing texture 1개로 가정함 !!!
                 }
@@ -331,7 +331,7 @@ int loadMaterials(const aiScene* scene) {
                 */
            }
         }
-       ///  std::cout << msgs ;
+        std::cout << msgs ;
     }
     return true;
 }
@@ -584,8 +584,8 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
 
     for ( n=0 ; n < nd->mNumMeshes; ++n)
     {
-        /* mesh는 material을 다르게 갖을수있다 --> 구현안함. material 동일한것을 가정함 */
-
+        /* Mesh는 material을 다르게 갖을수있다 --> 구현안함. material 동일한것을 가정함 */
+        Material *_material;
         int mesh_idx = nd->mMeshes[n];  // mesh index
         const struct aiMesh* mesh = sc->mMeshes[mesh_idx];
 
@@ -593,14 +593,16 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
         std::cout << tab << " + mesh->mMaterialIndex = " << mesh->mMaterialIndex <<"\n";
         const aiMaterial *mtl=sc->mMaterials[mesh->mMaterialIndex];
 
-        auto search = MaterialTexture.find(mtl->GetName().C_Str());
-        if ( search != MaterialTexture.end())
+        auto search = Materials.find(mtl->GetName().C_Str());
+        if ( search != Materials.end())
         {
             //std::cout << "DEBUG: Found " << search->first << ' ' << search->second << '\n';
-            xobj->set_texture(search->second);
+            _material=search->second;
+            xobj->set_texture(_material->getTextureName());
         }
         else
         {
+            _material=nullptr;
             std::cout << tab << "+ NO texture ===> color object\n";
         }
         /*
@@ -625,29 +627,34 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
             if(mesh->mColors[0] != nullptr)
             {
                 mesh->mColors[0][i];     //Color4f(&mesh->mColors[0][vertexIndex]);
-                printf("%s vertice color!!! \n",tab.c_str());
+                printf("%s ================> vertice color!!! \n",tab.c_str());
             }
             float tu=0,tv=0;
-            if(mesh->HasTextureCoords(0))	//HasTextureCoords(texture_coordinates_set)
+            //if(mesh->HasTextureCoords(0))	//HasTextureCoords(texture_coordinates_set)
+            if(_material->texture != nullptr)
             {
                 tu=mesh->mTextureCoords[0][i].x;
                 tv= 1 - mesh->mTextureCoords[0][i].y; //mTextureCoords[channel][vertex]
                 //vertex_set(vert, mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z, tu,tv);
                 vert.tu=tu;
                 vert.tv=tv;
-                vert.type=1;
+                vert.type=0; // texture mode
+                //printf("%s %2.3f %2.3f %2.3f *tu=%.2f tv=%.2f\n",tab.c_str(),
+                //       mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z,  tu,tv);
             }
             else
             {
-                vert.type=0;
+                vert.r=_material->diffuse[0];
+                vert.g=_material->diffuse[1];
+                vert.b=_material->diffuse[2];
+                //printf("%s diffuse==> %2.3f %2.3f %2.3f \n",tab.c_str(),_material->diffuse[0],_material->diffuse[1],_material->diffuse[2]);
+                vert.type=1; // color mode
             }            
             vert.v[0]=mesh->mVertices[i].x;
             vert.v[1]=mesh->mVertices[i].y;
             vert.v[2]=mesh->mVertices[i].z;
 
             xobj->vertexes.push_back(vert);
-            //printf("%s %2.3f %2.3f %2.3f *tu=%.2f tv=%.2f\n",tab.c_str(),
-            //       mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z,  tu,tv);
         }
 
         printf("%s + [%d].mNumFaces = %d \n",tab.c_str(), n,mesh->mNumFaces);

@@ -22,18 +22,21 @@
 */
 
 out vec4 FragColor;
-in vec2 TexCoord;
+in vec2  TexCoord;
+in vec3  Color;
+in float Type;
+
 uniform sampler2D ourTexture; // how working???
 //in int gl_SampleID;
 //uniform Material material;
 
-
-//gl_SampleID
-
 void main()
 {
     ///FragColor = texture2D(ourTexture, TexCoord); // 130
-    FragColor = texture(ourTexture, TexCoord); // 330
+    if (Type > 0 )
+        FragColor = vec4(Color, 1.0); // color mode
+    else
+        FragColor = texture(ourTexture, TexCoord) ;
 }
 
 /*

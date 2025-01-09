@@ -198,3 +198,10 @@ Material::Material(string _name)
     set4f(emission, 0.0, 0.0, 0.0, 0.0);
     texture = nullptr;
 }
+
+GLuint Material::getTextureName()
+{
+    if (texture != nullptr)
+       return texture->d_tex_glname;
+    return -1;
+}

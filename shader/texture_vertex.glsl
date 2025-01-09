@@ -26,9 +26,16 @@ in int  vType;      // 32bit testing
 
 //out vec3 ourColor;
 out vec2 TexCoord;
+out vec3 Color;
+out float  Type;
 
 void main()
 {
     gl_Position = projView * modelView * vec4(vPos, 1.0);
     TexCoord = vTexCoord; // ---> vec2(aTexCoord.x, aTexCoord.y);
+    Color = vColor;
+    if ( vType > 0 )
+        Type=3.0; // color mode
+    else
+        Type=0.0; // texture mode
 }

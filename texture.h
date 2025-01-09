@@ -39,6 +39,7 @@ public:
     float emission[4];
     float shininess, strength;
     Texture *texture;
+    GLuint  getTextureName();
 };
 
 #endif // TEXTURE_H

@@ -49,7 +49,7 @@ public:
     vector<vertex>  vertexes; // verts
     vector<triangle> triangles; // tris
     vector<MeshFloat> meshes; //
-    Material    *material; // test
+    Material    *material; // testing: Material only 1
     ///vector<Material> materials;
     ///vector<xTexture> xtextures;
 
