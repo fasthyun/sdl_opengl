@@ -416,11 +416,11 @@ void init_object()
     //objects.push_back(obj);
 
     obj = new grid();
-    obj->name="grid";
-    objects.push_back(obj);
+    //obj->name="grid";
+    //objects.push_back(obj);
 
     d_camera = new camera();
-    set(d_camera->pos,0,3,7);
+    set(d_camera->pos,0,5,7);
     set(d_camera->up,0,1,0); //
     set(d_camera->forward,0,0,-1); //
     objects.push_back(d_camera);

@@ -620,10 +620,17 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
 
         printf("%s + [%d].mNumvertices=%d \n",tab.c_str(), n,mesh->mNumVertices);
         vertex vert;
+        int count_normal=0;
         for (i = 0; i < mesh->mNumVertices ; ++i) {
             //mesh->mVertices[i].x;
             if(mesh->mNormals != nullptr)
-                mesh->mNormals[i].x;
+            {
+                vert.normal[0]=mesh->mNormals[i].x;
+                vert.normal[1]=mesh->mNormals[i].y;
+                vert.normal[2]=mesh->mNormals[i].z;
+                count_normal++;
+            }
+
             if(mesh->mColors[0] != nullptr)
             {
                 mesh->mColors[0][i];     //Color4f(&mesh->mColors[0][vertexIndex]);
@@ -657,7 +664,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
             xobj->vertexes.push_back(vert);
         }
 
-        printf("%s + [%d].mNumFaces = %d \n",tab.c_str(), n,mesh->mNumFaces);
+        printf("%s + [%d].mNumFaces = %d normal=%d \n",tab.c_str(), n,mesh->mNumFaces, count_normal);
         for (t = 0; t < mesh->mNumFaces; ++t) {
             const struct aiFace* face = &mesh->mFaces[t];
             GLenum face_mode;
@@ -924,6 +931,7 @@ void init_models()
     //loadObjectFrom3Dfile("./model/ball.fbx");
 
 
+     // TEST:
     for ( int i=0 ; i < 0 ; i++)
     {
         xObject *obj;
@@ -943,9 +951,9 @@ void init_models()
         printf("x=%f  y=%f  z=%f \n",x,y,z);
     }
 
-    obj=new particle();
-    set(obj->pos,0,0,0);
-    objects.push_back(obj);
+    //obj=new particle();
+    //set(obj->pos,0,0,0);
+    //objects.push_back(obj);
 
     //xObject *model_obj=new model_object("./model/Bob.fbx");
     //set(model_obj->pos,0,10,0);

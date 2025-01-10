@@ -120,12 +120,15 @@ make_glVertexArray()
     // VBO버퍼에 대한 구조 설명
     glEnableVertexAttribArray(0); //  first input to vertex-shader?
     glEnableVertexAttribArray(1); //  second input to vertex-shader?
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)0);    // (idx, size, type, ? , stride-size, offset)
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)0); // position[3]   // (idx, size, type, ? , stride-size, offset)
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)(3 * sizeof(float))); // tu,tv
     glEnableVertexAttribArray(2); //  third input to vertex-shader?
     glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)(5 * sizeof(float))); // R,G,B
     glEnableVertexAttribArray(3); //  fourth input to vertex-shader?
-    glVertexAttribPointer(3, 1, GL_INT, GL_FALSE, sizeof(vertex), (void*)(8 * sizeof(float))); // type : 1 color 0 texture
+    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)(8 * sizeof(float))); // normal[3]
+    glEnableVertexAttribArray(4); //  fourth input to vertex-shader?
+    glVertexAttribPointer(4, 1, GL_INT, GL_FALSE, sizeof(vertex), (void*)(11 * sizeof(float))); // type : 1 color 0 texture
+
     glBindVertexArray(0); // break
 }
 
@@ -293,7 +296,8 @@ void camera::update(float dt)
                 printf("clicked! \n");
                 if (d_ball==nullptr)
                     d_ball=findObject("ball"); // how lagg ?
-                set(d_ball->pos, pos);
+                if (d_ball!=nullptr)
+                    set(d_ball->pos, pos);
                 break;
             default :;
 
