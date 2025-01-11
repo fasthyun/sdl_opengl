@@ -9,7 +9,7 @@ using namespace std;
 struct vertex {
     float v[3];
     float tu,tv;
-    float r,g,b;
+    float r,g,b,a;
     float normal[3];
     int type;
 };

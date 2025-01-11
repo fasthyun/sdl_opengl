@@ -23,7 +23,7 @@
 
 out vec4 FragColor;
 in vec2  TexCoord;
-in vec3  Color;
+in vec4  Color;
 in vec3  Normal;
 in float Type;
 in vec3  FragPos;
@@ -36,11 +36,11 @@ uniform sampler2D ourTexture; // how working???
 void main()
 {
 
-    vec3 lightPos = vec3(0,5,0);
+    vec3 lightPos = vec3(0,3,0);
     vec3 lightColor = vec3(1.0,1.0,1.0);
 
     // ambient
-    float ambientStrength = 0.1;
+    float ambientStrength = 0.2;
     vec3 ambient = ambientStrength * lightColor;
 
     // diffuse
@@ -50,18 +50,18 @@ void main()
     vec3 diffuse = diff * lightColor;
 
     vec4 _color;
-    vec3 result;
+    vec4 result;
     ///FragColor = texture2D(ourTexture, TexCoord); // 130
     if (Type > 0 ){
         //_color = vec4(Color, 1.0); // color mode
-        result = (ambient + diffuse) * Color;
+        result = vec4((ambient + diffuse),1.0) * Color;
     }
     else
     {
-        result = (ambient + diffuse) * texture(ourTexture, TexCoord).xyz ;
+        result = vec4((ambient + diffuse),1.0) * texture(ourTexture, TexCoord) ;
     }
 
-    FragColor = vec4(result, 1.0);
+    FragColor = result;
 }
 
 /*

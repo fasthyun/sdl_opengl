@@ -6,6 +6,7 @@
 #include <boost/uuid/uuid_generators.hpp> // generators
 #include <boost/uuid/uuid_io.hpp>         // streaming operators etc.  to_string()
 
+#include <glm/gtc/type_ptr.hpp> // make_mat4()
 
 using namespace std::chrono;
 // 이걸 왜 작성했지????
@@ -123,17 +124,13 @@ make_glVertexArray()
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)0); // position[3]   // (idx, size, type, ? , stride-size, offset)
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)(3 * sizeof(float))); // tu,tv
     glEnableVertexAttribArray(2); //  third input to vertex-shader?
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)(5 * sizeof(float))); // R,G,B
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)(5 * sizeof(float))); // R,G,B,A
     glEnableVertexAttribArray(3); //  fourth input to vertex-shader?
-    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)(8 * sizeof(float))); // normal[3]
+    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)(9 * sizeof(float))); // normal[3]
     glEnableVertexAttribArray(4); //  fourth input to vertex-shader?
-    glVertexAttribPointer(4, 1, GL_INT, GL_FALSE, sizeof(vertex), (void*)(11 * sizeof(float))); // type : 1 color 0 texture
+    glVertexAttribPointer(4, 1, GL_INT, GL_FALSE, sizeof(vertex), (void*)(12 * sizeof(float))); // type : 1 color 0 texture
 
     glBindVertexArray(0); // break
-}
-
-void xObject::make_glVertexArray_for_color()
-{
 }
 
 
@@ -141,7 +138,7 @@ void xObject::make_radius()
 {
     // bound-box-radius , temporaliry
     vertex *t;
-    vertex orig={0,0,0,0,0,0,0,0,0};
+    vertex orig={0,0,0,0,0,0,0,0,0,0,0,0,0};
     float r=0,max_r=0;
     for ( int i =0 ;i < vertexes.size() ; i++)
     {
@@ -201,21 +198,29 @@ void xObject::draw_meshes()
     }
 }
 
+#include <glm/gtc/matrix_transform.hpp>
 void xObject::draw()
 {
     //draw_axis();
     //draw_dir_up();
     //draw_meshes();
     mat4x4_translate(model_mat, pos[0], pos[1], pos[2]);
+
+    //glm::mat4 _m1 = glm::make_mat4(model_mat);
+    //glm::translate(_m1, glm::vec3(pos[0], pos[1], pos[2]));
+
     float _m[16];
     if (parent)
     {
         loadIdentity(_m);
         //set(_m,parent->model_m);
         mat4x4_mult(_m, parent->model_mat, model_mat);
+
     }
     else
         mat4x4_set(_m, model_mat); // copy
+
+    glm::mat4 _m1 = glm::make_mat4(_m);
 
     if (texname > 0)
         glBindTexture(GL_TEXTURE_2D, texname);
@@ -223,25 +228,25 @@ void xObject::draw()
     if (VAO>0)
     {
         GLint location;
-        location = glGetUniformLocation(shader->mShaderProgram, "modelView");
+        shader->setMat4("model",_m1);
+        /*location = glGetUniformLocation(shader->mProgram, "model");
         if (location >= 0)
             glUniformMatrix4fv(location, 1, GL_FALSE, _m); // ( location, count,  transpose, float *value )
-        // else          ;
-
+        */
        /* location = glGetUniformLocation(shader->mShaderProgram, "ourTexture");
         if (location >=0)
             glUniform1i(location, texname); */
 
-        //printf("texture draw!! %d\n",triangles.size());
         glBindVertexArray(VAO);
         //( mode, count, index_data_type, void * indices);
-        glDrawElements(GL_TRIANGLES, triangles.size()*3 , GL_UNSIGNED_INT, 0); // ????? count why ????
+        glDrawElements(GL_TRIANGLES, triangles.size() * 3 , GL_UNSIGNED_INT, 0); // ????? count why ????
         /* same as
-          for(i =0 ;i < len ; i++)
+           for(i =0 ;i < len ; i++)
               glArrayElement(i);
-            */
+           --- or ---
+           glDrawArrays(GL_TRIANGLES, 0, vertexes.size());
+        */
 
-        //glDrawArrays(GL_TRIANGLES, 0, vertexes.size());
     }
 
    for ( size_t i=0 ; i < children.size(); i++)
@@ -606,7 +611,7 @@ void particle::draw()
     if (VAO>0)
     {
         GLint location;
-        location = glGetUniformLocation(shader->mShaderProgram, "modelView");
+        location = glGetUniformLocation(shader->mProgram, "modelView");
         if (location >= 0)
             glUniformMatrix4fv(location, 1, GL_FALSE, _m); // ( location, count,  transpose, float *value )
 

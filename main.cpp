@@ -53,6 +53,16 @@ bool init_SDL()
             SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
             return false;
     }
+    //int SDL_GetNumVideoDisplays(void);
+    //int SDL_GetDesktopDisplayMode(int displayIndex, SDL_DisplayMode * mode);
+    SDL_DisplayMode _displaymode;
+    if(SDL_GetDesktopDisplayMode(0,&_displaymode)==0)
+    {
+       printf("DesktopDisplayMode:  w=%d h=%d\n",_displaymode.w,_displaymode.h);
+       if(_displaymode.w>2000)
+           width=1920,height=1024;
+    }
+
     // Set OpenGL attributes
     // Use the core OpenGL profile
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE); //works , no legacy!
@@ -289,8 +299,8 @@ void main_loop()
         // Aspect Ratio. Depends on the size of your window. Notice that 4/3 == 800/600 == 1280/960, sounds familiar?
         // Near clipping plane. Keep as big as possible, or you'll get precision issues.
         // Far clipping plane. Keep as little as possible.
-        glm::mat4 projectionMatrix = glm::perspective(
-            glm::radians(FoV), 4.0f / 3.0f, 0.1f, 100.0f );
+        glm::mat4 projectionMatrix = glm::perspective(            
+            glm::radians(FoV), (float)width / height, 0.1f, 100.0f ); // glm::radians(FoV), 4.0f / 3.0f, 0.1f, 100.0f );
 
         glm::mat4 viewMatrix ;
         /* = glm::lookAt(
@@ -311,10 +321,8 @@ void main_loop()
             if (obj->shader != nullptr)
             {
                 obj->shader->SetActive();
-                GLint location=glGetUniformLocation(obj->shader->mShaderProgram, "projView"); // testing!
-                if (location>=0)
-                    glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(tmp_mat4)); // ( location, count,  transpose, float *value )
-
+                obj->shader->setMat4("projView",tmp_mat4);
+                //glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(tmp_mat4)); // ( location, count,  transpose, float *value )
                 obj->draw(); //temp
             }
         }

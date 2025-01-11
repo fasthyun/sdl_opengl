@@ -3,6 +3,7 @@
 #include "Shader.h"
 #include "element3d.h"
 #include "texture.h"
+#include <glm/glm.hpp>
 #include "./support/mesh.h"
 #include "./support/material.h"
 
@@ -33,7 +34,7 @@ class xObject {
 
 public:
     xObject();
-    ~xObject();
+    virtual ~xObject();  // virtual why?
     virtual void update(float dt=0);
     virtual void draw();
     void set_parent(xObject *p){ parent=p;}
@@ -43,8 +44,7 @@ public:
     void draw_axis();
     void draw_dir_up();
     void load_gltf(string name); // remove
-    void make_glVertexArray();
-    void make_glVertexArray_for_color();
+    void make_glVertexArray();    
     void make_radius(); // tmp
     vector<vertex>  vertexes; // verts
     vector<triangle> triangles; // tris
@@ -61,6 +61,7 @@ public:
     float force[3];
     float weight = 0.0 ;  // kg
     float model_mat[16];
+    glm::mat4 mat; // new matrix
     uint64_t prev_time;
     Shader *shader;
 

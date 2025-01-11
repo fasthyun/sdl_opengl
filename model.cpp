@@ -331,7 +331,7 @@ int loadMaterials(const aiScene* scene) {
                 */
            }
         }
-        std::cout << msgs ;
+        /// std::cout << msgs ;
     }
     return true;
 }
@@ -535,7 +535,7 @@ aiNode *findxObject(const struct aiNode* nd, int level=-1)
 }
 
 // TODO : scale remove
-void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale, xObject *xobj, int tab_level)
+void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scalex, xObject *xobj, int tab_level)
 {    
     /*
        1. process meta_data
@@ -553,9 +553,6 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
     unsigned int i;
     unsigned int n=0, t;
     aiMatrix4x4 m = nd->mTransformation;
-    //aiMatrix4x4 m2;
-    //aiMatrix4x4::Scaling(aiVector3D(scale, scale, scale), m2);
-    //m = m * m2;
 
     string tab="";  // tab tricks. have a fun!
     for (int i=0; i<tab_level; i++)
@@ -576,15 +573,23 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
     m.Transpose();  // Q: transpose for OpenGL?   A: ...
 
     copy(xobj->model_mat, &m.a1);
-
+    /*
+    printf("%8.4f,%8.4f,%8.4f,%8.4f\n", m.a1, m.a2,m.a3,m.a4);
+    printf("%8.4f,%8.4f,%8.4f,%8.4f\n", m.b1, m.b2,m.b3,m.b4);
+    printf("%8.4f,%8.4f,%8.4f,%8.4f\n", m.c1, m.c2,m.c3,m.c4);
+    printf("%8.4f,%8.4f,%8.4f,%8.4f\n", m.d1, m.d2,m.d3,m.d4);
+    */
     //if (tab_level==0 )
+    xobj->pos[0]=m.d1;
+    xobj->pos[1]=m.d2;
+    xobj->pos[2]=m.d3;
     xobj->name = nd->mName.C_Str(); // object name
 
     printf("%s[%s].mNumMeshes=%d \n", tab.c_str(), nd->mName.C_Str(), nd->mNumMeshes);
 
     for ( n=0 ; n < nd->mNumMeshes; ++n)
     {
-        /* Mesh는 material을 다르게 갖을수있다 --> 구현안함. material 동일한것을 가정함 */
+        /* Mesh는 material을 다르게 갖을 수 있다 --> 구현안함. material 동일한것을 가정함 */
         Material *_material;
         int mesh_idx = nd->mMeshes[n];  // mesh index
         const struct aiMesh* mesh = sc->mMeshes[mesh_idx];
@@ -619,10 +624,12 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
         //glDisable(GL_COLOR_MATERIAL);
 
         printf("%s + [%d].mNumvertices=%d \n",tab.c_str(), n,mesh->mNumVertices);
-        vertex vert;
+
         int count_normal=0;
+        int count_vertex_color=0;
         for (i = 0; i < mesh->mNumVertices ; ++i) {
-            //mesh->mVertices[i].x;
+            vertex vert;
+
             if(mesh->mNormals != nullptr)
             {
                 vert.normal[0]=mesh->mNormals[i].x;
@@ -634,7 +641,12 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
             if(mesh->mColors[0] != nullptr)
             {
                 mesh->mColors[0][i];     //Color4f(&mesh->mColors[0][vertexIndex]);
-                printf("%s ================> vertice color!!! \n",tab.c_str());
+                //printf("%s ================> vertice color!!! \n",tab.c_str());
+                vert.r=mesh->mColors[0][i].r;
+                vert.g=mesh->mColors[0][i].g;
+                vert.b=mesh->mColors[0][i].b;
+                vert.a=mesh->mColors[0][i].a;
+                count_vertex_color++;
             }
             float tu=0,tv=0;
             //if(mesh->HasTextureCoords(0))	//HasTextureCoords(texture_coordinates_set)
@@ -654,17 +666,17 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
                 vert.r=_material->diffuse[0];
                 vert.g=_material->diffuse[1];
                 vert.b=_material->diffuse[2];
+                vert.a=_material->diffuse[3];
                 //printf("%s diffuse==> %2.3f %2.3f %2.3f \n",tab.c_str(),_material->diffuse[0],_material->diffuse[1],_material->diffuse[2]);
                 vert.type=1; // color mode
             }            
             vert.v[0]=mesh->mVertices[i].x;
             vert.v[1]=mesh->mVertices[i].y;
             vert.v[2]=mesh->mVertices[i].z;
-
             xobj->vertexes.push_back(vert);
         }
 
-        printf("%s + [%d].mNumFaces = %d normal=%d \n",tab.c_str(), n,mesh->mNumFaces, count_normal);
+        printf("%s + [%d].mNumFaces = %d normal=%d  vertex_color=%d \n",tab.c_str(), n,mesh->mNumFaces, count_normal, count_vertex_color);
         for (t = 0; t < mesh->mNumFaces; ++t) {
             const struct aiFace* face = &mesh->mFaces[t];
             GLenum face_mode;
@@ -713,7 +725,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
         child->set_shader(xobj->shader); // from parent's shader
         xobj->children.push_back(child);
         //if (xobj.xobject_found==true)
-        loadToObject(sc, nd->mChildren[n], scale, child, tab_level+1);
+        loadToObject(sc, nd->mChildren[n], scalex, child, tab_level+1);
     }
     // printf("%sobj.children=%d \n",tab.c_str(), xobj.children.size());
     printf("%sload model obj.name = %s \n",tab.c_str(), xobj->name.c_str());
@@ -872,7 +884,8 @@ extern vector<xObject* > objects;
 
 void loadObjectsFrom3Dfile(string _path)
 {
-    //xObject *obj;
+    /* Temp :  fbx파일에서 레벨1인 object만 따로 등록하기 */
+    //
     xObject *dummy;
     dummy = new xObject();
     Shader *_shader;
@@ -889,7 +902,7 @@ void loadObjectsFrom3Dfile(string _path)
          objects.push_back(obj);
      }
 
-    //delete dummy;
+    delete dummy;
 }
 
 
@@ -922,12 +935,12 @@ void init_models()
     set(obj->pos,0,0,0);
     objects.push_back(obj);
     */
-
-     xObject *model_obj=new model_object("./model/teapot.fbx");
-     set(model_obj->pos,0,0,0);
-     objects.push_back(model_obj);
+    xObject *model_obj;
+     //xObject *model_obj=new model_object("./model/teapot.fbx");
+     //set(model_obj->pos,0,0,0);
+     //objects.push_back(model_obj);
+     loadObjectsFrom3Dfile("./model/teapot.fbx");
      //loadObjectsFrom3Dfile("./model/stage.fbx");
-
     //loadObjectFrom3Dfile("./model/ball.fbx");
 
 
@@ -955,9 +968,10 @@ void init_models()
     //set(obj->pos,0,0,0);
     //objects.push_back(obj);
 
-    //xObject *model_obj=new model_object("./model/Bob.fbx");
-    //set(model_obj->pos,0,10,0);
+    //model_obj=new model_object("./model/Bob.fbx");
+    //set(model_obj->pos,0,0,-5);
     //objects.push_back(model_obj);
+
     //obj=new texture_manager();
     //objects.push_back(obj);
     printf("init_models()\n");

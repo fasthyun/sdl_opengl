@@ -7,16 +7,13 @@
 // ----------------------------------------------------------------
 //#include "stable.h"
 #include "Shader.h"
-//#include <vector>
-//#include <fstream>
 #include <sstream>
-//#include <iostream>
 
 
-
+GLuint d_installed_program=-1; // global current installed program
 
 Shader::Shader()
-	: mShaderProgram(0)
+    : mProgram(0)
 	, mVertexShader(0)
 	, mFragShader(0)
 {
@@ -67,10 +64,10 @@ bool Shader::Load(const std::string& vertName, const std::string& fragName)
 	
 	// Now create a shader program that
 	// links together the vertex/frag shaders
-	mShaderProgram = glCreateProgram();
-	glAttachShader(mShaderProgram, mVertexShader);
-	glAttachShader(mShaderProgram, mFragShader);
-	glLinkProgram(mShaderProgram);
+    mProgram = glCreateProgram();
+    glAttachShader(mProgram, mVertexShader);
+    glAttachShader(mProgram, mFragShader);
+    glLinkProgram(mProgram);
 	
 	// Verify that the program linked successfully
 	if (!IsValidProgram())
@@ -79,28 +76,34 @@ bool Shader::Load(const std::string& vertName, const std::string& fragName)
 	}
 	
 
-    printf("Shader load() ........\n");//, fileName.c_str());
+    printf("Shader load() ........ program = %d \n", mProgram);//, fileName.c_str());
 	return true;
 }
 
 void Shader::Unload()
 {
 	// Delete the program/shaders
-	glDeleteProgram(mShaderProgram);
+    glDeleteProgram(mProgram);
 	glDeleteShader(mVertexShader);
 	glDeleteShader(mFragShader);
 }
 
 void Shader::SetActive()
 {
+   glUseProgram(mProgram);
 	// Set this program as the active one
-	glUseProgram(mShaderProgram);
+    if (d_installed_program != mProgram)
+    {
+        //printf("new progrma =%d \n",mProgram);
+        glUseProgram(mProgram);
+        d_installed_program = mProgram;
+    }
 }
 
 void Shader::SetMatrixUniform(const char* name, const Matrix4& matrix)
 {
 	// Find the uniform by this name
-	GLuint loc = glGetUniformLocation(mShaderProgram, name);
+    GLuint loc = glGetUniformLocation(mProgram, name);
 	// Send the matrix data to the uniform
 	glUniformMatrix4fv(loc, 1, GL_TRUE, matrix.GetAsFloatPtr());
 }
@@ -178,12 +181,12 @@ bool Shader::IsValidProgram()
 	
 	GLint status;
 	// Query the link status
-	glGetProgramiv(mShaderProgram, GL_LINK_STATUS, &status);
+    glGetProgramiv(mProgram, GL_LINK_STATUS, &status);
 	if (status != GL_TRUE)
 	{
 		char buffer[512];
 		memset(buffer, 0, 512);
-		glGetProgramInfoLog(mShaderProgram, 511, nullptr, buffer);
+        glGetProgramInfoLog(mProgram, 511, nullptr, buffer);
         //SDL_Log("GLSL Link Status:\n%s", buffer);
 		return false;
 	}	
