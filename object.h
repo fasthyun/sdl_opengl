@@ -55,13 +55,18 @@ public:
 
     // variables
     xObject *parent;
-    float pos[3];
+    float pos[3];  // translate
     float forward[3]; //
     float up[3];
     float force[3];
     float weight = 0.0 ;  // kg
-    float model_mat[16];
-    glm::mat4 mat; // new matrix
+    float movement_speed=0.0;
+    float pitch = 0.0; // x
+    float yaw = 0.0; // y
+    float roll = 0.0; // z
+    float scale[3] = {1.0,1.0,1.0}; // scale
+    ///float model_mat[16];
+    glm::mat4 model; // new matrix
     uint64_t prev_time;
     Shader *shader;
 
@@ -127,6 +132,17 @@ public:
     virtual void update(float dt=0);
     virtual void draw();
 };
+
+class cube : public xObject
+{
+
+public:
+    cube();
+    float rotate_angle_speed;
+    virtual void update(float dt=0);
+    virtual void draw();
+};
+
 
 xObject* findObject(string _name);
 

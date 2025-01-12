@@ -7,6 +7,8 @@
 #include <boost/uuid/uuid_io.hpp>         // streaming operators etc.  to_string()
 
 #include <glm/gtc/type_ptr.hpp> // make_mat4()
+#include <glm/gtc/matrix_transform.hpp> // rotate()
+//#include <glm/gtx/transform.hpp> //rotate
 
 using namespace std::chrono;
 // 이걸 왜 작성했지????
@@ -49,7 +51,8 @@ xObject::xObject()
     set(forward,0,0,1);
     set(force,0,0,0);
     //make_circle();
-    loadIdentity(model_mat);
+    // loadIdentity(model_mat);
+    model = glm::mat4(1);
     name="None";
 }
 
@@ -68,7 +71,7 @@ xObject::~xObject(){
 
 
 
-void xObject::update(float dt)
+void xObject::update(float dt /* ms seconds */)
 {
     float v[3];
     multiply(force, dt, v);
@@ -204,38 +207,58 @@ void xObject::draw()
     //draw_axis();
     //draw_dir_up();
     //draw_meshes();
-    mat4x4_translate(model_mat, pos[0], pos[1], pos[2]);
+    //mat4x4_translate(model_mat, pos[0], pos[1], pos[2]);
+    //model=glm::translate(model, glm::vec3(pos[0], pos[1], pos[2]));
 
-    //glm::mat4 _m1 = glm::make_mat4(model_mat);
+    /* TransformedVector = TranslationMatrix * RotationMatrix * ScaleMatrix * OriginalVector; */
+
+
+
+    //glm::mat4  m1(1.0);
+    //glm::mat4  m2(1.0);
     //glm::translate(_m1, glm::vec3(pos[0], pos[1], pos[2]));
+    //m1[3].x =pos[0];    m1[3].y =pos[1];    m1[3].z =pos[2];
+    //m1[3].x =pos[0];    m1[3].y =pos[1];    m1[3].z =pos[2];
+    //model=m1 *glm::rotate(m2, yaw , glm::vec3(0,1,0));
+    if (0)
+    {
+        model = glm::mat4(1.0); // identity
+        model=glm::translate(model, glm::vec3(pos[0], pos[1], pos[2]));
 
+        //model=glm::rotate(model, roll , glm::vec3(0,0,1));//z
+        //model=glm::rotate(model, yaw , glm::vec3(0,1,0)); //y
+        //model=glm::rotate(model, pitch , glm::vec3(1,0,0)); //x
+
+        model=glm::scale(model, glm::vec3(scale[0],scale[1],scale[2]));
+    }
+    glm::mat4 _m1(1);
     float _m[16];
     if (parent)
     {
         loadIdentity(_m);
         //set(_m,parent->model_m);
-        mat4x4_mult(_m, parent->model_mat, model_mat);
+        //mat4x4_mult(_m, parent->model_mat, model_mat);
+        _m1=parent->model * _m1;
 
     }
-    else
-        mat4x4_set(_m, model_mat); // copy
+    else _m1 = model;
+    //else mat4x4_set(_m, model_mat); // copy
 
-    glm::mat4 _m1 = glm::make_mat4(_m);
+    //glm::mat4 _m1 = glm::make_mat4(_m);
 
     if (texname > 0)
         glBindTexture(GL_TEXTURE_2D, texname);
 
     if (VAO>0)
     {
-        GLint location;
         shader->setMat4("model",_m1);
-        /*location = glGetUniformLocation(shader->mProgram, "model");
-        if (location >= 0)
+        /* GLint location;
+          location = glGetUniformLocation(shader->mProgram, "model");
+          if (location >= 0)
             glUniformMatrix4fv(location, 1, GL_FALSE, _m); // ( location, count,  transpose, float *value )
         */
-       /* location = glGetUniformLocation(shader->mShaderProgram, "ourTexture");
-        if (location >=0)
-            glUniform1i(location, texname); */
+        /* location = glGetUniformLocation(shader->mShaderProgram, "ourTexture");
+        if (location >=0) glUniform1i(location, texname); */
 
         glBindVertexArray(VAO);
         //( mode, count, index_data_type, void * indices);
@@ -246,7 +269,6 @@ void xObject::draw()
            --- or ---
            glDrawArrays(GL_TRIANGLES, 0, vertexes.size());
         */
-
     }
 
    for ( size_t i=0 ; i < children.size(); i++)
@@ -594,16 +616,15 @@ particle::particle()
 void particle::draw()
 {
     //draw_meshes();
-    mat4x4_translate(model_mat, pos[0], pos[1], pos[2]);
+    ///mat4x4_translate(model_mat, pos[0], pos[1], pos[2]);
     float _m[16];
     if (parent)
     {
         loadIdentity(_m);
         //set(_m,parent->model_m);
-        mat4x4_mult(_m, parent->model_mat, model_mat);
+        //mat4x4_mult(_m, parent->model_mat, model_mat);
     }
-    else
-        mat4x4_set(_m, model_mat); // copy
+    //else mat4x4_set(_m, model_mat); // copy
 
     if (texname > 0)
         glBindTexture(GL_TEXTURE_2D, texname);
@@ -630,6 +651,23 @@ void particle::update(float dt)
 {
 
 }
+
+
+cube::cube():xObject()
+{
+    rotate_angle_speed=10;
+}
+
+void cube::update(float dt)
+{
+    ///yaw += glm::degrees(rotate_angle_speed * dt);
+}
+
+void cube::draw()
+{
+    xObject::draw();
+}
+
 
 extern std::vector<Texture *> textures;
 
@@ -727,3 +765,4 @@ void texture_object::draw()
 {
     xObject::draw();
 }
+

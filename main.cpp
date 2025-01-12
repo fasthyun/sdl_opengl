@@ -11,6 +11,9 @@
 #include <cstdlib> // rand()
 //#include <complex>
 
+
+#include <glm/glm.hpp> // vec2, vec3, mat4, radians
+#include <glm/ext.hpp> // perspective, translate, rotate
 ///#includ "misc.h"
 
 //#include "nukclear_pre.h"
@@ -214,7 +217,8 @@ void test_print_nk_tree_object(xObject *obj)
     {
         nk_draw_vector3f(ctx,"force",obj->force);
         //nk_layout_row_dynamic(ctx, 10, 1);
-        nk_drawMatrix4f(ctx,"model_mat",obj->model_mat);
+        //nk_drawMatrix4f(ctx,"model_mat",obj->model_mat);
+        nk_drawMatrix4f(ctx,"model_mat",glm::value_ptr(obj->model)); //glm::value_ptr(tmp_mat4)
         //nk_label(ctx, "Label aligned centered", NK_TEXT_CENTERED);
 
         for ( size_t i=0 ; i < obj->children.size(); i++)
@@ -224,16 +228,14 @@ void test_print_nk_tree_object(xObject *obj)
             if(nk_tree_push_hashed(ctx, NK_TREE_NODE , c_obj->name.c_str(), NK_MINIMIZED, c_obj->uuid.c_str(), c_obj->uuid.length() ,0))
             {
                 //nk_layout_row_dynamic(ctx, 10, 1);
-                nk_drawMatrix4f(ctx,"model_mat",obj->model_mat);
+                //nk_drawMatrix4f(ctx,"model_mat",obj->model_mat);
+                nk_drawMatrix4f(ctx,"model_mat",glm::value_ptr(obj->model)); //glm::value_ptr(tmp_mat4)
                 nk_tree_pop(ctx);
             }
         }
         nk_tree_pop(ctx);
     }
 }
-
-#include <glm/glm.hpp> // vec2, vec3, mat4, radians
-#include <glm/ext.hpp> // perspective, translate, rotate
 void main_loop()
 {
     //float  time_test=0;
@@ -372,7 +374,7 @@ void main_loop()
             static nk_flags window_flags =NK_WINDOW_MOVABLE|NK_WINDOW_SCALABLE|NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE;
 
             /* nk Window ? */
-            if (nk_begin(ctx, "console", nk_rect(10, 10, 300, 130), window_flags ))
+            if (nk_begin(ctx, "console", nk_rect(10, 10, 400, 930), window_flags ))
             {                
                 nk_layout_row_static(ctx, 30, 80, 1);
                 if (nk_button_label(ctx, "button"))    printf("button pressed!\n");

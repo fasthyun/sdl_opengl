@@ -331,7 +331,7 @@ int loadMaterials(const aiScene* scene) {
                 */
            }
         }
-        /// std::cout << msgs ;
+       /// std::cout << msgs ;
     }
     return true;
 }
@@ -359,9 +359,7 @@ int loadMetadata(aiMetadata *md, xObject *obj, string name="", int level=0) {
     for(size_t i=0; i<md->mNumProperties ;i++)
     {
         const aiMetadataEntry *prop;
-        const aiString *key;
-
-        //string msg;
+        const aiString *key;        
         string msg;
 
         if (md->Get(i,key,prop))
@@ -440,7 +438,6 @@ int loadMetadata(aiMetadata *md, xObject *obj, string name="", int level=0) {
             }
             else
                 msg +="else! unknown metadata type " + std::to_string(prop->mType);
-
 
             if (level >=0)
                 std::cout << msg << "\n" ;
@@ -534,6 +531,8 @@ aiNode *findxObject(const struct aiNode* nd, int level=-1)
     return node;
 }
 
+#include <glm/gtc/type_ptr.hpp> // make_mat4()
+
 // TODO : scale remove
 void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scalex, xObject *xobj, int tab_level)
 {    
@@ -544,7 +543,8 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
            - triangles
            - (already materials)
        3. process children
-       30%
+
+        30%
 
        1. 재귀함수
        2. object들을 xObject로 바꿔줘야한다.
@@ -570,22 +570,32 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
     if(loadMetadata(nd->mMetaData, xobj, nd->mName.C_Str(), tab_level)==true)
         xobj->xobject_found=true; // test
 
-    m.Transpose();  // Q: transpose for OpenGL?   A: ...
+    // no transpose then, extract scale, translate, rotate
+    // m.Transpose();  // Q: transpose for OpenGL?   A: maybe!
+    //copy(xobj->model_mat, &m.a1);
+    //xobj->model = glm::make_mat4(&m.a1); // without transpose!!
 
-    copy(xobj->model_mat, &m.a1);
-    /*
+    xobj->name = nd->mName.C_Str(); // object name
+    printf("%s[%s].mNumMeshes=%d \n", tab.c_str(), nd->mName.C_Str(), nd->mNumMeshes);
+
+    //if (tab_level==0)
+    // when non_transpose
+    xobj->pos[0]=m.a3; xobj->pos[1]=m.b3;  xobj->pos[2]=m.c3; // translate. ok
+    xobj->scale[0]=m.a1,xobj->scale[1]=m.b2,xobj->scale[2]=m.c3; //scale. ok
+    xobj->pitch=atan2(m.b3,m.c3);  //x
+    xobj->yaw=atan2(-m.a3,sqrt(m.a1*m.a1+m.a2*m.a2)); //y
+    xobj->roll=atan2(m.a2,m.a1); // z
+    printf("pitch(x) = %8.4f yaw(y)=%8.4f roll(z)=%8.4f \n", glm::degrees(xobj->pitch),glm::degrees(xobj->yaw),glm::degrees(xobj->roll));
+
+    m.Transpose();  // Q: transpose for OpenGL?   A: maybe!
     printf("%8.4f,%8.4f,%8.4f,%8.4f\n", m.a1, m.a2,m.a3,m.a4);
     printf("%8.4f,%8.4f,%8.4f,%8.4f\n", m.b1, m.b2,m.b3,m.b4);
     printf("%8.4f,%8.4f,%8.4f,%8.4f\n", m.c1, m.c2,m.c3,m.c4);
     printf("%8.4f,%8.4f,%8.4f,%8.4f\n", m.d1, m.d2,m.d3,m.d4);
-    */
-    //if (tab_level==0 )
-    xobj->pos[0]=m.d1;
-    xobj->pos[1]=m.d2;
-    xobj->pos[2]=m.d3;
-    xobj->name = nd->mName.C_Str(); // object name
+    glm::mat4 m1= glm::make_mat4(&m.a1);
 
-    printf("%s[%s].mNumMeshes=%d \n", tab.c_str(), nd->mName.C_Str(), nd->mNumMeshes);
+    //xobj->model = glm::make_mat4(&m.a1);
+    xobj->model = glm::mat4(1);
 
     for ( n=0 ; n < nd->mNumMeshes; ++n)
     {
@@ -633,8 +643,8 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
             if(mesh->mNormals != nullptr)
             {
                 vert.normal[0]=mesh->mNormals[i].x;
-                vert.normal[1]=mesh->mNormals[i].y;
-                vert.normal[2]=mesh->mNormals[i].z;
+                vert.normal[1]=mesh->mNormals[i].z;
+                vert.normal[2]=- mesh->mNormals[i].y;
                 count_normal++;
             }
 
@@ -670,9 +680,14 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
                 //printf("%s diffuse==> %2.3f %2.3f %2.3f \n",tab.c_str(),_material->diffuse[0],_material->diffuse[1],_material->diffuse[2]);
                 vert.type=1; // color mode
             }            
-            vert.v[0]=mesh->mVertices[i].x;
-            vert.v[1]=mesh->mVertices[i].y;
-            vert.v[2]=mesh->mVertices[i].z;
+            /* vert.v[0]=mesh->mVertices[i].x;
+            vert.v[1]=mesh->mVertices[i].z;
+            vert.v[2]=-mesh->mVertices[i].y; */
+            glm::vec4 _v1=glm::vec4(mesh->mVertices[i].x,mesh->mVertices[i].y,mesh->mVertices[i].z,1.0);
+            glm::vec4 new_v= m1*_v1;
+            vert.v[0]=new_v.x;
+            vert.v[1]=new_v.y;
+            vert.v[2]=new_v.z;
             xobj->vertexes.push_back(vert);
         }
 
@@ -720,7 +735,17 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
     for (n = 0; n < nd->mNumChildren; ++n)
     {
         // tempolarily needvmore time and works later!!!
-        xObject *child=new xObject();
+        xObject *child;
+        string _name = nd->mChildren[n]->mName.C_Str();
+        std::transform(_name.begin(), _name.end(), _name.begin(), ::tolower); // 소문자로 바꿔주기
+        int idx=_name.find("cube");
+        if (idx != string::npos)
+        {
+            child=new cube();
+            printf("=============> found cube %s", _name.c_str());
+        }else
+            child=new xObject();
+
         child->set_parent(xobj); //
         child->set_shader(xobj->shader); // from parent's shader
         xobj->children.push_back(child);
@@ -799,7 +824,7 @@ bool Import3DFromFile(const std::string filename,xObject *obj)
     // 1. load material
     // 2. scene's metadata
     loadMaterials(g_scene);
-    //loadMetadata(g_scene->mMetaData, obj, g_scene->mName.C_Str());
+    loadMetadata(g_scene->mMetaData, obj, g_scene->mName.C_Str());
     loadToObject(g_scene, g_scene->mRootNode, 1.0, obj, 0); // 3. load object ?
 
     /*
@@ -939,10 +964,63 @@ void init_models()
      //xObject *model_obj=new model_object("./model/teapot.fbx");
      //set(model_obj->pos,0,0,0);
      //objects.push_back(model_obj);
+     //loadObjectsFrom3Dfile("./model/box.fbx");
      loadObjectsFrom3Dfile("./model/teapot.fbx");
      //loadObjectsFrom3Dfile("./model/stage.fbx");
     //loadObjectFrom3Dfile("./model/ball.fbx");
+/*
 
+   no_transpose
+ 32.0000,  0.0000,  0.0000,  0.0000
+  0.0000, -0.0000,  1.0000,  0.0000
+  0.0000,-32.0000, -0.0000,  0.0000
+  0.0000,  0.0000,  0.0000,  1.0000
+
+ 32.0000,  0.0000,  0.0000,  0.0000
+  0.0000, 32.0000,  0.0000,  0.0000
+  0.0000,  0.0000,  1.0000,  0.0000
+  0.0000,  0.0000,  0.0000,  1.0000
+
+ transpose
+  0.8280,  0.0000, -0.5607,  0.0000
+ -0.5607,  0.0000, -0.8280,  0.0000
+  0.0000,  1.0000,  0.0000,  0.0000
+ -3.0000,  0.0000, -2.0000,  1.0000
+
+ transpose
+ 0.8280,  0.5607,  0.0000,  0.0000
+ -0.5607,  0.8280,  0.0000,  0.0000
+  0.0000,  0.0000,  1.0000,  0.0000
+ -3.0000,  2.0000,  0.0000,  1.0000
+
+ metadata_n = 18
+ + data[0]=UpAxis : ( 1 )
+ + data[1]=UpAxisSign : ( 1 )
+ + data[2]=FrontAxis : ( 2 )
+ + data[3]=FrontAxisSign : ( 1 )
+ + data[4]=CoordAxis : ( 0 )
+ + data[5]=CoordAxisSign : ( 1 )
+ + data[6]=OriginalUpAxis : ( -1 )
+ + data[7]=OriginalUpAxisSign : ( 1 )
+ + data[8]=UnitScaleFactor : ( 1.000000 )
+ + data[9]=OriginalUnitScaleFactor : ( 1.000000 )
+ + data[10]=AmbientColor : (AIVECTOR3D)
+ + data[11]=FrameRate : ( 11 )
+ + data[12]=TimeSpanStart : ( 0 )
+ + data[13]=TimeSpanStop : ( 0 )
+ + data[14]=CustomFrameRate : ( 24.000000 )
+ + data[15]=SourceAsset_FormatVersion : 7400
+ + data[16]=SourceAsset_Generator : Blender (stable FBX IO) - 2.93.18 - 4.23.1
+ + data[17]=SourceAsset_Format : Autodesk FBX Importer
+
+
+    [Box] metadata_n = 4
+     + data[0]=UserProperties :
+     + data[1]=IsNull : False
+     + data[2]=DefaultAttributeIndex : ( 0 )
+     + data[3]=InheritType : ( 1 )
+
+*/
 
      // TEST:
     for ( int i=0 ; i < 0 ; i++)
