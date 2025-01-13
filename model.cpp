@@ -580,13 +580,44 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
 
     //if (tab_level==0)
     // when non_transpose
-    xobj->pos[0]=m.a3; xobj->pos[1]=m.b3;  xobj->pos[2]=m.c3; // translate. ok
+    xobj->pos[0]=m.a4; xobj->pos[1]=m.b4;  xobj->pos[2]=m.c4; // translate. ok
     xobj->scale[0]=m.a1,xobj->scale[1]=m.b2,xobj->scale[2]=m.c3; //scale. ok
-    xobj->pitch=atan2(m.b3,m.c3);  //x
-    xobj->yaw=atan2(-m.a3,sqrt(m.a1*m.a1+m.a2*m.a2)); //y
-    xobj->roll=atan2(m.a2,m.a1); // z
-    printf("pitch(x) = %8.4f yaw(y)=%8.4f roll(z)=%8.4f \n", glm::degrees(xobj->pitch),glm::degrees(xobj->yaw),glm::degrees(xobj->roll));
 
+    if(1)
+    {
+        xobj->pitch=atan2(m.b3,m.c3);  //x
+        xobj->yaw=atan2(-m.a3,sqrt(m.a1*m.a1+m.a2*m.a2)); //y
+        xobj->roll=atan2(m.a2,m.a1); // z
+    }
+    float angleY, angleX,angleZ;
+    if ( m.c1 < 1)
+    {
+        if( m.c1 > -1)
+        {
+            angleY = asin( -m.c1 ) ;
+            angleZ = atan2(m.b1 , m.a1) ;
+            angleX = atan2 (m.c2 , m.c3 ) ;
+        }
+        else // r20 = −1
+        {
+        // Not a uniquesolution:thetaZ − thetaX = atan2( r10 , r11 )
+            angleY = M_PI / 2;
+            angleZ = -atan2 ( -m.b3 , m.b2 );
+            angleX = 0 ;
+        }
+    }
+    else
+    {
+        angleY= -M_PI/2;
+        angleZ= atan2(-m.b3, m.b2);
+        angleX=0;
+    }
+
+    printf("pitch(x) = %8.4f yaw(y)=%8.4f roll(z)=%8.4f \n", glm::degrees(xobj->pitch),glm::degrees(xobj->yaw),glm::degrees(xobj->roll));
+    printf(" (x) = %8.4f (y)=%8.4f (z)=%8.4f \n",glm::degrees(angleX),glm::degrees(angleY),glm::degrees(angleZ));
+    printf("translate(x) = %8.4f (y)=%8.4f (z)=%8.4f \n", xobj->pos[0],xobj->pos[1],xobj->pos[2]);
+
+    //m.a4=0;m.b4=0,m.c4=0;// works!!!
     m.Transpose();  // Q: transpose for OpenGL?   A: maybe!
     printf("%8.4f,%8.4f,%8.4f,%8.4f\n", m.a1, m.a2,m.a3,m.a4);
     printf("%8.4f,%8.4f,%8.4f,%8.4f\n", m.b1, m.b2,m.b3,m.b4);
@@ -964,8 +995,8 @@ void init_models()
      //xObject *model_obj=new model_object("./model/teapot.fbx");
      //set(model_obj->pos,0,0,0);
      //objects.push_back(model_obj);
-     //loadObjectsFrom3Dfile("./model/box.fbx");
-     loadObjectsFrom3Dfile("./model/teapot.fbx");
+     loadObjectsFrom3Dfile("./model/box.fbx");
+     //loadObjectsFrom3Dfile("./model/teapot.fbx");
      //loadObjectsFrom3Dfile("./model/stage.fbx");
     //loadObjectFrom3Dfile("./model/ball.fbx");
 /*
@@ -1054,3 +1085,4 @@ void init_models()
     //objects.push_back(obj);
     printf("init_models()\n");
 }
+
