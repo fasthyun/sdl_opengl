@@ -548,7 +548,11 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
 
        1. 재귀함수
        2. object들을 xObject로 바꿔줘야한다.
-     */
+
+       Model matrix ===> identity
+       Loading vertex ======> opengl vertex
+
+   */
 
     unsigned int i;
     unsigned int n=0, t;
@@ -583,12 +587,13 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
     xobj->pos[0]=m.a4; xobj->pos[1]=m.b4;  xobj->pos[2]=m.c4; // translate. ok
     xobj->scale[0]=m.a1,xobj->scale[1]=m.b2,xobj->scale[2]=m.c3; //scale. ok
 
-    if(1)
+    if(0)
     {
         xobj->pitch=atan2(m.b3,m.c3);  //x
         xobj->yaw=atan2(-m.a3,sqrt(m.a1*m.a1+m.a2*m.a2)); //y
         xobj->roll=atan2(m.a2,m.a1); // z
     }
+
     float angleY, angleX,angleZ;
     if ( m.c1 < 1)
     {
@@ -612,6 +617,9 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
         angleZ= atan2(-m.b3, m.b2);
         angleX=0;
     }
+    xobj->pitch = angleX;
+    xobj->yaw = angleY;
+    xobj->roll = angleZ;
 
     printf("pitch(x) = %8.4f yaw(y)=%8.4f roll(z)=%8.4f \n", glm::degrees(xobj->pitch),glm::degrees(xobj->yaw),glm::degrees(xobj->roll));
     printf(" (x) = %8.4f (y)=%8.4f (z)=%8.4f \n",glm::degrees(angleX),glm::degrees(angleY),glm::degrees(angleZ));
@@ -675,7 +683,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
             {
                 vert.normal[0]=mesh->mNormals[i].x;
                 vert.normal[1]=mesh->mNormals[i].z;
-                vert.normal[2]=- mesh->mNormals[i].y;
+                vert.normal[2]=-mesh->mNormals[i].y;
                 count_normal++;
             }
 
@@ -941,7 +949,7 @@ extern vector<xObject* > objects;
 void loadObjectsFrom3Dfile(string _path)
 {
     /* Temp :  fbx파일에서 레벨1인 object만 따로 등록하기 */
-    //
+
     xObject *dummy;
     dummy = new xObject();
     Shader *_shader;
@@ -995,8 +1003,8 @@ void init_models()
      //xObject *model_obj=new model_object("./model/teapot.fbx");
      //set(model_obj->pos,0,0,0);
      //objects.push_back(model_obj);
-     loadObjectsFrom3Dfile("./model/box.fbx");
-     //loadObjectsFrom3Dfile("./model/teapot.fbx");
+     //loadObjectsFrom3Dfile("./model/box.fbx");
+     loadObjectsFrom3Dfile("./model/teapot.fbx");
      //loadObjectsFrom3Dfile("./model/stage.fbx");
     //loadObjectFrom3Dfile("./model/ball.fbx");
 /*

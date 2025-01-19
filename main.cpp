@@ -374,7 +374,7 @@ void main_loop()
             static nk_flags window_flags =NK_WINDOW_MOVABLE|NK_WINDOW_SCALABLE|NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE;
 
             /* nk Window ? */
-            if (nk_begin(ctx, "console", nk_rect(10, 10, 400, 930), window_flags ))
+            if (nk_begin(ctx, "console", nk_rect(10, 10, 400, 900), window_flags ))
             {                
                 nk_layout_row_static(ctx, 30, 80, 1);
                 if (nk_button_label(ctx, "button"))    printf("button pressed!\n");

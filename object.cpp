@@ -154,8 +154,16 @@ void xObject::make_radius()
 
 void xObject::draw_axis()
 {
+    /* https://stackoverflow.com/questions/60440682/drawing-a-line-in-modern-opengl
+     */
     // this will not work ! old_opengl
     float len=3;
+    float threeLines[] = {
+        0.0f, 0.0f, 0.0f, 1.0f,0.0f,0.0f,  // x line
+        0.0f, 0.0f, 0.0f, 0.0f,1.0f,0.0f,  // y line
+        0.0f, 0.0f, 0.0f, 0.0f,0.0f,1.0f,  // z line
+        };
+
     glLineWidth(3);
     glBegin(GL_LINES);
     glColor3f(1.0, 0, 0);
