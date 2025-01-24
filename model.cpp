@@ -265,7 +265,9 @@ int loadMaterials(const aiScene* scene) {
             }
         }
         if (found_texture==0)
+        {
             printf(" + ===============> texture NONE !!!!!!!!!!!!!!!!! \n");
+        }
 
         /*
          + properties[2]=$clr.diffuse, ( 0.800000 0.746561 0.052616 )
@@ -331,7 +333,7 @@ int loadMaterials(const aiScene* scene) {
                 */
            }
         }
-       /// std::cout << msgs ;
+        std::cout << msgs ;
     }
     return true;
 }
@@ -532,9 +534,12 @@ aiNode *findxObject(const struct aiNode* nd, int level=-1)
 }
 
 #include <glm/gtc/type_ptr.hpp> // make_mat4()
-
+#include <glm/gtc/quaternion.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/string_cast.hpp>
+//#include <glm/gtx/quaternion.hpp>
 // TODO : scale remove
-void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scalex, xObject *xobj, int tab_level)
+void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scalex, xObject *xobj, int level)
 {    
     /*
        1. process meta_data
@@ -549,9 +554,13 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
        1. 재귀함수
        2. object들을 xObject로 바꿔줘야한다.
 
-       Model matrix ===> identity
-       Loading vertex ======> opengl vertex
+      * Blender 좌표계에서 Opengl로 바꾸는 아이디어
 
+      * 문제는 origin이
+       Model matrix ===> identity
+       Loading vertex ======> transform to opengl_vertex
+
+    * scale 과 rotate만 모델에 적용 , translate는 나중에 적용하게 ...
    */
 
     unsigned int i;
@@ -559,19 +568,20 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
     aiMatrix4x4 m = nd->mTransformation;
 
     string tab="";  // tab tricks. have a fun!
-    for (int i=0; i<tab_level; i++)
+
+    for (int i=0; i<level; i++)
     {
         tab = tab + '\t';
     }
 
-    if(nd->mName==aiString("Lamp") || nd->mName==aiString("Camera"))
+    if(nd->mName==aiString("Lamp") || nd->mName==aiString("Camera")|| nd->mName==aiString("Light"))
     {
         printf("%s[%s] skipped \n", tab.c_str(), nd->mName.C_Str());
         return;
     }
 
     // process meta_data
-    if(loadMetadata(nd->mMetaData, xobj, nd->mName.C_Str(), tab_level)==true)
+    if(loadMetadata(nd->mMetaData, xobj, nd->mName.C_Str(), level)==true)
         xobj->xobject_found=true; // test
 
     // no transpose then, extract scale, translate, rotate
@@ -584,80 +594,78 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
 
     //if (tab_level==0)
     // when non_transpose
-    xobj->pos[0]=m.a4; xobj->pos[1]=m.b4;  xobj->pos[2]=m.c4; // translate. ok
-    xobj->scale[0]=m.a1,xobj->scale[1]=m.b2,xobj->scale[2]=m.c3; //scale. ok
+    aiVector3f pScaling, pRotation, pPosition;
+    aiQuaternion qRotation;
+    //m.Decompose(pScaling,pRotation,pPosition);
+    m.Decompose(pScaling,qRotation,pPosition);
+    //qRotation.Normalize();
+    glm::quat MyQuaternion;
+    MyQuaternion = glm::quat(qRotation.w,qRotation.x,qRotation.y,qRotation.z);
 
-    if(0)
+    xobj->pos[0]=pPosition.x; xobj->pos[1]=pPosition.y;  xobj->pos[2]=pPosition.z; // translate. ok
+    //xobj->scale[0]=m.a1,xobj->scale[1]=m.b2,xobj->scale[2]=m.c3; //scale. ok
+
+    glm::mat4 TranslationMatrix = glm::mat4(1) ;
+    //glm::mat4 TranslationMatrix = glm::translate(glm::mat4(1), glm::vec3( pPosition.x,pPosition.y,pPosition.z));
+    glm::mat4 ScaleMatrix = glm::scale(glm::mat4(1), glm::vec3(pScaling.x,pScaling.y,pScaling.z));
+    glm::mat4 RotationMatrix = glm::mat4_cast(MyQuaternion);
+    glm::mat4 ModelMatrix = TranslationMatrix * RotationMatrix * ScaleMatrix; // works!!!
+
+    if (0)
     {
-        xobj->pitch=atan2(m.b3,m.c3);  //x
-        xobj->yaw=atan2(-m.a3,sqrt(m.a1*m.a1+m.a2*m.a2)); //y
-        xobj->roll=atan2(m.a2,m.a1); // z
+        std::cout << glm::to_string(TranslationMatrix) << "\n";
+        std::cout << glm::to_string(RotationMatrix) << "\n";
+        std::cout << glm::to_string(ScaleMatrix) << "\n";
+        std::cout << glm::to_string(ModelMatrix) << "\n";
     }
-
     float angleY, angleX,angleZ;
-    if ( m.c1 < 1)
-    {
-        if( m.c1 > -1)
-        {
-            angleY = asin( -m.c1 ) ;
-            angleZ = atan2(m.b1 , m.a1) ;
-            angleX = atan2 (m.c2 , m.c3 ) ;
-        }
-        else // r20 = −1
-        {
-        // Not a uniquesolution:thetaZ − thetaX = atan2( r10 , r11 )
-            angleY = M_PI / 2;
-            angleZ = -atan2 ( -m.b3 , m.b2 );
-            angleX = 0 ;
-        }
-    }
-    else
-    {
-        angleY= -M_PI/2;
-        angleZ= atan2(-m.b3, m.b2);
-        angleX=0;
-    }
-    xobj->pitch = angleX;
-    xobj->yaw = angleY;
-    xobj->roll = angleZ;
 
-    printf("pitch(x) = %8.4f yaw(y)=%8.4f roll(z)=%8.4f \n", glm::degrees(xobj->pitch),glm::degrees(xobj->yaw),glm::degrees(xobj->roll));
-    printf(" (x) = %8.4f (y)=%8.4f (z)=%8.4f \n",glm::degrees(angleX),glm::degrees(angleY),glm::degrees(angleZ));
-    printf("translate(x) = %8.4f (y)=%8.4f (z)=%8.4f \n", xobj->pos[0],xobj->pos[1],xobj->pos[2]);
+    printf("translate(x) = %8.4f (y)=%8.4f (z)=%8.4f \n", pPosition.x,pPosition.y,pPosition.z);
+    //printf("rotate (x) = %8.4f (y)=%8.4f (z)=%8.4f \n",glm::degrees(pRotation.x),glm::degrees(pRotation.y),glm::degrees(pRotation.z));
+    printf("rotate w=%4.4f x=%4.4f y=%4.4f z=%4.4f \n",qRotation.w,qRotation.x,qRotation.y,qRotation.z);
+
 
     //m.a4=0;m.b4=0,m.c4=0;// works!!!
+    /*
     m.Transpose();  // Q: transpose for OpenGL?   A: maybe!
     printf("%8.4f,%8.4f,%8.4f,%8.4f\n", m.a1, m.a2,m.a3,m.a4);
     printf("%8.4f,%8.4f,%8.4f,%8.4f\n", m.b1, m.b2,m.b3,m.b4);
     printf("%8.4f,%8.4f,%8.4f,%8.4f\n", m.c1, m.c2,m.c3,m.c4);
     printf("%8.4f,%8.4f,%8.4f,%8.4f\n", m.d1, m.d2,m.d3,m.d4);
     glm::mat4 m1= glm::make_mat4(&m.a1);
+    */
+    glm::mat4 m1= ModelMatrix; // glm::mat4 m1= glm::transpose(ModelMatrix); <=== up-side-down!
 
     //xobj->model = glm::make_mat4(&m.a1);
     xobj->model = glm::mat4(1);
 
+    int vertex_offset=0;
     for ( n=0 ; n < nd->mNumMeshes; ++n)
     {
-        /* Mesh는 material을 다르게 갖을 수 있다 --> 구현안함. material 동일한것을 가정함 */
+        /* Mesh는 material을 다르게 갖을 수 있다
+         * Mesh마다 vertice 인덱스가 중복되므로 ! vertex_offset 필요!
+         */
         Material *_material;
+
         int mesh_idx = nd->mMeshes[n];  // mesh index
         const struct aiMesh* mesh = sc->mMeshes[mesh_idx];
 
-        //apply_material(sc->mMaterials[mesh->mMaterialIndex]);
-        std::cout << tab << " + mesh->mMaterialIndex = " << mesh->mMaterialIndex <<"\n";
+        // 참고 ==> apply_material(sc->mMaterials[mesh->mMaterialIndex]);
         const aiMaterial *mtl=sc->mMaterials[mesh->mMaterialIndex];
+        std::cout << tab << " + *** mesh->mMaterialIndex = " << mesh->mMaterialIndex << " ===> " << mtl->GetName().C_Str() <<"\n";
 
         auto search = Materials.find(mtl->GetName().C_Str());
         if ( search != Materials.end())
         {
             //std::cout << "DEBUG: Found " << search->first << ' ' << search->second << '\n';
             _material=search->second;
-            xobj->set_texture(_material->getTextureName());
+            if (_material->texture!=nullptr)
+                xobj->set_texture(_material->getTextureName());
         }
         else
         {
             _material=nullptr;
-            std::cout << tab << "+ NO texture ===> color object\n";
+            std::cout << tab << "+ DEBUG: NO Material ===> color object????????????????\n";
         }
         /*
         if(mesh->mNormals == nullptr)
@@ -673,12 +681,10 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
         //glDisable(GL_COLOR_MATERIAL);
 
         printf("%s + [%d].mNumvertices=%d \n",tab.c_str(), n,mesh->mNumVertices);
-
         int count_normal=0;
         int count_vertex_color=0;
         for (i = 0; i < mesh->mNumVertices ; ++i) {
             vertex vert;
-
             if(mesh->mNormals != nullptr)
             {
                 vert.normal[0]=mesh->mNormals[i].x;
@@ -712,25 +718,26 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
             }
             else
             {
+                // temp...
                 vert.r=_material->diffuse[0];
                 vert.g=_material->diffuse[1];
                 vert.b=_material->diffuse[2];
-                vert.a=_material->diffuse[3];
-                //printf("%s diffuse==> %2.3f %2.3f %2.3f \n",tab.c_str(),_material->diffuse[0],_material->diffuse[1],_material->diffuse[2]);
+                vert.a=1.0;
+                //printf("%s diffuse==> %2.3f %2.3f %2.3f %2.3f \n",tab.c_str(),_material->diffuse[0],_material->diffuse[1],_material->diffuse[2],_material->diffuse[3]);
                 vert.type=1; // color mode
             }            
-            /* vert.v[0]=mesh->mVertices[i].x;
-            vert.v[1]=mesh->mVertices[i].z;
-            vert.v[2]=-mesh->mVertices[i].y; */
-            glm::vec4 _v1=glm::vec4(mesh->mVertices[i].x,mesh->mVertices[i].y,mesh->mVertices[i].z,1.0);
-            glm::vec4 new_v= m1*_v1;
-            vert.v[0]=new_v.x;
-            vert.v[1]=new_v.y;
-            vert.v[2]=new_v.z;
-            xobj->vertexes.push_back(vert);
-        }
 
-        printf("%s + [%d].mNumFaces = %d normal=%d  vertex_color=%d \n",tab.c_str(), n,mesh->mNumFaces, count_normal, count_vertex_color);
+            // transform to OpenGL
+                glm::vec4 v1=glm::vec4(mesh->mVertices[i].x,mesh->mVertices[i].y,mesh->mVertices[i].z,1.0);
+                glm::vec4 new_v = m1 * v1;
+                vert.v[0]=new_v.x;
+                vert.v[1]=new_v.y;
+                vert.v[2]=new_v.z;
+
+            xobj->vertexes.push_back(vert);
+
+        }
+        printf("%s + [%d].mNumFaces = %d normal=%d  vertex_colors=%d \n",tab.c_str(), n,mesh->mNumFaces, count_normal, count_vertex_color);
         for (t = 0; t < mesh->mNumFaces; ++t) {
             const struct aiFace* face = &mesh->mFaces[t];
             GLenum face_mode;
@@ -745,7 +752,8 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
                     std::cout << "Error: not triangle " << face->mNumIndices << "\n";
                     break;
                 case 3: face_mode = GL_TRIANGLES;
-                    triangle_set(tr, face->mIndices[0], face->mIndices[1], face->mIndices[2]);
+                    triangle_set(tr, face->mIndices[0] + vertex_offset, face->mIndices[1]+ vertex_offset, face->mIndices[2]+ vertex_offset);
+                    //std::cout << tab << " +--> DEBUG :   " << face->mIndices[0]+ vertex_offset <<","<< face->mIndices[1]+ vertex_offset <<","<< face->mIndices[2]+ vertex_offset << "\n";
                     xobj->triangles.push_back(tr);
                     if(mesh->mNormals != nullptr)
                     {
@@ -758,7 +766,8 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
                     std::cout << "Error: not triangle " << face->mNumIndices << "\n";
                     break;
             }
-        }
+        } // face
+        vertex_offset=xobj->vertexes.size();
 
     } // Mesh
 
@@ -789,7 +798,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
         child->set_shader(xobj->shader); // from parent's shader
         xobj->children.push_back(child);
         //if (xobj.xobject_found==true)
-        loadToObject(sc, nd->mChildren[n], scalex, child, tab_level+1);
+        loadToObject(sc, nd->mChildren[n], scalex, child, level+1);
     }
     // printf("%sobj.children=%d \n",tab.c_str(), xobj.children.size());
     printf("%sload model obj.name = %s \n",tab.c_str(), xobj->name.c_str());
@@ -823,7 +832,7 @@ bool Import3DFromFile(const std::string filename,xObject *obj)
         * 게다가 각 Object들이 child를 갖을수 있음
 
         - blender에서 각 object는 properties를 갖는다.
-        - 이 properties가 FBX에서는 metadata임
+        - properties가 FBX에서는 metadata임
         - xobject key를 찾으면...
 
         1. 각 OBject중 LAMP , Camera는 제외하고 등록하자...
@@ -835,7 +844,7 @@ bool Import3DFromFile(const std::string filename,xObject *obj)
 
     const aiScene* g_scene = nullptr;
 
-    createAILogger();
+    createAILogger();   // TODO: check!
     // Check if file exists
     std::ifstream fin(filename.c_str());
     if(fin.fail()) {
@@ -861,9 +870,9 @@ bool Import3DFromFile(const std::string filename,xObject *obj)
     // We're done. Everything will be cleaned up by the importer destructor
 
     // 1. load material
-    // 2. scene's metadata
+
     loadMaterials(g_scene);
-    loadMetadata(g_scene->mMetaData, obj, g_scene->mName.C_Str());
+    loadMetadata(g_scene->mMetaData, obj, g_scene->mName.C_Str());  // 2. scene's metadata
     loadToObject(g_scene, g_scene->mRootNode, 1.0, obj, 0); // 3. load object ?
 
     /*
@@ -914,12 +923,11 @@ void model_object::draw()
    xObject::draw();
 }
 
-
 shader_object::shader_object(string _type)
 {
     printf("shader_object=%s \n", path.c_str());
     shader=new Shader();
-    shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
+    shader->Load("./shader/texture_vertex.glsl", "./shader/texture_fragment.glsl");
 
     /*
     for ( size_t i=0 ; i < models.size(); i++)
@@ -930,7 +938,6 @@ shader_object::shader_object(string _type)
             //return true;
         }
     } */
-
 }
 
 void shader_object::update(float dt)
@@ -945,11 +952,9 @@ void shader_object::draw()
 
 extern vector<xObject* > objects;
 
-
 void loadObjectsFrom3Dfile(string _path)
 {
     /* Temp :  fbx파일에서 레벨1인 object만 따로 등록하기 */
-
     xObject *dummy;
     dummy = new xObject();
     Shader *_shader;
@@ -965,7 +970,6 @@ void loadObjectsFrom3Dfile(string _path)
          // printf("obj.children()=%d  %d\n",i,obj->VAO);
          objects.push_back(obj);
      }
-
     delete dummy;
 }
 
@@ -1000,12 +1004,13 @@ void init_models()
     objects.push_back(obj);
     */
     xObject *model_obj;
-     //xObject *model_obj=new model_object("./model/teapot.fbx");
-     //set(model_obj->pos,0,0,0);
-     //objects.push_back(model_obj);
-     //loadObjectsFrom3Dfile("./model/box.fbx");
-     loadObjectsFrom3Dfile("./model/teapot.fbx");
-     //loadObjectsFrom3Dfile("./model/stage.fbx");
+    //xObject *model_obj=new model_object("./model/teapot.fbx");
+    //set(model_obj->pos,0,0,0);
+    //objects.push_back(model_obj);
+    //loadObjectsFrom3Dfile("./model/axis.fbx");
+    //loadObjectsFrom3Dfile("./model/box.fbx");
+    loadObjectsFrom3Dfile("./model/teapot.fbx");
+    //loadObjectsFrom3Dfile("./model/stage.fbx");
     //loadObjectFrom3Dfile("./model/ball.fbx");
 /*
 

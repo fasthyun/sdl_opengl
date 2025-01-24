@@ -36,7 +36,7 @@ uniform sampler2D ourTexture; // how working???
 void main()
 {
 
-    vec3 lightPos = vec3(0,3,0);
+    vec3 lightPos = vec3(0,30000,0);
     vec3 lightColor = vec3(1.0,1.0,1.0);
 
     // ambient
@@ -49,14 +49,19 @@ void main()
     float diff = max(dot(norm, lightDir), 0.0);
     vec3 diffuse = diff * lightColor;
 
-    vec4 _color;
+    //vec4 _color;
     vec4 result;
     ///FragColor = texture2D(ourTexture, TexCoord); // 130
-    if (Type > 0 ){
+    if (Type > 1.5 ){
+        result =  Color;
+        //result =  vec4(1,0,0,1);
+    }
+    else   if (Type >= 0.5 ) // color
+    {
         //_color = vec4(Color, 1.0); // color mode
         result = vec4((ambient + diffuse),1.0) * Color;
-    }
-    else
+    }    
+    else if (Type < 0.5) // texture
     {
         result = vec4((ambient + diffuse),1.0) * texture(ourTexture, TexCoord) ;
     }

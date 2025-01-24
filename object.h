@@ -42,6 +42,7 @@ public:
     void set_texture(GLuint name){ texname=name;}
     void draw_meshes();
     void draw_axis();
+    void make_axis();
     void draw_dir_up();
     void load_gltf(string name); // remove
     void make_glVertexArray();    
@@ -61,8 +62,8 @@ public:
     float force[3];
     float weight = 0.0 ;  // kg
     float movement_speed=0.0;
-    float pitch = 0.0; // x
-    float yaw = 0.0; // y
+    float pitch = 0.0; // x , angle
+    float yaw = 0.0; // y , angle
     float roll = 0.0; // z
     float scale[3] = {1.0,1.0,1.0}; // scale
     ///float model_mat[16];
@@ -72,6 +73,7 @@ public:
 
     // OpenGL element
     GLuint VBO, VAO, EBO;
+    GLuint VBO_axis, VAO_axis;
     GLuint texname;
     vector<xObject*> children;
     string name;

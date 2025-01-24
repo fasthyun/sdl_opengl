@@ -2,6 +2,8 @@
 #include "object.h"
 #include "xmath.h"
 
+#include <cstddef> // offsetof()
+
 #include <boost/uuid/uuid.hpp>            // uuid class
 #include <boost/uuid/uuid_generators.hpp> // generators
 #include <boost/uuid/uuid_io.hpp>         // streaming operators etc.  to_string()
@@ -54,6 +56,7 @@ xObject::xObject()
     // loadIdentity(model_mat);
     model = glm::mat4(1);
     name="None";
+    make_axis();
 }
 
 xObject::~xObject(){
@@ -103,9 +106,34 @@ void xObject::load_gltf(string name)
    /// LoadGLTF(name, 1, &meshes, &materials, &xtextures);
 }
 
+void xObject::make_axis()
+{
+    float axies[] = {
+        0.0f,0.0f,0.0f,  1,0,0,1,   // x line red
+        100.0f,0.0f,0.0f,  1,0,0,1,   // x line red
+        0.0f,0.0f,0.0f,  0,1,0,1,   // y line gree
+        0.0f,100.0f,0.0f,  0,1,0,1,   // y line gree
+        0.0f,0.0f,0.0f,  0,0,1,1,   // z line  blue
+        0.0f,0.0f,100.0f,  0,0,1,1,   // z line  blue
+        };
+
+    glGenVertexArrays(1, &VAO_axis);
+    glGenBuffers(1, &VBO_axis);
+
+    glBindVertexArray(VAO_axis);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO_axis);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(axies), axies, GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(0); //
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float)*7, (void*)0); // position[3]   // (idx, size, type, ? , stride-size, offset)
+    glEnableVertexAttribArray(2); //
+    glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(float)*7, (void*)(3 * sizeof(float))); // RGBA
+
+    glBindVertexArray(0); // break
+}
 // TODO: name
-void xObject::
-make_glVertexArray()
+
+void xObject::make_glVertexArray()
 {
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
@@ -115,24 +143,26 @@ make_glVertexArray()
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     //glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
     glBufferData(GL_ARRAY_BUFFER, vertexes.size()*sizeof(vertex), vertexes.data(), GL_STATIC_DRAW);
-    //printf("sizeof(vertex)= %d data=%x\n", sizeof(vertex), vertexes.data());
+    printf("sizeof(vertex)= %ld vertexs.size=%ld data=%p\n", sizeof(vertex), vertexes.size(), vertexes.data());
     //printf(" why??? %f %f %f %f %f\n", vertexes.data()[0].v[0],vertexes.data()[0].v[1],vertexes.data()[0].v[2],vertexes.data()[0].v[3], vertexes.data()[4]);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, triangles.size()*sizeof(triangle) ,triangles.data(), GL_STATIC_DRAW);
 
-    // VBO버퍼에 대한 구조 설명
+    // VBO버퍼 구성 설명
     glEnableVertexAttribArray(0); //  first input to vertex-shader?
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)offsetof(vertex,v)); // pos[3]  (idx, size, type, ? , stride-size, offset)
     glEnableVertexAttribArray(1); //  second input to vertex-shader?
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)0); // position[3]   // (idx, size, type, ? , stride-size, offset)
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)(3 * sizeof(float))); // tu,tv
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)offsetof(vertex,tu)); // tu,tv    // 3*4 = 12, 16 ok...
     glEnableVertexAttribArray(2); //  third input to vertex-shader?
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)(5 * sizeof(float))); // R,G,B,A
+    glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)offsetof(vertex,r)); // RGBA
     glEnableVertexAttribArray(3); //  fourth input to vertex-shader?
-    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)(9 * sizeof(float))); // normal[3]
-    glEnableVertexAttribArray(4); //  fourth input to vertex-shader?
-    glVertexAttribPointer(4, 1, GL_INT, GL_FALSE, sizeof(vertex), (void*)(12 * sizeof(float))); // type : 1 color 0 texture
+    glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(vertex), (void*)offsetof(vertex,normal)); // normal[3]
+    //glVertexAttribPointer(4, 1, GL_FLOAT,GL_FALSE, sizeof(vertex), (void*)offsetof(vertex,type)); // type : 1 color 0 texture
+    glVertexAttribIPointer(4, 1, GL_INT, sizeof(vertex), (void*)offsetof(vertex,type)); // type : 1 color 0 texture works!!when intger!!!
+    glEnableVertexAttribArray(4); //  fifth input to vertex-shader?
 
+    //DEL printf("offsetof(v)=%ld offsetof(tu)=%ld offsetof(r)=%ld offsetof(normal)=%ld offsetof(type)=%ld \n",offsetof(vertex,v),offsetof(vertex,tv),offsetof(vertex,r),offsetof(vertex,normal),offsetof(vertex,type));
     glBindVertexArray(0); // break
 }
 
@@ -152,17 +182,14 @@ void xObject::make_radius()
     }
 }
 
+
 void xObject::draw_axis()
 {
     /* https://stackoverflow.com/questions/60440682/drawing-a-line-in-modern-opengl
      */
     // this will not work ! old_opengl
     float len=3;
-    float threeLines[] = {
-        0.0f, 0.0f, 0.0f, 1.0f,0.0f,0.0f,  // x line
-        0.0f, 0.0f, 0.0f, 0.0f,1.0f,0.0f,  // y line
-        0.0f, 0.0f, 0.0f, 0.0f,0.0f,1.0f,  // z line
-        };
+
 
     glLineWidth(3);
     glBegin(GL_LINES);
@@ -180,6 +207,7 @@ void xObject::draw_axis()
     glEnd();
     glLineWidth(1);
 }
+
 
 void xObject::draw_meshes()
 {
@@ -211,33 +239,31 @@ void xObject::draw_meshes()
 
 #include <glm/gtc/matrix_transform.hpp>
 void xObject::draw()
-{
-    //draw_axis();
+{    
     //draw_dir_up();
     //draw_meshes();
     //mat4x4_translate(model_mat, pos[0], pos[1], pos[2]);
-    //model=glm::translate(model, glm::vec3(pos[0], pos[1], pos[2]));
-
-    /* TransformedVector = TranslationMatrix * RotationMatrix * ScaleMatrix * OriginalVector; */
-
-
 
     //glm::mat4  m1(1.0);
     //glm::mat4  m2(1.0);
     //glm::translate(_m1, glm::vec3(pos[0], pos[1], pos[2]));
     //m1[3].x =pos[0];    m1[3].y =pos[1];    m1[3].z =pos[2];
     //m1[3].x =pos[0];    m1[3].y =pos[1];    m1[3].z =pos[2];
-    //model=m1 *glm::rotate(m2, yaw , glm::vec3(0,1,0));
-    if (0)
+
+    if (1)
     {
         model = glm::mat4(1.0); // identity
-        model=glm::translate(model, glm::vec3(pos[0], pos[1], pos[2]));
-
         //model=glm::rotate(model, roll , glm::vec3(0,0,1));//z
         //model=glm::rotate(model, yaw , glm::vec3(0,1,0)); //y
         //model=glm::rotate(model, pitch , glm::vec3(1,0,0)); //x
-
-        model=glm::scale(model, glm::vec3(scale[0],scale[1],scale[2]));
+        //model=glm::scale(model, glm::vec3(scale[0],scale[1],scale[2]));
+        glm::mat4 Mi = glm::mat4(1.0f);
+        glm::mat4 RotationMatrix = glm::rotate(Mi, glm::radians(yaw), glm::vec3(0.0, 1.0, 0.0));
+        glm::mat4 TranslationMatrix = glm::translate(model, glm::vec3(pos[0], pos[1], pos[2]));
+        glm::mat4 ScaleMatrix = glm::mat4(1.0);
+        //glm::mat4 RotationMatrix = glm::mat4(1.0);
+        /* TransformedVector = TranslationMatrix * RotationMatrix * ScaleMatrix * OriginalVector; */
+        model= TranslationMatrix * RotationMatrix * ScaleMatrix; // works!!!
     }
     glm::mat4 _m1(1);
     float _m[16];
@@ -259,6 +285,7 @@ void xObject::draw()
 
     if (VAO>0)
     {
+        glEnable(GL_DEPTH_TEST);    // Enable depth buffering
         shader->setMat4("model",_m1);
         /* GLint location;
           location = glGetUniformLocation(shader->mProgram, "model");
@@ -269,14 +296,24 @@ void xObject::draw()
         if (location >=0) glUniform1i(location, texname); */
 
         glBindVertexArray(VAO);
-        //( mode, count, index_data_type, void * indices);
-        glDrawElements(GL_TRIANGLES, triangles.size() * 3 , GL_UNSIGNED_INT, 0); // ????? count why ????
+        glDrawElements(GL_TRIANGLES, triangles.size() *3 /* index count so x3 */ , GL_UNSIGNED_INT, 0); //( mode, count, index_data_type, void * indices);
         /* same as
            for(i =0 ;i < len ; i++)
               glArrayElement(i);
            --- or ---
            glDrawArrays(GL_TRIANGLES, 0, vertexes.size());
         */
+    }
+
+    if (VAO_axis>0)
+    {
+        glDisable(GL_DEPTH_TEST);    // Enable depth buffering
+        shader->setMat4("model",_m1); //
+        glLineWidth(3);
+        glBindVertexArray(VAO_axis);
+        //glVertexAttrib3f(vertColor_loc, 1.0f, 1.0f, 0.2f);
+        glVertexAttribI1i(4, 2); //glVertexAttrib1f(4, 2);
+        glDrawArrays(GL_LINES, 0, 6); // why 6?
     }
 
    for ( size_t i=0 ; i < children.size(); i++)
@@ -663,12 +700,12 @@ void particle::update(float dt)
 
 cube::cube():xObject()
 {
-    rotate_angle_speed=10;
+    rotate_angle_speed=30;
 }
 
 void cube::update(float dt)
 {
-    ///yaw += glm::degrees(rotate_angle_speed * dt);
+    yaw += rotate_angle_speed * dt; // degree to radian
 }
 
 void cube::draw()

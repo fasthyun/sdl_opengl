@@ -302,7 +302,7 @@ void main_loop()
         // Near clipping plane. Keep as big as possible, or you'll get precision issues.
         // Far clipping plane. Keep as little as possible.
         glm::mat4 projectionMatrix = glm::perspective(            
-            glm::radians(FoV), (float)width / height, 0.1f, 100.0f ); // glm::radians(FoV), 4.0f / 3.0f, 0.1f, 100.0f );
+            glm::radians(FoV), (float)width / height, 0.1f, 10000.0f ); // glm::radians(FoV), 4.0f / 3.0f, 0.1f, 100.0f );
 
         glm::mat4 viewMatrix ;
         /* = glm::lookAt(
@@ -430,7 +430,7 @@ void init_object()
     //objects.push_back(obj);
 
     d_camera = new camera();
-    set(d_camera->pos,0,5,7);
+    set(d_camera->pos,0,500,700);
     set(d_camera->up,0,1,0); //
     set(d_camera->forward,0,0,-1); //
     objects.push_back(d_camera);
@@ -457,7 +457,34 @@ void init_shader()
     shader=new Shader();
     shader->Load("./shader/basic_vertex.glsl","./shader/basic_fragment.glsl");
 }*/
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/string_cast.hpp>
 
+void check_system_performance()
+{
+    Uint32 startTime;
+    Uint32 dt;
+    startTime=SDL_GetTicks(); // init
+    glm::mat4 m=glm::mat4(1);
+    glm::mat4 m2=glm::mat4(2);
+    float theta = 2 * M_PI * ((float)rand() / RAND_MAX);
+    glm::vec3 v=glm::sphericalRand (theta);
+    glm::mat4 m3 = glm::mat4(
+        v.x, 0, 0, 0,
+        0, v.y, 0, 0,
+        0, 0, v.z, 0,
+        0, 0, 0, v.x);
+
+    std::cout << glm::to_string(v) << "\n";
+    for (int i = 0; i< 1000000;i++)
+    {
+        m=m*m3/theta;
+        //if ()
+    }
+    std::cout << glm::to_string(m) << "\n";
+    dt=SDL_GetTicks() - startTime;
+    printf("check time = %d ms\n",dt);
+}
 
 int main(int argc, char *argv[])
 {
@@ -467,6 +494,7 @@ int main(int argc, char *argv[])
     init_SDL();
     init_GL();
 
+    check_system_performance();
 
     //init_shader();
     //init_font();
