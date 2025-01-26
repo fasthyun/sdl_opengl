@@ -14,7 +14,7 @@
 
 #include <glm/glm.hpp> // vec2, vec3, mat4, radians
 #include <glm/ext.hpp> // perspective, translate, rotate
-///#includ "misc.h"
+
 
 //#include "nukclear_pre.h"
 #define NK_INCLUDE_FIXED_TYPES
@@ -45,7 +45,7 @@ SDL_GLContext glContext; //OpenGL context
 struct nk_context *ctx;
 // struct nk_colorf bg;
 int flag_nk=1;
-
+int flag_large_screen=false;
 int width=1024;
 int height=768;
 
@@ -63,7 +63,10 @@ bool init_SDL()
     {
        printf("DesktopDisplayMode:  w=%d h=%d\n",_displaymode.w,_displaymode.h);
        if(_displaymode.w>2000)
+       {
            width=1920,height=1024;
+           flag_large_screen=true;
+       }
     }
 
     // Set OpenGL attributes
