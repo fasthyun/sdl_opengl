@@ -311,7 +311,7 @@ void main_loop()
             glm::make_vec3(d_camera->up)        // probably glm::vec3(0,1,0), but (0,-1,0) would make you looking upside-down, which can be great too
         ); */
         // TODO:
-        viewMatrix = lookAt_with_glm(d_camera->pos, d_camera->forward , d_camera->up);
+        viewMatrix = lookAt_with_glm(glm::value_ptr(d_camera->position), d_camera->forward , d_camera->up);
         glm::mat4 tmp_mat4 = projectionMatrix * viewMatrix;
         //memcpy(proj_m, glm::value_ptr(tmp_mat4), sizeof( proj_m ));
 
@@ -430,7 +430,8 @@ void init_object()
     //objects.push_back(obj);
 
     d_camera = new camera();
-    set(d_camera->pos,0,500,700);
+    //set(d_camera->pos,0,500,700);
+    d_camera->position=glm::vec3(0,500,700);
     set(d_camera->up,0,1,0); //
     set(d_camera->forward,0,0,-1); //
     objects.push_back(d_camera);

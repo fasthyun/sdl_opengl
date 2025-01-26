@@ -602,7 +602,8 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
     glm::quat MyQuaternion;
     MyQuaternion = glm::quat(qRotation.w,qRotation.x,qRotation.y,qRotation.z);
 
-    xobj->pos[0]=pPosition.x; xobj->pos[1]=pPosition.y;  xobj->pos[2]=pPosition.z; // translate. ok
+    //xobj->pos[0]=pPosition.x; xobj->pos[1]=pPosition.y;  xobj->pos[2]=pPosition.z; // translate. ok
+    xobj->position=glm::vec3(pPosition.x,pPosition.y,pPosition.z);
     //xobj->scale[0]=m.a1,xobj->scale[1]=m.b2,xobj->scale[2]=m.c3; //scale. ok
 
     glm::mat4 TranslationMatrix = glm::mat4(1) ;
@@ -1081,7 +1082,10 @@ void init_models()
         x=(rand()%60) - 30;
         y=rand()%30;
         z=rand()%60 - 30 ;
-        set(obj->pos,x,y,z);
+        //set(obj->pos,x,y,z);
+        obj->position.x=x;
+        obj->position.y=y;
+        obj->position.z=z;
         objects.push_back(obj);
         printf("x=%f  y=%f  z=%f \n",x,y,z);
     }

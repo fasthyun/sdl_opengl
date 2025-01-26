@@ -56,7 +56,8 @@ public:
 
     // variables
     xObject *parent;
-    float pos[3];  // translate
+    //float pos[3];  // translate
+    glm::vec3 position;
     float forward[3]; //
     float up[3];
     float force[3];
@@ -82,6 +83,7 @@ public:
     bool xobject_found=false;
     string path; // tmp
     float radius; // tmp
+    bool flag_axis_on=false;
 };
 
 class camera : public xObject{

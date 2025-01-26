@@ -48,7 +48,8 @@ xObject::xObject()
     //shader=new Shader();
     //shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
     //meshes=NULL;
-    set(pos,0,0,0);
+    //set(pos,0,0,0);
+    position.x=0;position.y=0;position.z=0;
     set(up ,0,1,0);
     set(forward,0,0,1);
     set(force,0,0,0);
@@ -77,8 +78,10 @@ xObject::~xObject(){
 void xObject::update(float dt /* ms seconds */)
 {
     float v[3];
-    multiply(force, dt, v);
-    add(pos, v, pos);
+    glm::vec3 force1;
+    //multiply(force, dt, v);
+    //add(pos, v, pos);
+    position+=force1*dt;
 }
 
 
@@ -89,12 +92,12 @@ void xObject::draw_dir_up()
     glLineWidth(3);
     glBegin(GL_LINES);
     glColor3f(1.0, 1.0, 1.0);
-    glVertex3fv(pos);
-    add(pos,up,t);
+    ///glVertex3fv(pos);
+    ////add(pos,up,t);
     glVertex3fv(t);
     glColor3f(0.0, 1.0, 0);
-    glVertex3fv(pos);
-    add(pos,forward,t);
+    ////glVertex3fv(pos);
+    ///add(pos,forward,t);
     glVertex3fv(t);
     glEnd();
     glLineWidth(1);
@@ -259,7 +262,7 @@ void xObject::draw()
         //model=glm::scale(model, glm::vec3(scale[0],scale[1],scale[2]));
         glm::mat4 Mi = glm::mat4(1.0f);
         glm::mat4 RotationMatrix = glm::rotate(Mi, glm::radians(yaw), glm::vec3(0.0, 1.0, 0.0));
-        glm::mat4 TranslationMatrix = glm::translate(model, glm::vec3(pos[0], pos[1], pos[2]));
+        glm::mat4 TranslationMatrix = glm::translate(model, position);
         glm::mat4 ScaleMatrix = glm::mat4(1.0);
         //glm::mat4 RotationMatrix = glm::mat4(1.0);
         /* TransformedVector = TranslationMatrix * RotationMatrix * ScaleMatrix * OriginalVector; */
@@ -305,7 +308,7 @@ void xObject::draw()
         */
     }
 
-    if (VAO_axis>0)
+    if (flag_axis_on && VAO_axis>0)
     {
         glDisable(GL_DEPTH_TEST);    // Enable depth buffering
         shader->setMat4("model",_m1); //
@@ -327,7 +330,11 @@ void xObject::draw()
 
 camera::camera(): xObject() // init
 {
-    set(pos,0,5,20);
+    //set(pos,0,5,20);
+    position.x=0;
+    position.y=5;
+    position.z=20;
+
     set(up,0,1,0); //
     set(forward,0,0,-1); //
     set(force,0,0,0);
@@ -347,7 +354,7 @@ void camera::update(float dt)
 {
     SDL_Event e; //Event handler
 
-    /// xObject::update(dt);
+    xObject::update(dt);
 
     if(d_focus==false)
         return;
@@ -368,8 +375,8 @@ void camera::update(float dt)
                 printf("clicked! \n");
                 if (d_ball==nullptr)
                     d_ball=findObject("ball"); // how lagg ?
-                if (d_ball!=nullptr)
-                    set(d_ball->pos, pos);
+                if (d_ball!=nullptr);
+                    //set(d_ball->pos, pos);
                 break;
             default :;
 
@@ -423,9 +430,9 @@ void camera::update(float dt)
 void camera::on_key_pressed(uint key)
 {
     /*
-     *  right_side,
-     o.  혹은 dir 성분만  zero해야하는거 아닐까?
-     */
+     right_side,
+     혹은 dir 성분만  zero해야하는거 아닐까?
+    */
     float right[3],t[3];
     //fprintf(stderr,"camera.onkey\n");
     float speed=5;
@@ -433,9 +440,8 @@ void camera::on_key_pressed(uint key)
     {
         multiply(forward,speed,force);
     }
-    else if(key==key_backward)
+    else if(key==key_backward) //s
     {
-        //s
         multiply(forward,-speed,force);
     } else
     if(key==key_side_right) //d
@@ -596,7 +602,7 @@ void CollisionDetector::update(float dt)
         {
             float v[3];
             multiply(obj->force, dt*0.1, v);
-            add(obj->pos, v, obj->pos);
+            ////add(obj->pos, v, obj->pos);
         }
 
         xObject *other;
@@ -701,6 +707,7 @@ void particle::update(float dt)
 cube::cube():xObject()
 {
     rotate_angle_speed=30;
+    flag_axis_on=true;
 }
 
 void cube::update(float dt)
