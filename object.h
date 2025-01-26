@@ -61,6 +61,7 @@ public:
     float forward[3]; //
     float up[3];
     float force[3];
+    glm::vec3 new_forward,new_up,new_force;
     float weight = 0.0 ;  // kg
     float movement_speed=0.0;
     float pitch = 0.0; // x , angle
@@ -84,6 +85,7 @@ public:
     string path; // tmp
     float radius; // tmp
     bool flag_axis_on=false;
+    bool flag_shader_global=false;
 };
 
 class camera : public xObject{
@@ -91,6 +93,7 @@ class camera : public xObject{
 public:
     camera();
     virtual void update(float dt=0);
+    void updateCameraVectors();
     void on_key_pressed(uint key);
     void on_key_released(uint key);
     void on_mouse_moved(int dx,int dy);    

@@ -217,11 +217,11 @@ void quat_rotate(float r[3], float angle,float v[3],float result[3])
 {
     // works well,
     /*
-     * 쿼터니언을 이용한 회전,  기준 벡터 r, 그리고 회전각 angle
-     * 입력 v , 결과  result
+     * 쿼터니언을 이용한 회전,  기준 벡터 r, 그리고 회전각 angle, 입력 vertex, 결과  result
      * 사용중:
      * object.cpp ---> void camera::on_mouse_moved(int dx, int dy)
      */
+
     float x = r[0] * sin(angle/2);
     float y = r[1] * sin(angle/2);
     float z = r[2] * sin(angle/2);

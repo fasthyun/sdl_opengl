@@ -316,7 +316,6 @@ void main_loop()
         // TODO:
         viewMatrix = lookAt_with_glm(glm::value_ptr(d_camera->position), d_camera->forward , d_camera->up);
         glm::mat4 tmp_mat4 = projectionMatrix * viewMatrix;
-        //memcpy(proj_m, glm::value_ptr(tmp_mat4), sizeof( proj_m ));
 
         for ( size_t i=0 ; i < objects.size(); i++)
         {
@@ -377,7 +376,7 @@ void main_loop()
             static nk_flags window_flags =NK_WINDOW_MOVABLE|NK_WINDOW_SCALABLE|NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE;
 
             /* nk Window ? */
-            if (nk_begin(ctx, "console", nk_rect(10, 10, 400, 900), window_flags ))
+            if (nk_begin(ctx, "console", nk_rect(10, 10, 400, 100), window_flags ))
             {                
                 nk_layout_row_static(ctx, 30, 80, 1);
                 if (nk_button_label(ctx, "button"))    printf("button pressed!\n");
@@ -434,7 +433,7 @@ void init_object()
 
     d_camera = new camera();
     //set(d_camera->pos,0,500,700);
-    d_camera->position=glm::vec3(0,500,700);
+    d_camera->position=glm::vec3(0,600,900);
     set(d_camera->up,0,1,0); //
     set(d_camera->forward,0,0,-1); //
     objects.push_back(d_camera);

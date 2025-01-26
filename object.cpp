@@ -56,6 +56,7 @@ xObject::xObject()
     //make_circle();
     // loadIdentity(model_mat);
     model = glm::mat4(1);
+    new_force = glm::vec3(0);
     name="None";
     make_axis();
 }
@@ -78,10 +79,9 @@ xObject::~xObject(){
 void xObject::update(float dt /* ms seconds */)
 {
     float v[3];
-    glm::vec3 force1;
     //multiply(force, dt, v);
     //add(pos, v, pos);
-    position+=force1*dt;
+    position += new_force * dt;
 }
 
 
@@ -191,53 +191,13 @@ void xObject::draw_axis()
     /* https://stackoverflow.com/questions/60440682/drawing-a-line-in-modern-opengl
      */
     // this will not work ! old_opengl
-    float len=3;
 
-
-    glLineWidth(3);
-    glBegin(GL_LINES);
-    glColor3f(1.0, 0, 0);
-    glVertex3f(0,0,0);
-    glVertex3f(len,0,0);
-
-    glColor3f(0.0, 1.0, 0);
-    glVertex3f(0,0,0);
-    glVertex3f(0,len,0);
-
-    glColor3f(0.0, 0.0, 1.0);
-    glVertex3f(0,0,0);
-    glVertex3f(0,0,len);
-    glEnd();
-    glLineWidth(1);
 }
 
 
 void xObject::draw_meshes()
 {
     // will not work ! (legacy)
-    // if (meshes==NULL) return; // hmm...
-    //   TODO: vertexbuffer
-    // printf("mesesh->size()= %ld \n", meshes->size());
-    for(size_t i=0; i< meshes.size();i++)
-    {
-        MeshFloat *mesh= &(meshes.at(i));
-        //vector<float> &vertices = (m->vertices);
-        //vector<unsigned int> &faces = (m->faces);
-        int face_n=mesh->faces.size()/3;
-        glColor3f(0.6,0.6,0.6);
-        glBegin(GL_TRIANGLES);
-        for (int face_idx=0 ; face_idx < face_n; face_idx++)
-        {
-            float v0[3], v1[3], v2[3], Ng[3], Ns[3], u, v;
-            u=1; v=1;
-            mesh->GetVerticeNormal(v0,v1,v2,Ng,Ns,face_idx,u,v);
-            glNormal3fv(Ng); // normal for geometry
-            glVertex3fv(v0);
-            glVertex3fv(v1);
-            glVertex3fv(v2);
-        }
-        glEnd();
-    }
 }
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -261,11 +221,11 @@ void xObject::draw()
         //model=glm::rotate(model, pitch , glm::vec3(1,0,0)); //x
         //model=glm::scale(model, glm::vec3(scale[0],scale[1],scale[2]));
         glm::mat4 Mi = glm::mat4(1.0f);
+        //glm::mat4 RotationMatrix = glm::mat4(1.0);
         glm::mat4 RotationMatrix = glm::rotate(Mi, glm::radians(yaw), glm::vec3(0.0, 1.0, 0.0));
         glm::mat4 TranslationMatrix = glm::translate(model, position);
         glm::mat4 ScaleMatrix = glm::mat4(1.0);
-        //glm::mat4 RotationMatrix = glm::mat4(1.0);
-        /* TransformedVector = TranslationMatrix * RotationMatrix * ScaleMatrix * OriginalVector; */
+        /* TransformedVector = TranslationMatrix * RotationMatrix * ScaleMatrix * OriginalVertex; */
         model= TranslationMatrix * RotationMatrix * ScaleMatrix; // works!!!
     }
     glm::mat4 _m1(1);
@@ -332,14 +292,14 @@ camera::camera(): xObject() // init
 {
     //set(pos,0,5,20);
     position.x=0;
-    position.y=5;
-    position.z=20;
+    position.y=500;
+    position.z=900;
 
     set(up,0,1,0); //
     set(forward,0,0,-1); //
     set(force,0,0,0);
 
-    key_forward=SDLK_w;
+    key_forward =SDLK_w;
     key_backward=SDLK_s;
     key_side_right=SDLK_d;
     key_side_left=SDLK_a;
@@ -375,8 +335,9 @@ void camera::update(float dt)
                 printf("clicked! \n");
                 if (d_ball==nullptr)
                     d_ball=findObject("ball"); // how lagg ?
-                if (d_ball!=nullptr);
+                if (d_ball!=nullptr){
                     //set(d_ball->pos, pos);
+                }
                 break;
             default :;
 
@@ -387,7 +348,6 @@ void camera::update(float dt)
         {            
             //int scancode=e.key.keysym.scancode;
             /* SDLK_UP , SDLK_W */
-            //SDL_GetMouseState( &x, &y );
             //handleKeys( e.text.text[ 0 ], x, y );
             if (key == SDLK_ESCAPE)
             {
@@ -407,12 +367,13 @@ void camera::update(float dt)
             on_key_pressed(key);
             // printf("keycode=%d \n",key);
         }
-        else if( e.type == SDL_KEYUP)
+        if( e.type == SDL_KEYUP)
         {            
             on_key_released(key);
         }
-        else if( e.type == SDL_MOUSEMOTION)
+        if( e.type == SDL_MOUSEMOTION)
         {
+            //SDL_GetMouseState( &x, &y );
             int dx=e.motion.xrel;
             int dy=e.motion.yrel;
 
@@ -435,14 +396,16 @@ void camera::on_key_pressed(uint key)
     */
     float right[3],t[3];
     //fprintf(stderr,"camera.onkey\n");
-    float speed=5;
+    float speed=300;
     if(key==key_forward) //w
     {
         multiply(forward,speed,force);
+        new_force=new_forward*speed;
     }
     else if(key==key_backward) //s
     {
         multiply(forward,-speed,force);
+        new_force=new_forward* -speed;
     } else
     if(key==key_side_right) //d
     {
@@ -468,11 +431,14 @@ void camera::on_key_released(uint key)
     if(key==key_forward) //w
     {
         multiply(forward,0.0,force); //
+        new_force=glm::vec3(0);
         //fprintf(stderr,"release! %f %f %f \n",force[0],force[1],force[2]);
     }
     if(key==key_backward) //s
+    {
         multiply(forward,0.0,force);
-
+        new_force=glm::vec3(0);
+    }
     if(key==key_side_right) //d
         set(force,0,0,0);
 
@@ -485,21 +451,50 @@ void camera::on_key_released(uint key)
     if(key==SDLK_1) //
         set(force,0,0,0);
 }
+void camera::updateCameraVectors()
+{
 
+}
 void camera::on_mouse_moved(int dx, int dy)
 {
-    float angle=-1*M_PI*dx/360.0;
-    float v[3];
+    //dx=0;
+    float angle= -1*dx*M_PI/360.0;
+
+    ///printf("angle=%f \n",angle);
+    /*
+     * float v[3];
     quat_rotate(up,angle,forward,v);
     normalize(v);
     set(forward,v);
 
-    angle=-1*M_PI*dy/360.0;
     float side[3];
     cross(forward,up,side);
     quat_rotate(side,angle,forward,v);
     normalize(v);
     set(forward,v);
+
+    */
+    glm::quat q;
+    glm::vec3 v1;
+    new_up=glm::make_vec3(up);
+    q=glm::angleAxis(angle, new_up);
+    v1 = q * glm::make_vec3(forward);
+    new_forward=glm::normalize(v1);
+
+    set(forward, glm::value_ptr(new_forward)); // **
+
+    angle=-2*dy*M_PI/360.0;
+    ///printf("angle=%f \n",angle);
+    glm::vec3 right=glm::cross(new_forward, new_up);
+    q=glm::angleAxis(angle, right);
+    v1 = q * new_forward;
+    new_forward=glm::normalize(v1);
+    //v1 = q * glm::make_vec3(new_up); // not work!!!
+    set(forward, glm::value_ptr(new_forward)); // **
+
+    v1=glm::cross(right,new_forward);
+    //new_up=glm::normalize(v1);
+    //set(up,glm::value_ptr(new_up));
 }
 
 grid::grid()
