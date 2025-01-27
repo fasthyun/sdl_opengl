@@ -317,6 +317,8 @@ void main_loop()
         viewMatrix = lookAt_with_glm(glm::value_ptr(d_camera->position), d_camera->forward , d_camera->up);
         glm::mat4 tmp_mat4 = projectionMatrix * viewMatrix;
 
+
+        objLight *_light= (objLight *) findObject( "light");
         for ( size_t i=0 ; i < objects.size(); i++)
         {
             xObject *obj = objects[i];
@@ -326,6 +328,9 @@ void main_loop()
             {
                 obj->shader->SetActive();
                 obj->shader->setMat4("projView",tmp_mat4);
+                if(_light)
+                    obj->shader->setVec3("lightPos",_light->position);
+
                 //glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(tmp_mat4)); // ( location, count,  transpose, float *value )
                 obj->draw(); //temp
             }
@@ -486,7 +491,7 @@ void check_system_performance()
     }
     std::cout << glm::to_string(m) << "\n";
     dt=SDL_GetTicks() - startTime;
-    printf("check time = %d ms\n",dt);
+    printf("check mat4*mat4 performance time = %d ms\n",dt);
 }
 
 int main(int argc, char *argv[])

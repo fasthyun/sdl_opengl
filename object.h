@@ -43,8 +43,7 @@ public:
     void draw_meshes();
     void draw_axis();
     void make_axis();
-    void draw_dir_up();
-    void load_gltf(string name); // remove
+    void draw_dir_up();    
     void make_glVertexArray();    
     void make_radius(); // tmp
     vector<vertex>  vertexes; // verts
@@ -136,6 +135,17 @@ class particle : public xObject{
     int d_size;
 public:
     particle();
+    virtual void update(float dt=0);
+    virtual void draw();
+};
+
+
+class objLight : public xObject{
+    GLuint buffer;
+    GLuint vertex_array;
+    int d_size;
+public:
+    objLight();
     virtual void update(float dt=0);
     virtual void draw();
 };

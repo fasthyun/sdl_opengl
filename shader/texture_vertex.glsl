@@ -22,7 +22,7 @@ layout (location = 0) in vec3 vPos;       //layout (location = 0) in vec3 vPos;
 layout (location = 1) in vec2 vTexCoord;  //layout (location = 1) in vec2 vTexCoord;
 layout (location = 2) in vec4 vColor;     //layout (location = 2)
 layout (location = 3) in vec3 vNormal;    //layout (location = 3)
-layout (location = 4) in int  vType;      //layout (location = 4)    int32 not works!!!
+layout (location = 4) in int  vType;      //layout (location = 4)    int32  works!!!
 
 out vec2 TexCoord;
 out vec4 Color;

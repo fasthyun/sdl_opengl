@@ -12,7 +12,6 @@
 // to the color buffer
 
 #version 330 core
-
 /* struct Material {
     vec3 ambient;
     vec3 diffuse;
@@ -30,13 +29,13 @@ in vec3  FragPos;
 
 
 uniform sampler2D ourTexture; // how working???
-//in int gl_SampleID;
 //uniform Material material;
+uniform vec3 lightPos;
 
 void main()
 {
 
-    vec3 lightPos = vec3(0,30000,0);
+    //vec3 lightPos = vec3(0,30000,0);
     vec3 lightColor = vec3(1.0,1.0,1.0);
 
     // ambient

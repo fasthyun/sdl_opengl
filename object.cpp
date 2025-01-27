@@ -17,9 +17,9 @@ using namespace std::chrono;
 milliseconds ms = duration_cast< milliseconds >(system_clock::now().time_since_epoch() );
 
 uint64_t epoch_now() { // timeSinceEpochMillisec
-    // 좀 느릴거 같은뎅..(hyun)
-  using namespace std::chrono;
-  return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    // 좀 느릴거 같은뎅..(hyun) 이걸 왜 만들었지?
+    using namespace std::chrono;
+    return duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
 }
 
 extern vector<xObject* > objects;
@@ -89,25 +89,8 @@ void xObject::draw_dir_up()
 {
     float len=3;
     float t[3];
-    glLineWidth(3);
-    glBegin(GL_LINES);
-    glColor3f(1.0, 1.0, 1.0);
-    ///glVertex3fv(pos);
-    ////add(pos,up,t);
-    glVertex3fv(t);
-    glColor3f(0.0, 1.0, 0);
-    ////glVertex3fv(pos);
-    ///add(pos,forward,t);
-    glVertex3fv(t);
-    glEnd();
-    glLineWidth(1);
 }
 
-///#include "gltf-loader.h"
-void xObject::load_gltf(string name)
-{
-   /// LoadGLTF(name, 1, &meshes, &materials, &xtextures);
-}
 
 void xObject::make_axis()
 {
@@ -397,30 +380,35 @@ void camera::on_key_pressed(uint key)
     float right[3],t[3];
     //fprintf(stderr,"camera.onkey\n");
     float speed=300;
+    glm::vec3 v1;
     if(key==key_forward) //w
     {
-        multiply(forward,speed,force);
+        //multiply(forward,speed,force);
         new_force=new_forward*speed;
     }
     else if(key==key_backward) //s
     {
-        multiply(forward,-speed,force);
+        //multiply(forward,-speed,force);
         new_force=new_forward* -speed;
     } else
     if(key==key_side_right) //d
     {
-        cross(forward,up,right);
-        multiply(right,speed,force);
+        //cross(forward,up,right);
+        //multiply(right,speed,force);
+        v1=glm::cross(new_forward,new_up);
+        new_force=v1* speed;
+
     } else
     if(key==key_side_left) // a
-    {
-        //float right[3];
-        cross(forward,up,right);
-        multiply(right,-speed,force);
+    {        
+        //cross(forward,up,right);
+        //multiply(right,-speed,force);
+        v1=glm::cross(new_forward,new_up);
+        new_force=v1* -speed;
     } else
        printf("pressed key %d \n", key);
 
-    fprintf(stderr," pressed! %f %f %f \n",force[0],force[1],force[2]);
+    ///fprintf(stderr," pressed! %f %f %f \n",force[0],force[1],force[2]);
     //fprintf(stderr," pressed! %f %f %f \n",forward[0],forward[1],forward[2]);
     //fprintf(stderr," pressed! pos %f %f %f \n",pos[0],pos[1],pos[2]);
 }
@@ -428,25 +416,14 @@ void camera::on_key_pressed(uint key)
 
 void camera::on_key_released(uint key)
 {
-    if(key==key_forward) //w
+
+    if(key==key_forward or key==key_backward
+            or key==key_side_right or key==key_side_left) //s) //s) //w
     {
-        multiply(forward,0.0,force); //
+        //multiply(forward,0.0,force); //
         new_force=glm::vec3(0);
         //fprintf(stderr,"release! %f %f %f \n",force[0],force[1],force[2]);
-    }
-    if(key==key_backward) //s
-    {
-        multiply(forward,0.0,force);
-        new_force=glm::vec3(0);
-    }
-    if(key==key_side_right) //d
-        set(force,0,0,0);
-
-    if(key==key_side_left) // a
-        set(force,0,0,0);
-
-    if(key==key_side_left) // a
-        set(force,0,0,0);
+    }    
 
     if(key==SDLK_1) //
         set(force,0,0,0);
@@ -472,8 +449,8 @@ void camera::on_mouse_moved(int dx, int dy)
     quat_rotate(side,angle,forward,v);
     normalize(v);
     set(forward,v);
-
     */
+
     glm::quat q;
     glm::vec3 v1;
     new_up=glm::make_vec3(up);
@@ -698,6 +675,25 @@ void particle::update(float dt)
 
 }
 
+objLight::objLight():xObject()
+{
+    name="light";
+    //d_size=2000;
+    //shader=new Shader();
+    //shader->Load("./shader/point_vertex.glsl","./shader/point_fragment.glsl");
+    //shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
+    flag_axis_on=true;
+}
+
+void objLight::draw()
+{
+    xObject::draw();
+}
+
+void objLight::update(float dt)
+{
+
+}
 
 cube::cube():xObject()
 {

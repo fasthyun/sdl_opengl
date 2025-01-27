@@ -333,7 +333,7 @@ int loadMaterials(const aiScene* scene) {
                 */
            }
         }
-        std::cout << msgs ;
+      /////  std::cout << msgs ;
     }
     return true;
 }
@@ -574,7 +574,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
         tab = tab + '\t';
     }
 
-    if(nd->mName==aiString("Lamp") || nd->mName==aiString("Camera")|| nd->mName==aiString("Light"))
+    if( nd->mName==aiString("Camera")|| nd->mName==aiString("Light"))
     {
         printf("%s[%s] skipped \n", tab.c_str(), nd->mName.C_Str());
         return;
@@ -589,7 +589,11 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
     //copy(xobj->model_mat, &m.a1);
     //xobj->model = glm::make_mat4(&m.a1); // without transpose!!
 
-    xobj->name = nd->mName.C_Str(); // object name
+    if(nd->mName==aiString("Lamp"))
+    {
+        xobj->name="light"; // object name
+    }
+    else xobj->name = nd->mName.C_Str(); // object name
     printf("%s[%s].mNumMeshes=%d \n", tab.c_str(), nd->mName.C_Str(), nd->mNumMeshes);
 
     //if (tab_level==0)
@@ -623,7 +627,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
 
     printf("translate(x) = %8.4f (y)=%8.4f (z)=%8.4f \n", pPosition.x,pPosition.y,pPosition.z);
     //printf("rotate (x) = %8.4f (y)=%8.4f (z)=%8.4f \n",glm::degrees(pRotation.x),glm::degrees(pRotation.y),glm::degrees(pRotation.z));
-    printf("rotate w=%4.4f x=%4.4f y=%4.4f z=%4.4f \n",qRotation.w,qRotation.x,qRotation.y,qRotation.z);
+    ///printf("rotate w=%4.4f x=%4.4f y=%4.4f z=%4.4f \n",qRotation.w,qRotation.x,qRotation.y,qRotation.z);
 
 
     //m.a4=0;m.b4=0,m.c4=0;// works!!!
@@ -787,12 +791,18 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
         xObject *child;
         string _name = nd->mChildren[n]->mName.C_Str();
         std::transform(_name.begin(), _name.end(), _name.begin(), ::tolower); // 소문자로 바꿔주기
-        int idx=_name.find("cube");
+        int idx=_name.find("lamp");
         if (idx != string::npos)
         {
+            child=new objLight();
+            printf("=============> found Lamp!!! %s", _name.c_str());
+        }
+
+        if (_name.find("cube") != string::npos)
+        {
             child=new cube();
-            printf("=============> found cube %s", _name.c_str());
-        }else
+            //printf("=============> found cube %s", _name.c_str());
+        }else            
             child=new xObject();
 
         child->set_parent(xobj); //
