@@ -344,12 +344,13 @@ void main_loop()
           glMatrixMode(GL_MODELVIEW);
           glLoadIdentity();
         */
-
+        camera *_camera= (camera *) findObject( "camera_viewer");
         glDisable(GL_DEPTH_TEST);
         if (flag_nk){
             /* Input */
             SDL_Event evt;
             nk_input_begin(ctx);
+
             while (SDL_PollEvent(&evt)) {
                 if (evt.type == SDL_QUIT)
                 {
@@ -362,7 +363,6 @@ void main_loop()
                     //handleKeys( e.text.text[ 0 ], x, y );
                     if (key == SDLK_ESCAPE)
                     {
-                        camera *_camera= (camera *) findObject( "camera_viewer");
                         if(_camera)
                             _camera->d_focus=true;
                         SDL_SetRelativeMouseMode(SDL_TRUE);
@@ -374,7 +374,8 @@ void main_loop()
                     }
 
                 }
-                nk_sdl_handle_event(&evt);
+                if(_camera and _camera->d_focus==false)
+                    nk_sdl_handle_event(&evt);
             }
             nk_input_end(ctx);
 
@@ -432,7 +433,7 @@ void init_object()
     //obj=new xObject();
     //objects.push_back(obj);
 
-    obj = new grid();
+    //obj = new grid();
     //obj->name="grid";
     //objects.push_back(obj);
 

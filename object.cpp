@@ -379,7 +379,7 @@ void camera::on_key_pressed(uint key)
     */
     float right[3],t[3];
     //fprintf(stderr,"camera.onkey\n");
-    float speed=300;
+    float speed=500;
     glm::vec3 v1;
     if(key==key_forward) //w
     {
