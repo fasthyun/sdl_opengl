@@ -551,7 +551,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
 
         30%
 
-       1. 재귀함수
+       1. 재귀함수 : need to change to what?
        2. object들을 xObject로 바꿔줘야한다.
 
       * Blender 좌표계에서 Opengl로 바꾸는 아이디어
@@ -790,19 +790,25 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
         // tempolarily needvmore time and works later!!!
         xObject *child;
         string _name = nd->mChildren[n]->mName.C_Str();
-        std::transform(_name.begin(), _name.end(), _name.begin(), ::tolower); // 소문자로 바꿔주기
-        int idx=_name.find("lamp");
-        if (idx != string::npos)
+        if(level==0)
         {
-            child=new objLight();
-            printf("=============> found Lamp!!! %s", _name.c_str());
-        }
+            std::transform(_name.begin(), _name.end(), _name.begin(), ::tolower); // 소문자로 바꿔주기
+            int idx=_name.find("lamp");
+            if (idx != string::npos)
+            {
+                child=new objLight();
+                printf("=============> found Lamp!!! %s", _name.c_str());
+            }
 
-        if (_name.find("cube") != string::npos)
-        {
-            child=new cube();
-            //printf("=============> found cube %s", _name.c_str());
-        }else            
+            if (_name.find("cube") != string::npos)
+            {
+                child=new cube();
+                //printf("=============> found cube %s", _name.c_str());
+            }
+            else
+                child=new xObject();
+        }
+        else
             child=new xObject();
 
         child->set_parent(xobj); //
@@ -1026,77 +1032,23 @@ void init_models()
     //loadObjectsFrom3Dfile("./model/box.fbx");
     loadObjectsFrom3Dfile("./model/teapot.fbx");
     //loadObjectsFrom3Dfile("./model/stage.fbx");
-    //loadObjectFrom3Dfile("./model/ball.fbx");
-/*
 
-   no_transpose
- 32.0000,  0.0000,  0.0000,  0.0000
-  0.0000, -0.0000,  1.0000,  0.0000
-  0.0000,-32.0000, -0.0000,  0.0000
-  0.0000,  0.0000,  0.0000,  1.0000
-
- 32.0000,  0.0000,  0.0000,  0.0000
-  0.0000, 32.0000,  0.0000,  0.0000
-  0.0000,  0.0000,  1.0000,  0.0000
-  0.0000,  0.0000,  0.0000,  1.0000
-
- transpose
-  0.8280,  0.0000, -0.5607,  0.0000
- -0.5607,  0.0000, -0.8280,  0.0000
-  0.0000,  1.0000,  0.0000,  0.0000
- -3.0000,  0.0000, -2.0000,  1.0000
-
- transpose
- 0.8280,  0.5607,  0.0000,  0.0000
- -0.5607,  0.8280,  0.0000,  0.0000
-  0.0000,  0.0000,  1.0000,  0.0000
- -3.0000,  2.0000,  0.0000,  1.0000
-
- metadata_n = 18
- + data[0]=UpAxis : ( 1 )
- + data[1]=UpAxisSign : ( 1 )
- + data[2]=FrontAxis : ( 2 )
- + data[3]=FrontAxisSign : ( 1 )
- + data[4]=CoordAxis : ( 0 )
- + data[5]=CoordAxisSign : ( 1 )
- + data[6]=OriginalUpAxis : ( -1 )
- + data[7]=OriginalUpAxisSign : ( 1 )
- + data[8]=UnitScaleFactor : ( 1.000000 )
- + data[9]=OriginalUnitScaleFactor : ( 1.000000 )
- + data[10]=AmbientColor : (AIVECTOR3D)
- + data[11]=FrameRate : ( 11 )
- + data[12]=TimeSpanStart : ( 0 )
- + data[13]=TimeSpanStop : ( 0 )
- + data[14]=CustomFrameRate : ( 24.000000 )
- + data[15]=SourceAsset_FormatVersion : 7400
- + data[16]=SourceAsset_Generator : Blender (stable FBX IO) - 2.93.18 - 4.23.1
- + data[17]=SourceAsset_Format : Autodesk FBX Importer
-
-
-    [Box] metadata_n = 4
-     + data[0]=UserProperties :
-     + data[1]=IsNull : False
-     + data[2]=DefaultAttributeIndex : ( 0 )
-     + data[3]=InheritType : ( 1 )
-
-*/
 
      // TEST:
-    for ( int i=0 ; i < 0 ; i++)
+    for ( int i=0 ; i < 30 ; i++)
     {
         xObject *obj;
         obj = new xObject();
         Shader *_shader;
-        //_shader=new Shader();
-        //_shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
+        _shader=new Shader();
+        _shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
         Import3DFromFile("./model/ball.fbx" , obj);
         // obj=new model_object("./model/ball.fbx"); // hmmm...
         obj->name="ball";
         float x,y,z;
-        x=(rand()%60) - 30;
-        y=rand()%30;
-        z=rand()%60 - 30 ;
-        //set(obj->pos,x,y,z);
+        x=(rand()%6000) - 3000;
+        y=rand()%3000;
+        z=rand()%6000 - 3000 ;
         obj->position.x=x;
         obj->position.y=y;
         obj->position.z=z;

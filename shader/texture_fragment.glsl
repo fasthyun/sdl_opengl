@@ -18,24 +18,23 @@
     vec3 specular;
     float shininess;
 };
+//uniform Material material;
 */
 
 out vec4 FragColor;
 in vec2  TexCoord;
 in vec4  Color;
 in vec3  Normal;
-in float Type;
+flat in int Type;    // int not work maybe...
 in vec3  FragPos;
 
 
 uniform sampler2D ourTexture; // how working???
-//uniform Material material;
-uniform vec3 lightPos;
+uniform vec3 lightPos;  // works??
 
 void main()
 {
 
-    //vec3 lightPos = vec3(0,30000,0);
     vec3 lightColor = vec3(1.0,1.0,1.0);
 
     // ambient
@@ -51,16 +50,17 @@ void main()
     //vec4 _color;
     vec4 result;
     ///FragColor = texture2D(ourTexture, TexCoord); // 130
-    if (Type > 1.5 ){
+    //result =  vec4(0,1,0,0.5);
+    if (Type > 1 ){
         result =  Color;
-        //result =  vec4(1,0,0,1);
+        // result =  vec4(1,0,0,1);
     }
-    else   if (Type >= 0.5 ) // color
+    if (Type == 1 ) // color
     {
         //_color = vec4(Color, 1.0); // color mode
         result = vec4((ambient + diffuse),1.0) * Color;
     }    
-    else if (Type < 0.5) // texture
+    if (Type == 0) // texture
     {
         result = vec4((ambient + diffuse),1.0) * texture(ourTexture, TexCoord) ;
     }
