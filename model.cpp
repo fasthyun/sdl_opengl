@@ -990,6 +990,10 @@ void init_models()
       xObject *obj;
     //objects.push_back(obj);
 
+      obj=new particle();
+      //set(obj->pos,0,0,0);
+      objects.push_back(obj);
+
     //xObject *texobj = new texture_object("check.bmp");
     //set(texobj->pos,-2,0,0);
     //objects.push_back(texobj);
@@ -1099,10 +1103,6 @@ void init_models()
         objects.push_back(obj);
         printf("x=%f  y=%f  z=%f \n",x,y,z);
     }
-
-    //obj=new particle();
-    //set(obj->pos,0,0,0);
-    //objects.push_back(obj);
 
     //model_obj=new model_object("./model/Bob.fbx");
     //set(model_obj->pos,0,0,-5);

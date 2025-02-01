@@ -454,6 +454,7 @@ void init_object()
     //obj=new texture_manager();
     //objects.push_back(obj);
 
+
     //time_fps=0;
     //call_count=0;
     //time_call=0;

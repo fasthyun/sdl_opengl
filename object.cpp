@@ -36,7 +36,7 @@ xObject* findObject(string _name)
 
 xObject::xObject()
 {
-    boost::uuids::uuid _uuid = boost::uuids::random_generator()();
+    boost::uuids::uuid _uuid = boost::uuids::random_generator()(); // get uuid
     uuid=to_string(_uuid);
     //std::cout << "uuid=" << uuid << std::endl;
 
