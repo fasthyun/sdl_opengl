@@ -292,7 +292,7 @@ void main_loop()
 
         glClearColor(0,0,0,1);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glEnable(GL_TEXTURE_2D);                
+        glEnable(GL_TEXTURE_2D);
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -304,8 +304,8 @@ void main_loop()
         // Aspect Ratio. Depends on the size of your window. Notice that 4/3 == 800/600 == 1280/960, sounds familiar?
         // Near clipping plane. Keep as big as possible, or you'll get precision issues.
         // Far clipping plane. Keep as little as possible.
-        glm::mat4 projectionMatrix = glm::perspective(            
-            glm::radians(FoV), (float)width / height, 0.1f, 10000.0f ); // glm::radians(FoV), 4.0f / 3.0f, 0.1f, 100.0f );
+        glm::mat4 projectionMatrix =
+                glm::perspective(glm::radians(FoV), (float)width / height, 0.1f, 10000.0f ); //
 
         glm::mat4 viewMatrix ;
         /* = glm::lookAt(
@@ -315,7 +315,7 @@ void main_loop()
         ); */
         // TODO:
         viewMatrix = lookAt_with_glm(glm::value_ptr(d_camera->position), d_camera->forward , d_camera->up);
-        glm::mat4 tmp_mat4 = projectionMatrix * viewMatrix;
+        glm::mat4 projview_mat4 = projectionMatrix * viewMatrix;
 
 
         objLight *_light= (objLight *) findObject( "light");
@@ -327,11 +327,12 @@ void main_loop()
             if (obj->shader != nullptr)
             {
                 obj->shader->SetActive();
-                obj->shader->setMat4("projView",tmp_mat4);
+                obj->shader->setMat4("projView",projview_mat4);
+                //glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(projview_mat4)); // ( location, count,  transpose, float *value )
                 if(_light)
                     obj->shader->setVec3("lightPos",_light->position);
 
-                //glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(tmp_mat4)); // ( location, count,  transpose, float *value )
+
                 obj->draw(); //temp
             }
         }

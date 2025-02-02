@@ -554,7 +554,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
        1. 재귀함수 : need to change to what?
        2. object들을 xObject로 바꿔줘야한다.
 
-      * Blender 좌표계에서 Opengl로 바꾸는 아이디어
+      * Blender 좌표계에서 OpenGL로 바꾸는 아이디어
 
       * 문제는 origin이
        Model matrix ===> identity
@@ -574,11 +574,12 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
         tab = tab + '\t';
     }
 
+    /*
     if( nd->mName==aiString("Camera")|| nd->mName==aiString("Light"))
     {
         printf("%s[%s] skipped \n", tab.c_str(), nd->mName.C_Str());
         return;
-    }
+    } */
 
     // process meta_data
     if(loadMetadata(nd->mMetaData, xobj, nd->mName.C_Str(), level)==true)
@@ -589,11 +590,13 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
     //copy(xobj->model_mat, &m.a1);
     //xobj->model = glm::make_mat4(&m.a1); // without transpose!!
 
+    /*
     if(nd->mName==aiString("Lamp"))
     {
         xobj->name="light"; // object name
     }
-    else xobj->name = nd->mName.C_Str(); // object name
+    else */
+    xobj->name = nd->mName.C_Str(); // object name
     printf("%s[%s].mNumMeshes=%d \n", tab.c_str(), nd->mName.C_Str(), nd->mNumMeshes);
 
     //if (tab_level==0)
@@ -790,7 +793,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
         // tempolarily needvmore time and works later!!!
         xObject *child;
         string _name = nd->mChildren[n]->mName.C_Str();
-        if(level==0)
+        if(level==99)
         {
             std::transform(_name.begin(), _name.end(), _name.begin(), ::tolower); // 소문자로 바꿔주기
             int idx=_name.find("lamp");
@@ -808,9 +811,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
             else
                 child=new xObject();
         }
-        else
-            child=new xObject();
-
+        child=new xObject();
         child->set_parent(xobj); //
         child->set_shader(xobj->shader); // from parent's shader
         xobj->children.push_back(child);
@@ -985,6 +986,31 @@ void loadObjectsFrom3Dfile(string _path)
          obj->parent=nullptr;
          obj->shader=_shader;
          // printf("obj.children()=%d  %d\n",i,obj->VAO);
+
+         if(obj->name=="Camera" or obj->name=="Light")
+         {
+           //printf("%s[%s] skipped \n", tab.c_str(), nd->mName.C_Str());
+             printf("[%s] skipped \n", obj->name.c_str());
+             continue;
+         }
+
+         if(obj->name == "Lamp")
+         {
+            xObject *light = new objLight();
+            light->copy(obj);
+            light->name="light";// temp
+            obj=light;
+             printf("=============> found Lamp!!! %s \n", obj->name.c_str());
+         }
+
+         if (obj->name.find("Cube") != string::npos)
+         {
+             // std::transform(_name.begin(), _name.end(), _name.begin(), ::tolower); // 소문자로 바꿔주기
+             xObject *_cube=new cube();
+             _cube->copy(obj);
+             obj=_cube;
+             //printf("=============> found cube %s", _name.c_str());
+         }
          objects.push_back(obj);
      }
     delete dummy;
@@ -1035,7 +1061,7 @@ void init_models()
 
 
      // TEST:
-    for ( int i=0 ; i < 30 ; i++)
+    for ( int i=0 ; i < 0 ; i++)
     {
         xObject *obj;
         obj = new xObject();

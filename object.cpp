@@ -61,6 +61,55 @@ xObject::xObject()
     make_axis();
 }
 
+
+xObject::xObject(const xObject &obj)
+{
+    uuid=obj.uuid;
+    parent=obj.parent;
+}
+
+void xObject::copy(xObject *obj) // 임시 생성!
+{
+    uuid=obj->uuid;
+    name=obj->name;
+
+    parent=obj->parent;
+    shader=obj->shader; // ***
+    VBO=obj->VBO;
+    VAO=obj->VAO;
+    EBO=obj->EBO;
+
+    position=obj->position;
+
+    //set(up ,0,1,0);
+    //set(forward,0,0,1);
+    //set(force,0,0,0);
+    model = obj->model;
+    new_force = obj->new_force;
+    new_forward = obj->new_forward;
+    new_up = obj->new_up;
+
+    material=obj->material;
+    vertexes=obj->vertexes;
+    triangles=obj->triangles;
+    texname=obj->texname;
+    children=obj->children;
+    make_axis();
+}
+
+xObject::xObject(xObject *obj)
+{
+    xObject::copy(obj);
+}
+
+xObject::xObject(xObject *&obj)
+{
+    uuid=obj->uuid;
+    parent=obj->parent;
+
+}
+
+
 xObject::~xObject(){
     if (parent !=nullptr)
     {
