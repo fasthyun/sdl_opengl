@@ -339,9 +339,12 @@ int loadMaterials(const aiScene* scene) {
 }
 
 
-// blender에서 각 object는 properties를 갖는다. 이 properties가 FBX에서는 metadata임
-// xobject key를 찾으면...
 int loadMetadata(aiMetadata *md, xObject *obj, string name="", int level=0) {
+    /* blender에서 각 object는 properties를 갖는다.
+     * 이 properties가 FBX에서는 metadata임
+     * xobject key를 찾으면...
+     */
+
     if (md == nullptr)
     {
         return 0;
@@ -507,47 +510,22 @@ int loadMetadata(aiMetadata *md, xObject *obj, string name="", int level=0) {
     load model obj.name = Sphere
 */
 
-aiNode *findxObject(const struct aiNode* nd, int level=-1)
-{
-    /*
-     *위에서 보듯이 root node는 메쉬가 없다. 카메라, 램프 기타 등등
-      root 노드 자식노드중에 실제 메쉬가 있기때문에
-      찾아서 object에 넣어줘야한다 */
-
-    /* tempolarily need more time and works later!!! */
-
-    aiNode * node = nullptr ;
-    for (int n = 0; n < nd->mNumChildren; ++n)
-    {
-        xObject *tmp_obj=new xObject();
-        aiNode * tn = nd->mChildren[n] ;
-        //if (xobj.xobject_found==true)
-        //findxObject(nd->mChildren[n], level+1);
-        if(loadMetadata(tn->mMetaData, tmp_obj, nd->mName.C_Str(), level)==true)
-        {
-            //tmp_obj->xobject_found=true;
-            node = nd->mChildren[n];
-        }
-        //delete tmp_obj;
-    }
-    return node;
-}
 
 #include <glm/gtc/type_ptr.hpp> // make_mat4()
-#include <glm/gtc/quaternion.hpp>
+#include <glm/gtc/quaternion.hpp> //#include <glm/gtx/quaternion.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
-//#include <glm/gtx/quaternion.hpp>
 // TODO : scale remove
 void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scalex, xObject *xobj, int level)
 {    
-    /*
-       1. process meta_data
-       2. process meshes
+    /*     
+     * A node:
+        +-- meta_data
+        +-- meshes
            - vertexes
            - triangles
            - (already materials)
-       3. process children
+        +-- children
 
         30%
 
@@ -792,25 +770,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
     {
         // tempolarily needvmore time and works later!!!
         xObject *child;
-        string _name = nd->mChildren[n]->mName.C_Str();
-        if(level==99)
-        {
-            std::transform(_name.begin(), _name.end(), _name.begin(), ::tolower); // 소문자로 바꿔주기
-            int idx=_name.find("lamp");
-            if (idx != string::npos)
-            {
-                child=new objLight();
-                printf("=============> found Lamp!!! %s", _name.c_str());
-            }
-
-            if (_name.find("cube") != string::npos)
-            {
-                child=new cube();
-                //printf("=============> found cube %s", _name.c_str());
-            }
-            else
-                child=new xObject();
-        }
+        //string _name = nd->mChildren[n]->mName.C_Str();
         child=new xObject();
         child->set_parent(xobj); //
         child->set_shader(xobj->shader); // from parent's shader
@@ -841,8 +801,33 @@ int DrawGLScene() //Here's where we do all the drawing
 }
 */
 
+aiNode *findxObject(const struct aiNode* nd, int level=-1)
+{
+    /* 사용 안함!
+     * root node는 메쉬가 없다. 카메라, 램프 기타 등등
+      root 노드 자식노드중에 실제 메쉬가 있기때문에
+      찾아서 object에 넣어줘야한다 */
 
-bool Import3DFromFile(const std::string filename,xObject *obj)
+    /* tempolarily need more time and works later!!! */
+
+    aiNode * node = nullptr ;
+    for (int n = 0; n < nd->mNumChildren; ++n)
+    {
+        xObject *tmp_obj=new xObject();
+        aiNode * tn = nd->mChildren[n] ;
+        //if (xobj.xobject_found==true)
+        //findxObject(nd->mChildren[n], level+1);
+        if(loadMetadata(tn->mMetaData, tmp_obj, nd->mName.C_Str(), level)==true)
+        {
+            //tmp_obj->xobject_found=true;
+            node = nd->mChildren[n];
+        }
+        //delete tmp_obj;
+    }
+    return node;
+}
+
+bool Import3DFromFile(const std::string filename, xObject *obj)
 {
     /*
         * Scene에는 여러개의 Object가 있을수 있다. 카메라, 라이트 등등
@@ -851,12 +836,11 @@ bool Import3DFromFile(const std::string filename,xObject *obj)
 
         - blender에서 각 object는 properties를 갖는다.
         - properties가 FBX에서는 metadata임
-        - xobject key를 찾으면...
+        - xobject key를 찾으면... type적용
 
         1. 각 OBject중 LAMP , Camera는 제외하고 등록하자...
-        2. 지금은 level==0 일때는 전부 다 개별 object로 등록하자
+        2. 지금은 level==0 일때는 전부 다 개별 object로 등록하자 ---> 수정!
         3. tree-child로 등록해야할지 , 개별 Object로 등록할지는... 조금더 해보고 결정
-
         4. metadata는 child 개수에 포함 안되는듯!
     */
 
@@ -887,21 +871,9 @@ bool Import3DFromFile(const std::string filename,xObject *obj)
     std::cout << "Import of scene " + filename + " succeeded.\n";
     // We're done. Everything will be cleaned up by the importer destructor
 
-    // 1. load material
-
-    loadMaterials(g_scene);
+    loadMaterials(g_scene);  // 1. load material
     loadMetadata(g_scene->mMetaData, obj, g_scene->mName.C_Str());  // 2. scene's metadata
-    loadToObject(g_scene, g_scene->mRootNode, 1.0, obj, 0); // 3. load object ?
-
-    /*
-    aiNode *node= findxObject(g_scene->mRootNode);
-    if (node!=NULL)
-    {
-        loadToObject(g_scene, node, 1.0, obj);
-    }
-    else
-        std::cout << "Error !!!!!!!!!!!!!!!!!!!!!  can't find xObject in metadata! \n";
-    */
+    loadToObject(g_scene, g_scene->mRootNode, 1.0, obj, 0); // 3. load object
 
     return true;
 }
@@ -970,16 +942,16 @@ void shader_object::draw()
 
 extern vector<xObject* > objects;
 
-void loadObjectsFrom3Dfile(string _path)
+vector<xObject*> loadObjectsFrom3Dfile(string _path) // importObjectsFrom3Dfile
 {
-    /* Temp :  fbx파일에서 레벨1인 object만 따로 등록하기 */
-    xObject *dummy;
-    dummy = new xObject();
+    /* Temp :  fbx파일에서 레벨 0인 object만 따로 등록하기 */
+    xObject *dummy = new xObject();
     Shader *_shader;
     _shader=new Shader();
     _shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
     Import3DFromFile(_path, dummy);
 
+    vector<xObject* > array_objects;
     for ( size_t i=0 ; i < dummy->children.size(); i++)
      {
          xObject *obj = dummy->children[i];
@@ -1011,9 +983,10 @@ void loadObjectsFrom3Dfile(string _path)
              obj=_cube;
              //printf("=============> found cube %s", _name.c_str());
          }
-         objects.push_back(obj);
+         array_objects.push_back(obj);
      }
     delete dummy;
+    return array_objects;
 }
 
 
@@ -1056,30 +1029,43 @@ void init_models()
     //objects.push_back(model_obj);
     //loadObjectsFrom3Dfile("./model/axis.fbx");
     //loadObjectsFrom3Dfile("./model/box.fbx");
-    loadObjectsFrom3Dfile("./model/teapot.fbx");
+    vector<xObject* > array_objects;
+    array_objects=loadObjectsFrom3Dfile("./model/teapot.fbx");
+    //objects.push_back(array_objects);
+    objects.insert(std::end(objects), std::begin(array_objects), std::end(array_objects)); // tooo long...
     //loadObjectsFrom3Dfile("./model/stage.fbx");
 
 
      // TEST:
-    for ( int i=0 ; i < 0 ; i++)
+    for ( int i=0 ; i < 50 ; i++)
     {
         xObject *obj;
         obj = new xObject();
         Shader *_shader;
         _shader=new Shader();
         _shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
-        Import3DFromFile("./model/ball.fbx" , obj);
+        //Import3DFromFile("./model/ball.fbx" , obj);
+        array_objects=loadObjectsFrom3Dfile("./model/ball.fbx");
+        for ( size_t i=0 ; i < array_objects.size(); i++)
+        {
+            // 임시 방편 ... 너무...장황하지만...
+            xObject *obj = array_objects[i];
+            if(obj->name=="ball")
+            {
+                //obj->name="ball";
+                float x,y,z;
+                x=(rand()%6000) - 3000;
+                y=rand()%3000;
+                z=rand()%6000 - 3000 ;
+                obj->position.x=x;
+                obj->position.y=y;
+                obj->position.z=z;
+                objects.push_back(obj);
+                printf("x=%f  y=%f  z=%f \n",x,y,z);
+            }
+        }
         // obj=new model_object("./model/ball.fbx"); // hmmm...
-        obj->name="ball";
-        float x,y,z;
-        x=(rand()%6000) - 3000;
-        y=rand()%3000;
-        z=rand()%6000 - 3000 ;
-        obj->position.x=x;
-        obj->position.y=y;
-        obj->position.z=z;
-        objects.push_back(obj);
-        printf("x=%f  y=%f  z=%f \n",x,y,z);
+
     }
 
     //model_obj=new model_object("./model/Bob.fbx");
