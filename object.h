@@ -50,6 +50,7 @@ public:
     void draw_dir_up();    
     void make_glVertexArray();    
     void make_radius(); // tmp
+    void check_collision();
     vector<vertex>  vertexes; // verts
     vector<triangle> triangles; // tris
     vector<MeshFloat> meshes; //
@@ -89,6 +90,7 @@ public:
     float radius; // tmp
     bool flag_axis_on=false;
     bool flag_shader_global=false;
+    bool flag_gravity=false;
 };
 
 class camera : public xObject{

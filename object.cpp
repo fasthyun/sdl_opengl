@@ -128,9 +128,20 @@ xObject::~xObject(){
 void xObject::update(float dt /* ms seconds */)
 {
     float v[3];
+    glm::vec3 force(0);
     //multiply(force, dt, v);
     //add(pos, v, pos);
-    position += new_force * dt;
+
+    if (flag_gravity)
+    {
+        force += glm::vec3(0,-980,0);
+    }
+
+    force+=new_force;
+
+    position += force * dt;
+
+
 }
 
 
@@ -214,6 +225,21 @@ void xObject::make_radius()
         r = vect3f_distance(t->v, orig.v);
         if ( r > max_r )
             radius=r;
+    }
+}
+
+void xObject::check_collision()
+{
+
+    xObject *other;
+    for ( size_t i=0 ; i < objects.size(); i++)
+    {
+        other = objects[i];
+        if (this != other )
+        {
+
+
+        }
     }
 }
 

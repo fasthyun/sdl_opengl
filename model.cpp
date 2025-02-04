@@ -989,6 +989,26 @@ vector<xObject*> loadObjectsFrom3Dfile(string _path) // importObjectsFrom3Dfile
     return array_objects;
 }
 
+xObject* loadObjectFrom3Dfile(string _path, string _name) // importObjectsFrom3Dfile
+{
+    xObject *dummy = new xObject();
+    Shader *_shader;
+    _shader=new Shader();
+    _shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
+    Import3DFromFile(_path, dummy);
+
+    for ( size_t i=0 ; i < dummy->children.size(); i++)
+     {
+         xObject *obj = dummy->children[i];
+         obj->parent=nullptr;
+         obj->shader=_shader;
+         // printf("obj.children()=%d  %d\n",i,obj->VAO);
+
+         if(obj->name==_name)
+             return obj;
+      }
+    return nullptr;
+}
 
 void init_models()
 {
@@ -1035,23 +1055,17 @@ void init_models()
     objects.insert(std::end(objects), std::begin(array_objects), std::end(array_objects)); // tooo long...
     //loadObjectsFrom3Dfile("./model/stage.fbx");
 
-
      // TEST:
     for ( int i=0 ; i < 50 ; i++)
     {
         xObject *obj;
-        obj = new xObject();
-        Shader *_shader;
-        _shader=new Shader();
-        _shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
-        //Import3DFromFile("./model/ball.fbx" , obj);
-        array_objects=loadObjectsFrom3Dfile("./model/ball.fbx");
-        for ( size_t i=0 ; i < array_objects.size(); i++)
+        obj=loadObjectFrom3Dfile("./model/ball.fbx","ball");
+        if (obj!=nullptr)
         {
             // 임시 방편 ... 너무...장황하지만...
-            xObject *obj = array_objects[i];
             if(obj->name=="ball")
             {
+                obj->flag_gravity=true;
                 //obj->name="ball";
                 float x,y,z;
                 x=(rand()%6000) - 3000;
@@ -1065,7 +1079,6 @@ void init_models()
             }
         }
         // obj=new model_object("./model/ball.fbx"); // hmmm...
-
     }
 
     //model_obj=new model_object("./model/Bob.fbx");
