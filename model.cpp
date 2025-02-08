@@ -33,6 +33,10 @@
 int loadMaterials(const aiScene* scene) ;
 void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale, xObject *obj, int tab_level=0);
 
+
+extern vector<xObject* > objects;
+vector<xObject* > cached_models;
+
 std::map<string, Material*> Materials;	// map Material name to texid
 
 std::map<string, GLuint> Textures;	// map Material name to texid
@@ -940,7 +944,6 @@ void shader_object::draw()
    xObject::draw();
 }
 
-extern vector<xObject* > objects;
 
 vector<xObject*> loadObjectsFrom3Dfile(string _path) // importObjectsFrom3Dfile
 {
@@ -988,7 +991,6 @@ vector<xObject*> loadObjectsFrom3Dfile(string _path) // importObjectsFrom3Dfile
     delete dummy;
     return array_objects;
 }
-vector<xObject*> cached_models;
 
 xObject* loadObjectFrom3Dfile(string _path, string _name) // importObjectFrom3Dfile
 {
@@ -1035,7 +1037,13 @@ void init_models()
       obj=new xObject();
       obj->name="center";
       obj->flag_axis_on=true;
-      obj->position=glm::vec3(0,0,0);
+      obj->position=glm::vec3(0,1500,0);
+      objects.push_back(obj);
+
+      obj=loadObjectFrom3Dfile("./model/light.fbx","Cube");
+      obj->position.x=0;
+      obj->position.y=900;
+      obj->position.z=0;
       objects.push_back(obj);
 
       //obj=new particle();
@@ -1055,10 +1063,10 @@ void init_models()
     //set(texobj->pos,4,0,0);
     //objects.push_back(texobj);
 
-      /*
-    xObject *model_obj=new model_object("./model/stage.blend"); // Fail to load textures!!!
-    set(model_obj->pos,0,-4,0);
-    objects.push_back(model_obj);
+    /*
+        xObject *model_obj=new model_object("./model/stage.blend"); // Fail to load textures!!!
+        set(model_obj->pos,0,-4,0);
+        objects.push_back(model_obj);
     */
     /*
     xObject *obj;
