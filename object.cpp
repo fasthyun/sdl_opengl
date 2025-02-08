@@ -70,7 +70,7 @@ xObject::xObject(const xObject &obj)
 
 void xObject::copy(xObject *obj) // 임시 생성!
 {
-    uuid=obj->uuid;
+///  uuid=obj->uuid;
     name=obj->name;
 
     parent=obj->parent;
@@ -95,6 +95,7 @@ void xObject::copy(xObject *obj) // 임시 생성!
     texname=obj->texname;
     children=obj->children;
     make_axis();
+    make_glVertexArray();
 }
 
 xObject::xObject(xObject *obj)
@@ -181,6 +182,8 @@ void xObject::make_axis()
 
 void xObject::make_glVertexArray()
 {
+    if (triangles.size()==0)
+        return;
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
@@ -189,7 +192,7 @@ void xObject::make_glVertexArray()
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     //glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
     glBufferData(GL_ARRAY_BUFFER, vertexes.size()*sizeof(vertex), vertexes.data(), GL_STATIC_DRAW);
-    printf("sizeof(vertex)= %ld vertexs.size=%ld data=%p\n", sizeof(vertex), vertexes.size(), vertexes.data());
+    ///printf("sizeof(vertex)= %ld vertexs.size=%ld data=%p\n", sizeof(vertex), vertexes.size(), vertexes.data());
     //printf(" why??? %f %f %f %f %f\n", vertexes.data()[0].v[0],vertexes.data()[0].v[1],vertexes.data()[0].v[2],vertexes.data()[0].v[3], vertexes.data()[4]);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
@@ -248,7 +251,16 @@ void xObject::draw_axis()
 {
     /* https://stackoverflow.com/questions/60440682/drawing-a-line-in-modern-opengl
      */
-    // this will not work ! old_opengl
+    if (flag_axis_on && VAO_axis>0)
+    {
+        glDisable(GL_DEPTH_TEST);    // Enable depth buffering
+        shader->setMat4("model",model); //
+        glLineWidth(3);
+        glBindVertexArray(VAO_axis);
+        //glVertexAttrib3f(vertColor_loc, 1.0f, 1.0f, 0.2f);
+        glVertexAttribI1i(4, 2); //glVertexAttrib1f(4, 2);
+        glDrawArrays(GL_LINES, 0, 6); // why 6?
+    }
 
 }
 
@@ -256,6 +268,23 @@ void xObject::draw_axis()
 void xObject::draw_meshes()
 {
     // will not work ! (legacy)
+}
+
+
+void xObject::update_model_matrix()
+{
+        model = glm::mat4(1.0); // identity
+        //model=glm::rotate(model, roll , glm::vec3(0,0,1));//z
+        //model=glm::rotate(model, yaw , glm::vec3(0,1,0)); //y
+        //model=glm::rotate(model, pitch , glm::vec3(1,0,0)); //x
+        //model=glm::scale(model, glm::vec3(scale[0],scale[1],scale[2]));
+        glm::mat4 Mi = glm::mat4(1.0f);
+        //glm::mat4 RotationMatrix = glm::mat4(1.0);
+        glm::mat4 RotationMatrix = glm::rotate(Mi, glm::radians(yaw), glm::vec3(0.0, 1.0, 0.0));
+        glm::mat4 TranslationMatrix = glm::translate(model, position);
+        glm::mat4 ScaleMatrix = glm::mat4(1.0);
+        /* TransformedVector = TranslationMatrix * RotationMatrix * ScaleMatrix * OriginalVertex; */
+        model= TranslationMatrix * RotationMatrix * ScaleMatrix; // works!!!
 }
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -271,21 +300,7 @@ void xObject::draw()
     //m1[3].x =pos[0];    m1[3].y =pos[1];    m1[3].z =pos[2];
     //m1[3].x =pos[0];    m1[3].y =pos[1];    m1[3].z =pos[2];
 
-    if (1)
-    {
-        model = glm::mat4(1.0); // identity
-        //model=glm::rotate(model, roll , glm::vec3(0,0,1));//z
-        //model=glm::rotate(model, yaw , glm::vec3(0,1,0)); //y
-        //model=glm::rotate(model, pitch , glm::vec3(1,0,0)); //x
-        //model=glm::scale(model, glm::vec3(scale[0],scale[1],scale[2]));
-        glm::mat4 Mi = glm::mat4(1.0f);
-        //glm::mat4 RotationMatrix = glm::mat4(1.0);
-        glm::mat4 RotationMatrix = glm::rotate(Mi, glm::radians(yaw), glm::vec3(0.0, 1.0, 0.0));
-        glm::mat4 TranslationMatrix = glm::translate(model, position);
-        glm::mat4 ScaleMatrix = glm::mat4(1.0);
-        /* TransformedVector = TranslationMatrix * RotationMatrix * ScaleMatrix * OriginalVertex; */
-        model= TranslationMatrix * RotationMatrix * ScaleMatrix; // works!!!
-    }
+    update_model_matrix();
     glm::mat4 _m1(1);
     float _m[16];
     if (parent)
@@ -326,16 +341,8 @@ void xObject::draw()
         */
     }
 
-    if (flag_axis_on && VAO_axis>0)
-    {
-        glDisable(GL_DEPTH_TEST);    // Enable depth buffering
-        shader->setMat4("model",_m1); //
-        glLineWidth(3);
-        glBindVertexArray(VAO_axis);
-        //glVertexAttrib3f(vertColor_loc, 1.0f, 1.0f, 0.2f);
-        glVertexAttribI1i(4, 2); //glVertexAttrib1f(4, 2);
-        glDrawArrays(GL_LINES, 0, 6); // why 6?
-    }
+
+   draw_axis();
 
    for ( size_t i=0 ; i < children.size(); i++)
     {
@@ -665,10 +672,14 @@ void CollisionDetector::update(float dt)
     }
 }
 
-particle::particle()
+particle::particle():xObject()
 {
     name="particle";
     d_size=2000;
+
+    Texture *_tex = new Texture("particle.png"); //
+    texname=_tex->getTextureName();
+
     shader=new Shader();
     shader->Load("./shader/point_vertex.glsl","./shader/point_fragment.glsl");
 
@@ -683,9 +694,9 @@ particle::particle()
     for ( int i=0 ; i < d_size ;)
     {
         float x,y,z;
-        x=rand()%60 - 30;
-        y=rand()%60 - 30;
-        z=rand()%60 - 30;
+        x=rand()%5000 - 1000;
+        y=rand()%5000 - 0;
+        z=rand()%5000 - 1000;
         vertexData[i++]=x;  // x
         vertexData[i++]=y;  // y
         vertexData[i++]=z;  // z
@@ -709,12 +720,16 @@ particle::particle()
     glBindVertexArray(0); // unbind
 
     free(vertexData);
+
+
+    flag_axis_on=true;
+    make_axis();//
 }
 
 void particle::draw()
 {
-    //draw_meshes();
-    ///mat4x4_translate(model_mat, pos[0], pos[1], pos[2]);
+    update_model_matrix();
+
     float _m[16];
     if (parent)
     {
@@ -723,26 +738,38 @@ void particle::draw()
         //mat4x4_mult(_m, parent->model_mat, model_mat);
     }
     //else mat4x4_set(_m, model_mat); // copy
+    if (1)
+    {
+      //  model = glm::mat4(1.0); // identity
+    }
+
+    //glm::mat4 _m1(1);
 
     if (texname > 0)
-        glBindTexture(GL_TEXTURE_2D, texname);
+    {
+       // glBindTexture(GL_TEXTURE_2D, texname);
+       // glEnable(GL_POINT_SPRITE);
+       // glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
+    }
 
     if (VAO>0)
     {
         GLint location;
+        //shader->setMat4("model",_m1);
         location = glGetUniformLocation(shader->mProgram, "modelView");
         if (location >= 0)
             glUniformMatrix4fv(location, 1, GL_FALSE, _m); // ( location, count,  transpose, float *value )
 
         glEnable(GL_PROGRAM_POINT_SIZE);
         glPointSize(3);
-        //draw_axis();
         glBindVertexArray(VAO);
         glDrawArrays(GL_POINTS, 0, d_size); // 0~2000
         //glDrawArrays(GL_LINES, 0, d_size/2);
         glBindVertexArray(0); // break
         //glDisableVertexAttribArray(0);
+        glDisable(GL_POINT_SPRITE);
     }
+    draw_axis();
 }
 
 void particle::update(float dt)
@@ -787,7 +814,7 @@ void cube::draw()
 }
 
 
-extern std::vector<Texture *> textures;
+extern std::vector<Texture *> cached_textures;
 
 texture_manager::texture_manager()
 {
@@ -812,11 +839,11 @@ GLuint texture_manager::get_glname(string filename)
 {
     GLuint texname = 0 ;
     // cout << "1. get_glname => "<< filename << "," << to_string(texname) << "\n";
-    for ( size_t i=0 ; i < textures.size(); i++)
+    for ( size_t i=0 ; i < cached_textures.size(); i++)
     {
-        if(textures[i]->d_filename==filename)
+        if(cached_textures[i]->d_filename==filename)
         {
-            texname=textures[i]->getTextureName();
+            texname=cached_textures[i]->getTextureName();
             cout << " texname==>" << texname << "\n";
             break;
         }
@@ -837,7 +864,7 @@ GLuint texture_manager::load_texture(string path)
     cout << "load_texture "<< basename << "\n;";
     Texture *_tex = new Texture(basename);
     if (_tex->getTextureName()>0)
-        textures.push_back(_tex);
+        cached_textures.push_back(_tex);
     return _tex->getTextureName();
 }
 

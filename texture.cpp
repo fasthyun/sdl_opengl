@@ -2,7 +2,7 @@
 #include "texture.h"
 #include "xmath.h"
 
-std::vector<Texture *> textures;
+std::vector<Texture *> cached_textures;
 
 /*
 SDL_Texture *loadTexture(const char *file){

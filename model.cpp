@@ -444,8 +444,8 @@ int loadMetadata(aiMetadata *md, xObject *obj, string name="", int level=0) {
             else
                 msg +="else! unknown metadata type " + std::to_string(prop->mType);
 
-            if (level >=0)
-                std::cout << msg << "\n" ;
+            ///if (level >=0)
+            ///    std::cout << msg << "\n" ;
         }
     }
     return xobject_found;
@@ -606,7 +606,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
     }
     float angleY, angleX,angleZ;
 
-    printf("translate(x) = %8.4f (y)=%8.4f (z)=%8.4f \n", pPosition.x,pPosition.y,pPosition.z);
+    printf("%s >>> translate(x) = %8.4f (y)=%8.4f (z)=%8.4f \n",tab.c_str(), pPosition.x,pPosition.y,pPosition.z);
     //printf("rotate (x) = %8.4f (y)=%8.4f (z)=%8.4f \n",glm::degrees(pRotation.x),glm::degrees(pRotation.y),glm::degrees(pRotation.z));
     ///printf("rotate w=%4.4f x=%4.4f y=%4.4f z=%4.4f \n",qRotation.w,qRotation.x,qRotation.y,qRotation.z);
 
@@ -838,8 +838,8 @@ bool Import3DFromFile(const std::string filename, xObject *obj)
         - properties가 FBX에서는 metadata임
         - xobject key를 찾으면... type적용
 
-        1. 각 OBject중 LAMP , Camera는 제외하고 등록하자...
-        2. 지금은 level==0 일때는 전부 다 개별 object로 등록하자 ---> 수정!
+        1. 각 OBject중 LAMP , Camera는 제외하고 등록하자... ---> 바뀜!
+        2. 지금은 level==0 일때는 전부 다 개별 object로 등록하자 ---> 바뀜!
         3. tree-child로 등록해야할지 , 개별 Object로 등록할지는... 조금더 해보고 결정
         4. metadata는 child 개수에 포함 안되는듯!
     */
@@ -873,7 +873,7 @@ bool Import3DFromFile(const std::string filename, xObject *obj)
 
     loadMaterials(g_scene);  // 1. load material
     loadMetadata(g_scene->mMetaData, obj, g_scene->mName.C_Str());  // 2. scene's metadata
-    loadToObject(g_scene, g_scene->mRootNode, 1.0, obj, 0); // 3. load object
+    loadToObject(g_scene, g_scene->mRootNode, 1.0, obj, 0); // 3. load 3D to object
 
     return true;
 }
@@ -988,9 +988,23 @@ vector<xObject*> loadObjectsFrom3Dfile(string _path) // importObjectsFrom3Dfile
     delete dummy;
     return array_objects;
 }
+vector<xObject*> cached_models;
 
-xObject* loadObjectFrom3Dfile(string _path, string _name) // importObjectsFrom3Dfile
+xObject* loadObjectFrom3Dfile(string _path, string _name) // importObjectFrom3Dfile
 {
+    xObject *joe = new xObject();
+
+    for ( size_t i=0 ; i < cached_models.size(); i++)
+    {
+        xObject *obj = cached_models[i];
+        if (obj->name==_name)
+        {
+            joe->copy(obj);
+            return joe;
+        }
+    }
+
+
     xObject *dummy = new xObject();
     Shader *_shader;
     _shader=new Shader();
@@ -998,15 +1012,18 @@ xObject* loadObjectFrom3Dfile(string _path, string _name) // importObjectsFrom3D
     Import3DFromFile(_path, dummy);
 
     for ( size_t i=0 ; i < dummy->children.size(); i++)
-     {
+    {
          xObject *obj = dummy->children[i];
          obj->parent=nullptr;
          obj->shader=_shader;
          // printf("obj.children()=%d  %d\n",i,obj->VAO);
-
          if(obj->name==_name)
-             return obj;
-      }
+         {
+             cached_models.push_back(obj); //save
+             joe->copy(obj);//*joe=*obj;
+             return joe;
+         }
+    }
     return nullptr;
 }
 
@@ -1015,9 +1032,16 @@ void init_models()
       xObject *obj;
     //objects.push_back(obj);
 
-      obj=new particle();
-      //set(obj->pos,0,0,0);
+      obj=new xObject();
+      obj->name="center";
+      obj->flag_axis_on=true;
+      obj->position=glm::vec3(0,0,0);
       objects.push_back(obj);
+
+      //obj=new particle();
+      //set(obj->pos,0,0,0);
+      //obj->position=glm::vec3(0,1000,0);
+      //objects.push_back(obj);
 
     //xObject *texobj = new texture_object("check.bmp");
     //set(texobj->pos,-2,0,0);
@@ -1050,33 +1074,30 @@ void init_models()
     //loadObjectsFrom3Dfile("./model/axis.fbx");
     //loadObjectsFrom3Dfile("./model/box.fbx");
     vector<xObject* > array_objects;
-    array_objects=loadObjectsFrom3Dfile("./model/teapot.fbx");
+    //array_objects=loadObjectsFrom3Dfile("./model/teapot.fbx");
     //objects.push_back(array_objects);
-    objects.insert(std::end(objects), std::begin(array_objects), std::end(array_objects)); // tooo long...
+    //objects.insert(std::end(objects), std::begin(array_objects), std::end(array_objects)); // tooo long...
     //loadObjectsFrom3Dfile("./model/stage.fbx");
 
-     // TEST:
-    for ( int i=0 ; i < 50 ; i++)
+    // tmp
+    for ( int i=0 ; i < 0 ; i++)
     {
         xObject *obj;
         obj=loadObjectFrom3Dfile("./model/ball.fbx","ball");
         if (obj!=nullptr)
         {
             // 임시 방편 ... 너무...장황하지만...
-            if(obj->name=="ball")
-            {
-                obj->flag_gravity=true;
-                //obj->name="ball";
-                float x,y,z;
-                x=(rand()%6000) - 3000;
-                y=rand()%3000;
-                z=rand()%6000 - 3000 ;
-                obj->position.x=x;
-                obj->position.y=y;
-                obj->position.z=z;
-                objects.push_back(obj);
-                printf("x=%f  y=%f  z=%f \n",x,y,z);
-            }
+            obj->flag_gravity=true;
+            //obj->name="ball";
+            float x,y,z;
+            x=(rand()%6000) - 3000;
+            y=rand()%3000;
+            z=(rand()%6000) - 3000 ;
+            obj->position.x=x;
+            obj->position.y=y;
+            obj->position.z=z;
+            objects.push_back(obj);
+            ///printf("x=%f  y=%f  z=%f \n",x,y,z);
         }
         // obj=new model_object("./model/ball.fbx"); // hmmm...
     }

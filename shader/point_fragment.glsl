@@ -18,7 +18,6 @@ void main()
     // RGBA of 100% blue, 100% opaque
     outColor = inColor;
 }
-
 */
 
 out vec4 FragColor;

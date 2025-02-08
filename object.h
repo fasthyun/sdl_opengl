@@ -47,6 +47,7 @@ public:
     void draw_meshes();
     void draw_axis();
     void make_axis();
+    void update_model_matrix();
     void draw_dir_up();    
     void make_glVertexArray();    
     void make_radius(); // tmp

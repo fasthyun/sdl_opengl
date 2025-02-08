@@ -6,8 +6,6 @@
 // See LICENSE in root directory for full details.
 // ----------------------------------------------------------------
 
-// Request GLSL
-
 // This corresponds to the output color
 // to the color buffer
 
@@ -25,7 +23,7 @@ out vec4 FragColor;
 in vec2  TexCoord;
 in vec4  Color;
 in vec3  Normal;
-flat in int Type;    // int not work maybe...
+flat in int Type;    // flat int  works!!!
 in vec3  FragPos;
 
 
