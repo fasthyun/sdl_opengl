@@ -318,7 +318,7 @@ void main_loop()
         glm::mat4 projview_mat4 = projectionMatrix * viewMatrix;
 
 
-        objLight *_light= (objLight *) findObject( "light");
+        objLight *_light= (objLight *) findObject( "Lamp");
         for ( size_t i=0 ; i < objects.size(); i++)
         {
             xObject *obj = objects[i];

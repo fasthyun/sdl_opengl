@@ -35,7 +35,9 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
 
 
 extern vector<xObject* > objects;
-vector<xObject* > cached_models;
+vector<xObject* > cached_models;  //
+vector<xObject* > cached_objects; // cube , lamp, light ...
+
 
 std::map<string, Material*> Materials;	// map Material name to texid
 
@@ -302,6 +304,11 @@ int loadMaterials(const aiScene* scene) {
                }
                if(keyname=="$clr.diffuse")
                    set4f(_material->diffuse,colorf);
+               else if(keyname=="$clr.emissive")
+                   set4f(_material->emission,colorf);
+               else if(keyname=="$clr.specular")
+                   set4f(_material->specular,colorf);
+
                str+=" )";
                msg += str;
            }
@@ -337,7 +344,7 @@ int loadMaterials(const aiScene* scene) {
                 */
            }
         }
-      /////  std::cout << msgs ;
+       std::cout << msgs ;
     }
     return true;
 }
@@ -882,10 +889,6 @@ bool Import3DFromFile(const std::string filename, xObject *obj)
     return true;
 }
 
-
-
-std::vector<xObject> models; // cached 3D models
-
 model_object::model_object(string _path): xObject()
 {
     //texname=texture_manager::get_glname("check.bmp");
@@ -893,9 +896,9 @@ model_object::model_object(string _path): xObject()
     shader=new Shader();
     shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
 
-    for ( size_t i=0 ; i < models.size(); i++)
+    for ( size_t i=0 ; i < cached_models.size(); i++)
     {
-        if(models[i].path==_path)
+        //if(cached_models[i].path==_path)
         {
             //obj=models[i];
             //return true;
@@ -945,67 +948,43 @@ void shader_object::draw()
 }
 
 
-vector<xObject*> loadObjectsFrom3Dfile(string _path) // importObjectsFrom3Dfile
+xObject *findCachedObject(string _name)
 {
-    /* Temp :  fbx파일에서 레벨 0인 object만 따로 등록하기 */
-    xObject *dummy = new xObject();
-    Shader *_shader;
-    _shader=new Shader();
-    _shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
-    Import3DFromFile(_path, dummy);
-
-    vector<xObject* > array_objects;
-    for ( size_t i=0 ; i < dummy->children.size(); i++)
+    xObject *node=nullptr;
+    /* tempolarily need more time and works later!!! */
+    for ( size_t i=0 ; i < cached_objects.size(); i++)
      {
-         xObject *obj = dummy->children[i];
-         obj->parent=nullptr;
-         obj->shader=_shader;
-         // printf("obj.children()=%d  %d\n",i,obj->VAO);
-
-         if(obj->name=="Camera" or obj->name=="Light")
-         {
-           //printf("%s[%s] skipped \n", tab.c_str(), nd->mName.C_Str());
-             printf("[%s] skipped \n", obj->name.c_str());
-             continue;
-         }
-
-         if(obj->name == "Lamp")
-         {
-            xObject *light = new objLight();
-            light->copy(obj);
-            light->name="light";// temp
-            obj=light;
-             printf("=============> found Lamp!!! %s \n", obj->name.c_str());
-         }
-
-         if (obj->name.find("Cube") != string::npos)
-         {
-             // std::transform(_name.begin(), _name.end(), _name.begin(), ::tolower); // 소문자로 바꿔주기
-             xObject *_cube=new cube();
-             _cube->copy(obj);
-             obj=_cube;
-             //printf("=============> found cube %s", _name.c_str());
-         }
-         array_objects.push_back(obj);
-     }
-    delete dummy;
-    return array_objects;
+        xObject *obj = cached_objects[i];
+        if(obj->name==_name)
+            node=obj;
+    }
+    return node;
 }
+
+xObject *findCachedModel(string _name)
+{
+    xObject *node=nullptr;
+    /* tempolarily need more time and works later!!! */
+    for ( size_t i=0 ; i < cached_models.size(); i++)
+     {
+        xObject *obj = cached_models[i];
+        if(obj->name==_name)
+            node=obj;
+    }
+    return node;
+}
+
 
 xObject* loadObjectFrom3Dfile(string _path, string _name) // importObjectFrom3Dfile
 {
-    xObject *joe = new xObject();
-
-    for ( size_t i=0 ; i < cached_models.size(); i++)
+    xObject *obj;
+    obj=findCachedModel(_name);
+    if (obj!=nullptr)
     {
-        xObject *obj = cached_models[i];
-        if (obj->name==_name)
-        {
-            joe->copy(obj);
-            return joe;
-        }
+        xObject *joe = new xObject();
+        joe->copy(obj);
+        return joe;
     }
-
 
     xObject *dummy = new xObject();
     Shader *_shader;
@@ -1022,6 +1001,7 @@ xObject* loadObjectFrom3Dfile(string _path, string _name) // importObjectFrom3Df
          if(obj->name==_name)
          {
              cached_models.push_back(obj); //save
+             xObject *joe = new xObject();
              joe->copy(obj);//*joe=*obj;
              return joe;
          }
@@ -1029,22 +1009,106 @@ xObject* loadObjectFrom3Dfile(string _path, string _name) // importObjectFrom3Df
     return nullptr;
 }
 
+
+vector<xObject*> loadObjectsFrom3Dfile(string _path) // importObjectsFrom3Dfile
+{
+    /*
+     * Temp :  fbx파일에서 레벨 0인 object만 따로 등록하기
+
+       triangles.size() ==0 일때 skip!
+    */
+    xObject *dummy = new xObject();
+    Shader *_shader;
+    _shader=new Shader();
+    _shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
+    Import3DFromFile(_path, dummy);
+
+    vector<xObject* > array_objects;
+    for ( size_t i=0 ; i < dummy->children.size(); i++)
+     {
+         xObject *obj = dummy->children[i];
+         obj->parent=nullptr;
+         obj->shader=_shader;
+         // printf("obj.children()=%d  %d\n",i,obj->VAO);
+         //if (obj->triangles.size()==0)
+         if(obj->name=="Camera")
+         //if(obj->name=="Camera" or obj->name=="Light")
+         {
+           //printf("%s[%s] skipped \n", tab.c_str(), nd->mName.C_Str());
+             printf("[%s] skipped \n", obj->name.c_str());
+             continue;
+         }
+         array_objects.push_back(obj);
+     }
+    delete dummy;
+    return array_objects;
+}
+
+
+vector<xObject*> loadMapObjectsFrom3Dfile(string _path) // importObjectsFrom3Dfile
+{
+    vector<xObject* > array_objects;
+    array_objects=loadObjectsFrom3Dfile(_path);
+    //objects.push_back(array_objects);
+    //objects.insert(std::end(objects), std::begin(array_objects), std::end(array_objects)); // tooo long...
+
+    for ( size_t i=0 ; i < array_objects.size(); i++)
+     {
+         xObject *obj = array_objects[i];
+         // printf("obj.children()=%d  %d\n",i,obj->VAO);
+         if(obj->name == "Lamp")
+         {
+            xObject *light = new objLight();
+            light->copy(obj);
+            //light->name="light";// temp
+            obj=light;
+            printf("=============> found Lamp!!! %s \n", obj->name.c_str());
+         }
+
+         if(obj->triangles.size()==0)
+         {
+            xObject *model=findCachedModel(obj->name);
+            if(model!=nullptr)
+            {
+                obj->copyModel(model);
+                printf("=============> copyModel!!!!!! %s \n", obj->name.c_str());
+            }
+         }
+
+         if (obj->name.find("Cube") != string::npos)
+         {
+             // std::transform(_name.begin(), _name.end(), _name.begin(), ::tolower); // 소문자로 바꿔주기
+             xObject *_cube=new cube();
+             _cube->copy(obj);
+             obj=_cube;
+             //printf("=============> found cube %s", _name.c_str());
+         }
+         objects.push_back(obj);
+     }
+    return array_objects;
+}
+
 void init_models()
 {
       xObject *obj;
-    //objects.push_back(obj);
+      vector<xObject* > array_objects;
 
-      obj=new xObject();
+      obj=new xObject(); // fail? why?
       obj->name="center";
       obj->flag_axis_on=true;
       obj->position=glm::vec3(0,1500,0);
       objects.push_back(obj);
 
-      obj=loadObjectFrom3Dfile("./model/light.fbx","Cube");
+      array_objects=loadObjectsFrom3Dfile("./model/light.fbx"); // Lamp, Light
+      cached_models.insert(std::end(cached_models), std::begin(array_objects), std::end(array_objects)); // tooo long...
+
+      /*
+      obj=loadObjectFrom3Dfile("./model/light.fbx","Light");
       obj->position.x=0;
       obj->position.y=900;
       obj->position.z=0;
       objects.push_back(obj);
+      */
 
       //obj=new particle();
       //set(obj->pos,0,0,0);
@@ -1081,10 +1145,8 @@ void init_models()
     //objects.push_back(model_obj);
     //loadObjectsFrom3Dfile("./model/axis.fbx");
     //loadObjectsFrom3Dfile("./model/box.fbx");
-    vector<xObject* > array_objects;
-    //array_objects=loadObjectsFrom3Dfile("./model/teapot.fbx");
-    //objects.push_back(array_objects);
-    //objects.insert(std::end(objects), std::begin(array_objects), std::end(array_objects)); // tooo long...
+
+    array_objects=loadMapObjectsFrom3Dfile("./model/teapot.fbx");
     //loadObjectsFrom3Dfile("./model/stage.fbx");
 
     // tmp

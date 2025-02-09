@@ -18,6 +18,7 @@ void main()
         vertexColor = gl_Color;
         //gl_FrontColor = gl_Color;
 }
+
 /*
 #version 130
 //uniform mat4 gl_ModelViewProjectionMatrix;
@@ -28,7 +29,9 @@ attribute vec4 vertex;
 
 void main(void)
 {
+    //gl_Position = gl_ModelViewProjectionMatrix * vertex;
+    //gl_Position =  vertex;
     gl_Position = gl_ModelViewProjectionMatrix * vertex;
-    gl_Position =  vertex;
+//    qt_TexCoord0 = qt_MultiTexCoord0;
 }
 */

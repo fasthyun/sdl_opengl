@@ -68,6 +68,19 @@ xObject::xObject(const xObject &obj)
     parent=obj.parent;
 }
 
+void xObject::copyModel(xObject *obj) // 임시 생성!
+{
+    model = obj->model;
+    VBO=obj->VBO;
+    VAO=obj->VAO;
+    EBO=obj->EBO;
+    material=obj->material;
+    vertexes=obj->vertexes;
+    triangles=obj->triangles;
+    texname=obj->texname;
+    children=obj->children;
+}
+
 void xObject::copy(xObject *obj) // 임시 생성!
 {
 ///  uuid=obj->uuid;
@@ -75,25 +88,16 @@ void xObject::copy(xObject *obj) // 임시 생성!
 
     parent=obj->parent;
     shader=obj->shader; // ***
-    VBO=obj->VBO;
-    VAO=obj->VAO;
-    EBO=obj->EBO;
 
     position=obj->position;
-
     //set(up ,0,1,0);
     //set(forward,0,0,1);
-    //set(force,0,0,0);
-    model = obj->model;
+    //set(force,0,0,0);    
     new_force = obj->new_force;
     new_forward = obj->new_forward;
     new_up = obj->new_up;
 
-    material=obj->material;
-    vertexes=obj->vertexes;
-    triangles=obj->triangles;
-    texname=obj->texname;
-    children=obj->children;
+    copyModel(obj);
     make_axis();
     make_glVertexArray();
 }
@@ -171,6 +175,7 @@ void xObject::make_axis()
     glBindBuffer(GL_ARRAY_BUFFER, VBO_axis);
     glBufferData(GL_ARRAY_BUFFER, sizeof(axies), axies, GL_STATIC_DRAW);
 
+    // 이렇게도 값 전달이 된다. 띄엄띄엄
     glEnableVertexAttribArray(0); //
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float)*7, (void*)0); // position[3]   // (idx, size, type, ? , stride-size, offset)
     glEnableVertexAttribArray(2); //

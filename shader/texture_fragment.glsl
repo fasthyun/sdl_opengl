@@ -10,14 +10,13 @@
 // to the color buffer
 
 #version 330 core
-/* struct Material {
+struct Material {
     vec3 ambient;
     vec3 diffuse;
     vec3 specular;
     float shininess;
 };
-//uniform Material material;
-*/
+uniform Material material;
 
 out vec4 FragColor;
 in vec2  TexCoord;
@@ -53,7 +52,7 @@ void main()
         result =  Color;
         // result =  vec4(1,0,0,1);
     }
-    if (Type == 1 ) // color
+    if (Type == 1 ) // color ==> diffuse
     {
         //_color = vec4(Color, 1.0); // color mode
         result = vec4((ambient + diffuse),1.0) * Color;

@@ -41,6 +41,7 @@ public:
     virtual void update(float dt=0);
     virtual void draw();
     void copy(xObject *);
+    void copyModel(xObject *);
     void set_parent(xObject *p){ parent=p;}
     void set_shader(Shader *s){ shader=s;}
     void set_texture(GLuint name){ texname=name;}
