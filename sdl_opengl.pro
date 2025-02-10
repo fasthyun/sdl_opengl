@@ -63,7 +63,5 @@ DISTFILES += \
     shader/point_vertex.glsl \
     shader/texture_fragment.glsl \
     shader/texture_vertex.glsl \
-    shader/vertex.glsl \
-    shader/vshader.glsl \
     shader/basic_fragment120.glsl \
     shader/basic_vertex120.glsl

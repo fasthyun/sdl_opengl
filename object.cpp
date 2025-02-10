@@ -332,9 +332,18 @@ void xObject::draw()
           location = glGetUniformLocation(shader->mProgram, "model");
           if (location >= 0)
             glUniformMatrix4fv(location, 1, GL_FALSE, _m); // ( location, count,  transpose, float *value )
+
+            See OpenGL 4.6 API Compatibility Profile Specification; 7.10 Samplers; page 154:
+            Samplers are special uniforms used in the OpenGL Shading Language to identify
+            the texture object used for each texture lookup. The value of a sampler
+            indicates the texture image unit being accessed.
+            Setting a sampler’s value to i selects texture image unit number i.
         */
-        /* location = glGetUniformLocation(shader->mShaderProgram, "ourTexture");
-        if (location >=0) glUniform1i(location, texname); */
+
+        GLint location = glGetUniformLocation(shader->mProgram, "ourTexture");
+        if(location >=0) glUniform1i(location, 0); // 0: GL_TEXTURE0 works!!! 0값이 전달될때 sampler2D로 변환되는것 같다.
+        location = glGetUniformLocation(shader->mProgram, "material.emission");
+        if(location >=0) glUniform3fv (location, 1, material->emission );
 
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, triangles.size() *3 /* index count so x3 */ , GL_UNSIGNED_INT, 0); //( mode, count, index_data_type, void * indices);

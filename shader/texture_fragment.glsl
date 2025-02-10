@@ -13,6 +13,7 @@
 struct Material {
     vec3 ambient;
     vec3 diffuse;
+    vec3 emission;
     vec3 specular;
     float shininess;
 };
@@ -44,7 +45,6 @@ void main()
     float diff = max(dot(norm, lightDir), 0.0);
     vec3 diffuse = diff * lightColor;
 
-    //vec4 _color;
     vec4 result;
     ///FragColor = texture2D(ourTexture, TexCoord); // 130
     //result =  vec4(0,1,0,0.5);
@@ -52,12 +52,14 @@ void main()
         result =  Color;
         // result =  vec4(1,0,0,1);
     }
+
     if (Type == 1 ) // color ==> diffuse
     {
         //_color = vec4(Color, 1.0); // color mode
         result = vec4((ambient + diffuse),1.0) * Color;
     }    
     if (Type == 0) // texture
+
     {
         result = vec4((ambient + diffuse),1.0) * texture(ourTexture, TexCoord) ;
     }

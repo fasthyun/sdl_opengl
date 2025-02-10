@@ -1101,6 +1101,7 @@ void init_models()
 
       array_objects=loadObjectsFrom3Dfile("./model/light.fbx"); // Lamp, Light
       cached_models.insert(std::end(cached_models), std::begin(array_objects), std::end(array_objects)); // tooo long...
+      //cached_models.append_range(array_objects);
 
       /*
       obj=loadObjectFrom3Dfile("./model/light.fbx","Light");
