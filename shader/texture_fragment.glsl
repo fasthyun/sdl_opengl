@@ -47,19 +47,26 @@ void main()
 
     vec4 result;
     ///FragColor = texture2D(ourTexture, TexCoord); // 130
-    //result =  vec4(0,1,0,0.5);
-    if (Type > 1 ){
+    result =  vec4(0,1,0,0.5);
+
+    if (Type == 4 ){ // particle: sprite_point
+     //   result =  Color;
+        result =  texture(ourTexture, TexCoord) ;
+     }
+
+    if (Type == 3 ){ // particle: point
         result =  Color;
         // result =  vec4(1,0,0,1);
     }
-
+    if (Type == 2 ){ // axis
+        result =  Color;
+    }
     if (Type == 1 ) // color ==> diffuse
     {
         //_color = vec4(Color, 1.0); // color mode
         result = vec4((ambient + diffuse),1.0) * Color;
     }    
     if (Type == 0) // texture
-
     {
         result = vec4((ambient + diffuse),1.0) * texture(ourTexture, TexCoord) ;
     }

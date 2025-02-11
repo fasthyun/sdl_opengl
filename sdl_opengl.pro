@@ -56,9 +56,6 @@ DISTFILES += \
     shader/basic_vertex.glsl \
     shader/color_fragment.glsl \
     shader/color_vertex.glsl \
-    shader/fshader.glsl \
-    shader/grid_fragment.glsl \
-    shader/grid_vertex.glsl \
     shader/point_fragment.glsl \
     shader/point_vertex.glsl \
     shader/texture_fragment.glsl \

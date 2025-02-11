@@ -45,8 +45,8 @@ xObject::xObject()
     VBO=0;
     VAO=0;
     EBO=0;
-    //shader=new Shader();
-    //shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
+    shader=new Shader();
+    shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
     //meshes=NULL;
     //set(pos,0,0,0);
     position.x=0;position.y=0;position.z=0;
@@ -175,11 +175,15 @@ void xObject::make_axis()
     glBindBuffer(GL_ARRAY_BUFFER, VBO_axis);
     glBufferData(GL_ARRAY_BUFFER, sizeof(axies), axies, GL_STATIC_DRAW);
 
-    // 이렇게도 값 전달이 된다. 띄엄띄엄
+    // 이렇게 띄엄띄엄 값 전달.
     glEnableVertexAttribArray(0); //
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float)*7, (void*)0); // position[3]   // (idx, size, type, ? , stride-size, offset)
     glEnableVertexAttribArray(2); //
     glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(float)*7, (void*)(3 * sizeof(float))); // RGBA
+
+//    glVertexAttribIPointer(4, 1, GL_INT, sizeof(vertex), (void*)offsetof(vertex,type)); // type : 1 color 0 texture works!!when intger!!!
+//    glEnableVertexAttribArray(4); //  fifth input to vertex-shader?
+
 
     glBindVertexArray(0); // break
 }
@@ -695,8 +699,8 @@ particle::particle():xObject()
     texname=_tex->getTextureName();
 
     shader=new Shader();
-    shader->Load("./shader/point_vertex.glsl","./shader/point_fragment.glsl");
-
+    //shader->Load("./shader/point_vertex.glsl","./shader/point_fragment.glsl");
+    shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
     float *vertexData = (float*)malloc(sizeof(float)*3*d_size);
 
     if (vertexData==nullptr)
@@ -704,17 +708,20 @@ particle::particle():xObject()
         SDL_Log("ERROR: Fail to malloc() !!!!");
         return;
     }
+    struct partc {
+        glm::vec3 pos;
+    };
 
-    for ( int i=0 ; i < d_size ;)
+    for ( int i=0 ; i < d_size ; )
     {
         float x,y,z;
-        x=rand()%5000 - 1000;
-        y=rand()%5000 - 0;
-        z=rand()%5000 - 1000;
+        x=rand()%1000 - 500;
+        y=rand()%1000 - 500;
+        z=rand()%1000 - 500;
         vertexData[i++]=x;  // x
         vertexData[i++]=y;  // y
         vertexData[i++]=z;  // z
-      //  printf("x=%f  y=%f  z=%f \n",x,y,z);
+       // printf("x=%f  y=%f  z=%f \n",x,y,z);
     }
 
     glGenVertexArrays(1, &VAO);
@@ -735,14 +742,13 @@ particle::particle():xObject()
 
     free(vertexData);
 
-
     flag_axis_on=true;
     make_axis();//
 }
 
 void particle::draw()
 {
-    update_model_matrix();
+    //update_model_matrix();
 
     float _m[16];
     if (parent)
@@ -754,36 +760,45 @@ void particle::draw()
     //else mat4x4_set(_m, model_mat); // copy
     if (1)
     {
-      //  model = glm::mat4(1.0); // identity
+       model = glm::mat4(1.0); // identity
     }
 
     //glm::mat4 _m1(1);
 
     if (texname > 0)
     {
-       // glBindTexture(GL_TEXTURE_2D, texname);
-       // glEnable(GL_POINT_SPRITE);
-       // glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
+        glBindTexture(GL_TEXTURE_2D, texname);
+        glEnable(GL_POINT_SPRITE);
+      //  glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
     }
 
     if (VAO>0)
     {
         GLint location;
+       // glDisable(GL_DEPTH_TEST);    // Enable depth buffering
+
         //shader->setMat4("model",_m1);
-        location = glGetUniformLocation(shader->mProgram, "modelView");
+        shader->setMat4("model",model); // works
+
+        /* location = glGetUniformLocation(shader->mProgram, "model");
         if (location >= 0)
             glUniformMatrix4fv(location, 1, GL_FALSE, _m); // ( location, count,  transpose, float *value )
-
+*/
         glEnable(GL_PROGRAM_POINT_SIZE);
-        glPointSize(3);
+        glPointSize(3);        
         glBindVertexArray(VAO);
+        glVertexAttribI1i(4, 3); //glVertexAttrib1f(4, 2);
         glDrawArrays(GL_POINTS, 0, d_size); // 0~2000
-        //glDrawArrays(GL_LINES, 0, d_size/2);
+
+        glVertexAttribI1i(4, 4); //glVertexAttrib1f(4, 2);
+        glDrawArrays(GL_POINTS, 0, d_size); // 0~2000
+
         glBindVertexArray(0); // break
         //glDisableVertexAttribArray(0);
         glDisable(GL_POINT_SPRITE);
     }
     draw_axis();
+
 }
 
 void particle::update(float dt)

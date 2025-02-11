@@ -1096,12 +1096,12 @@ void init_models()
       obj=new xObject(); // fail? why?
       obj->name="center";
       obj->flag_axis_on=true;
-      obj->position=glm::vec3(0,1500,0);
+      obj->position=glm::vec3(0,300,0);
       objects.push_back(obj);
 
       array_objects=loadObjectsFrom3Dfile("./model/light.fbx"); // Lamp, Light
       cached_models.insert(std::end(cached_models), std::begin(array_objects), std::end(array_objects)); // tooo long...
-      //cached_models.append_range(array_objects);
+      //cached_models.append_range(array_objects); // c++23
 
       /*
       obj=loadObjectFrom3Dfile("./model/light.fbx","Light");
@@ -1111,10 +1111,10 @@ void init_models()
       objects.push_back(obj);
       */
 
-      //obj=new particle();
+      obj=new particle();
       //set(obj->pos,0,0,0);
-      //obj->position=glm::vec3(0,1000,0);
-      //objects.push_back(obj);
+      obj->position=glm::vec3(0,0,0);
+      objects.push_back(obj);
 
     //xObject *texobj = new texture_object("check.bmp");
     //set(texobj->pos,-2,0,0);
@@ -1147,7 +1147,7 @@ void init_models()
     //loadObjectsFrom3Dfile("./model/axis.fbx");
     //loadObjectsFrom3Dfile("./model/box.fbx");
 
-    array_objects=loadMapObjectsFrom3Dfile("./model/teapot.fbx");
+    //array_objects=loadMapObjectsFrom3Dfile("./model/teapot.fbx");
     //loadObjectsFrom3Dfile("./model/stage.fbx");
 
     // tmp
