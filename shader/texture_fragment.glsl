@@ -19,7 +19,8 @@ struct Material {
 };
 uniform Material material;
 
-out vec4 FragColor;
+//out vec4 FragColor; //works
+layout(location = 0) out vec4 FragColor; // works!
 in vec2  TexCoord;
 in vec4  Color;
 in vec3  Normal;
@@ -51,21 +52,26 @@ void main()
 
     if (Type == 4 ){ // particle: sprite_point
      //   result =  Color;
-        result =  texture(ourTexture, TexCoord) ;
-     }
+        result =  texture(ourTexture, gl_PointCoord) ;
+        FragColor = result;
+        return;
+    }
 
     if (Type == 3 ){ // particle: point
         result =  Color;
         // result =  vec4(1,0,0,1);
     }
+    else
     if (Type == 2 ){ // axis
         result =  Color;
     }
+    else
     if (Type == 1 ) // color ==> diffuse
     {
         //_color = vec4(Color, 1.0); // color mode
         result = vec4((ambient + diffuse),1.0) * Color;
-    }    
+    }
+    else
     if (Type == 0) // texture
     {
         result = vec4((ambient + diffuse),1.0) * texture(ourTexture, TexCoord) ;

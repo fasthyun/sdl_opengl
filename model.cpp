@@ -1096,7 +1096,7 @@ void init_models()
       obj=new xObject(); // fail? why?
       obj->name="center";
       obj->flag_axis_on=true;
-      obj->position=glm::vec3(0,300,0);
+      obj->position=glm::vec3(0,500,0);
       objects.push_back(obj);
 
       array_objects=loadObjectsFrom3Dfile("./model/light.fbx"); // Lamp, Light
@@ -1113,7 +1113,7 @@ void init_models()
 
       obj=new particle();
       //set(obj->pos,0,0,0);
-      obj->position=glm::vec3(0,0,0);
+      obj->position=glm::vec3(0,1000,0);
       objects.push_back(obj);
 
     //xObject *texobj = new texture_object("check.bmp");
@@ -1147,7 +1147,7 @@ void init_models()
     //loadObjectsFrom3Dfile("./model/axis.fbx");
     //loadObjectsFrom3Dfile("./model/box.fbx");
 
-    //array_objects=loadMapObjectsFrom3Dfile("./model/teapot.fbx");
+    array_objects=loadMapObjectsFrom3Dfile("./model/teapot.fbx");
     //loadObjectsFrom3Dfile("./model/stage.fbx");
 
     // tmp

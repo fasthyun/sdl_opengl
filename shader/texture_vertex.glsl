@@ -17,10 +17,12 @@ flat out int Type;   // int works
 
 void main()
 {
-    gl_Position = projView * model * vec4(vPos, 1.0);
+    gl_Position = projView * model * vec4(vPos, 1.0);  // special : gl_Position
+    FragPos = vec3(model * vec4(vPos, 1.0));
 
     //Normal = vec3(model * vec4(vNormal, 1.0));
     //Normal = mat3(transpose(inverse(model))) * vNormal;
+
     Type = vType ;//* 1.0; // color mode
     if (vType==0) // texture!!
     {
@@ -44,10 +46,11 @@ void main()
     }
     else if(vType==4)  // point_sprite
     {
-        //Color = vec4(1.0,1.0,1.0,0.8);  //
+        Color = vec4(1.0,1.0,1.0,0.8);  //
         //Normal = vNormal;
+        gl_PointSize=20;
     }
 
     //Color = vec4(1.0,0.0,0.0,0.5);  //texture!!!
-    FragPos = vec3(model * vec4(vPos, 1.0));
+
 }

@@ -136,15 +136,25 @@ public:
     virtual void draw(){}
 };
 
+struct struct_motes {
+    glm::vec3 position;
+    glm::vec3 force;
+    float life;
+};
 
 class particle : public xObject{
     GLuint buffer;
     GLuint vertex_array;
     int d_size;
+    float *vertexData;
+
+    struct_motes  *motes;
+
 public:
     particle();
     virtual void update(float dt=0);
     virtual void draw();
+    void update_VBO();
 };
 
 
