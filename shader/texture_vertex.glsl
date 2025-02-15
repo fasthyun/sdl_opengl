@@ -19,7 +19,7 @@ void main()
 {
     gl_Position = projView * model * vec4(vPos, 1.0);  // special : gl_Position
     FragPos = vec3(model * vec4(vPos, 1.0));
-
+    //vPos = vPos * 1.5;
     //Normal = vec3(model * vec4(vNormal, 1.0));
     //Normal = mat3(transpose(inverse(model))) * vNormal;
 

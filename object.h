@@ -139,6 +139,7 @@ public:
 struct struct_motes {
     glm::vec3 position;
     glm::vec3 force;
+    float force_life;
     float life;
 };
 

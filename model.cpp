@@ -344,7 +344,7 @@ int loadMaterials(const aiScene* scene) {
                 */
            }
         }
-       std::cout << msgs ;
+      /// std::cout << msgs ;
     }
     return true;
 }
@@ -1095,12 +1095,12 @@ void init_models()
 
       obj=new xObject(); // fail? why?
       obj->name="center";
-      obj->flag_axis_on=true;
-      obj->position=glm::vec3(0,500,0);
-      objects.push_back(obj);
+      obj->flag_axis_on=false;
+      obj->position=glm::vec3(0,300,0);
+      //objects.push_back(obj);
 
-      array_objects=loadObjectsFrom3Dfile("./model/light.fbx"); // Lamp, Light
-      cached_models.insert(std::end(cached_models), std::begin(array_objects), std::end(array_objects)); // tooo long...
+      //array_objects=loadObjectsFrom3Dfile("./model/light.fbx"); // Lamp, Light
+      //cached_models.insert(std::end(cached_models), std::begin(array_objects), std::end(array_objects)); // tooo long...
       //cached_models.append_range(array_objects); // c++23
 
       /*
@@ -1147,7 +1147,7 @@ void init_models()
     //loadObjectsFrom3Dfile("./model/axis.fbx");
     //loadObjectsFrom3Dfile("./model/box.fbx");
 
-    array_objects=loadMapObjectsFrom3Dfile("./model/teapot.fbx");
+    //array_objects=loadMapObjectsFrom3Dfile("./model/teapot.fbx");
     //loadObjectsFrom3Dfile("./model/stage.fbx");
 
     // tmp

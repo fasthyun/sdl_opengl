@@ -47,9 +47,7 @@ xObject::xObject()
     VAO=0;
     EBO=0;
     shader=new Shader();
-    shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
-    //meshes=NULL;
-    //set(pos,0,0,0);
+    //shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
     position.x=0;position.y=0;position.z=0;
     set(up ,0,1,0);
     set(forward,0,0,1);
@@ -816,7 +814,7 @@ void particle::draw()
         if(location >=0) glUniform1i(location, 0); // 0: GL_TEXTURE0 works!!! 0값이 전달될때 sampler2D로 변환되는것 같다.
 
         glEnable(GL_PROGRAM_POINT_SIZE);
-        // glPointSize(5);
+        glPointSize(5);
         glBindVertexArray(VAO);
         //glVertexAttribI1i(4, 3); //glVertexAttrib1f(4, 2);
         //glDrawArrays(GL_POINTS, 0, d_size); // 0~2000

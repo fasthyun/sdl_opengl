@@ -44,7 +44,7 @@ SDL_GLContext glContext; //OpenGL context
 /* GUI */
 struct nk_context *ctx;
 // struct nk_colorf bg;
-int flag_nk=1;
+int flag_nk=0;
 int flag_large_screen=false;
 int width=1024;
 int height=768;
@@ -239,6 +239,9 @@ void test_print_nk_tree_object(xObject *obj)
         nk_tree_pop(ctx);
     }
 }
+
+extern GLuint d_installed_program; // global current installed program
+
 void main_loop()
 {
     //float  time_test=0;
@@ -284,8 +287,9 @@ void main_loop()
 
         if (time_fps > 1)
         {
-            ///printf("dt=%f \n",dt);
             fps = fps_count;
+
+            printf("fps=%d  dt=%f \n",fps, dt);
             time_fps = 0;
             fps_count=0;
         }
@@ -331,8 +335,6 @@ void main_loop()
                 //glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(projview_mat4)); // ( location, count,  transpose, float *value )
                 if(_light)
                     obj->shader->setVec3("lightPos",_light->position);
-
-
                 obj->draw(); //temp
             }
         }
@@ -347,7 +349,9 @@ void main_loop()
         */
         camera *_camera= (camera *) findObject( "camera_viewer");
         glDisable(GL_DEPTH_TEST);
+       // if (0){
         if (flag_nk){
+            d_installed_program=-1;
             /* Input */
             SDL_Event evt;
             nk_input_begin(ctx);
@@ -445,12 +449,12 @@ void init_object()
     set(d_camera->forward,0,0,-1); //
     objects.push_back(d_camera);
 
-    obj=new console();
-    obj->name="console";
-    objects.push_back(obj);  
+    //obj=new console();
+    //obj->name="console";
+    //objects.push_back(obj);
 
-    obj=new CollisionDetector();
-    objects.push_back(obj);
+    //obj=new CollisionDetector();
+    //objects.push_back(obj);
 
     //obj=new texture_manager();
     //objects.push_back(obj);

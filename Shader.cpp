@@ -51,46 +51,63 @@ glAttachShader(program,fshader);
 glLinkProgram(program);
 glUseProgram(program);
 */
+#include <map>
+std::map<std::string, GLuint> cached_shader_id;
+
 
 bool Shader::Load(const std::string& vertName, const std::string& fragName)
 {
-	// Compile vertex and pixel shaders
-    if (!CompileShader(vertName, GL_VERTEX_SHADER, mVertexShader) ||
-        !CompileShader(fragName, GL_FRAGMENT_SHADER, mFragShader))
-	{
-        printf("Shader load() fail ........\n");
-		return false;
-	}
-	
-	// Now create a shader program that
-	// links together the vertex/frag shaders
-    mProgram = glCreateProgram();
-    glAttachShader(mProgram, mVertexShader);
-    glAttachShader(mProgram, mFragShader);
-    glLinkProgram(mProgram);
-	
-	// Verify that the program linked successfully
-	if (!IsValidProgram())
-	{
-		return false;
-	}
-	
+    std::string _key = vertName+fragName;
 
-    printf("Shader load() ........ program = %d \n", mProgram);//, fileName.c_str());
+    auto search = cached_shader_id.find(_key);
+    if ( search != cached_shader_id.end())
+    {
+        mProgram=search->second;
+        std::cout << "DEBUG: Found " << search->first << ', id:???? ' << mProgram << '\n';
+
+    }
+    else
+    {
+      // Compile vertex and pixel shaders
+        if (!CompileShader(vertName, GL_VERTEX_SHADER, mVertexShader) ||
+            !CompileShader(fragName, GL_FRAGMENT_SHADER, mFragShader))
+        {
+            printf("Shader load() fail ........\n");
+            return false;
+        }
+
+        // Now create a shader program that
+        // links together the vertex/frag shaders
+        mProgram = glCreateProgram();
+        glAttachShader(mProgram, mVertexShader);
+        glAttachShader(mProgram, mFragShader);
+        glLinkProgram(mProgram);
+
+        // Verify that the program linked successfully
+        if (!IsValidProgram())
+        {
+            return false;
+        }
+        // Textures.insert({aimaterial->GetName().C_Str(), _tex->d_tex_glname}); // c++11
+        cached_shader_id.insert({_key, mProgram}); // ok
+   }
+
+    printf("Shader load() =====> program = %d \n", mProgram);
 	return true;
 }
 
 void Shader::Unload()
 {
 	// Delete the program/shaders
-    glDeleteProgram(mProgram);
+/*    glDeleteProgram(mProgram);
 	glDeleteShader(mVertexShader);
 	glDeleteShader(mFragShader);
+*/
 }
 
 void Shader::SetActive()
 {
-   glUseProgram(mProgram);
+    glUseProgram(mProgram);
 	// Set this program as the active one
     if (d_installed_program != mProgram)
     {
