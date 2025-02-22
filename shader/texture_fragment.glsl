@@ -53,7 +53,8 @@ void main()
     if (Type == 4 ){ // particle: sprite_point
      //   result =  Color;
         result =  texture(ourTexture, gl_PointCoord) ;
-         result =  vec4(0,1,0,0.3);
+        //if(result.a < 0.5) discard;
+        //result =  vec4(0,1,0,0.3);
         FragColor = result;
         return;
     }

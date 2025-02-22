@@ -30,7 +30,7 @@ SDL_Texture *loadTexture(const char *file){
 SDL_Surface* Texture::LoadImage(std::string file)
 {
     SDL_Surface *surface = nullptr;
-    //surface = SDL_LoadBMP(file.c_str());
+    ///surface = SDL_LoadBMP(file.c_str());
     surface = IMG_Load(file.c_str());
 
     if (surface != nullptr)
@@ -60,7 +60,8 @@ Texture::Texture(std::string _path)
 
     auto path="./texture/"+_filename;
     std::cout << "texture(): " << path  << "\n";
-    SDL_Surface *surface = IMG_Load(path.c_str()); //SDL_Surface *surface=LoadImage(path);
+    SDL_Surface *surface = IMG_Load(path.c_str());
+    //SDL_Surface *surface=LoadImage(path);
     if (surface == nullptr) {
         std::cout << "Error: fail read " << path  << "\n";
         return;
@@ -146,7 +147,7 @@ void Texture::makeTexture(SDL_Surface *surface)
     d_width = surface->w;
     d_height = surface->h;
 
-    int _bytes = surface->format->BytesPerPixel;
+    int _bytes = surface->format->BytesPerPixel;    
     glGenTextures(1, &d_tex_glname);
     glBindTexture(GL_TEXTURE_2D, d_tex_glname);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // power of 2 !!, need in AMD!
@@ -154,8 +155,8 @@ void Texture::makeTexture(SDL_Surface *surface)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); //
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // We will use linear interpolation for minifying filter
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // We will use linear interpolation for magnification filter
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // We will use linear interpolation for minifying filter
+    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // We will use linear interpolation for magnification filter
 
     if(_bytes == 3)
     {
@@ -167,7 +168,7 @@ void Texture::makeTexture(SDL_Surface *surface)
         if (surface->format->format==SDL_PIXELFORMAT_RGBA32)
         {
             output=surface;
-            //std::cout << "\n";
+            std::cout << "  +-----> SDL_PIXELFORMAT_RGBA32 \n";
         }
         else{
             // SDL_PIXELFORMAT_BGRA32, SDL_PIXELFORMAT_ARGB32, SDL_PIXELFORMAT_ABGR32
@@ -180,11 +181,14 @@ void Texture::makeTexture(SDL_Surface *surface)
         }
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, d_width, d_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, output->pixels);
     }
+    else
+    {
+       std::cout << "  ERROR: Not RGBA32, Not RGB24 !!! " <<  SDL_GetPixelFormatName(surface->format->format)  ;
+    }
     glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE); //?
     glGenerateMipmap(GL_TEXTURE_2D); // works???
-
     //printf("\n ===> bytes=%d format=%s  width=%d height=%d \n",_bytes,SDL_GetPixelFormatName(surface->format->format),d_width,d_height)  ;
-    glBindTexture(GL_TEXTURE_2D, 0); //ok!
+    glBindTexture(GL_TEXTURE_2D, 0);  //ok!
 }
 
 

@@ -15,6 +15,7 @@
 #include "stable.h"
 #include "element3d.h"
 #include "object.h"
+#include "particle.h"
 #include "model.h"
 #include "texture.h"
 #include "xmath.h"
@@ -1111,7 +1112,7 @@ void init_models()
       objects.push_back(obj);
       */
 
-      obj=new particle();
+      obj=new particle2();
       //set(obj->pos,0,0,0);
       obj->position=glm::vec3(0,1000,0);
       objects.push_back(obj);

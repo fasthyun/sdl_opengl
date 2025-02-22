@@ -45,6 +45,7 @@ HEADERS += \
     font.h \
     model.h \
     object.h \
+    particle.h \
     texture.h \
     xmath.h \
     stable.h
@@ -56,9 +57,9 @@ DISTFILES += \
     shader/basic_vertex.glsl \
     shader/color_fragment.glsl \
     shader/color_vertex.glsl \
+    shader/compute.glsl \
     shader/point_fragment.glsl \
     shader/point_vertex.glsl \
     shader/texture_fragment.glsl \
     shader/texture_vertex.glsl \
-    shader/basic_fragment120.glsl \
     shader/basic_vertex120.glsl

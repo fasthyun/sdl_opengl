@@ -11,6 +11,7 @@
 #include <glm/gtc/type_ptr.hpp> // make_mat4()
 #include <glm/gtc/matrix_transform.hpp> // rotate()
 #include <glm/gtc/random.hpp>
+
 //#include <glm/gtx/transform.hpp> //rotate
 
 using namespace std::chrono;
@@ -317,7 +318,6 @@ void xObject::draw()
         //set(_m,parent->model_m);
         //mat4x4_mult(_m, parent->model_mat, model_mat);
         _m1=parent->model * _m1;
-
     }
     else _m1 = model;
     //else mat4x4_set(_m, model_mat); // copy
@@ -699,7 +699,7 @@ particle::particle():xObject()
 
     shader=new Shader();
     //shader->Load("./shader/point_vertex.glsl","./shader/point_fragment.glsl");
-    shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
+    //shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
 
     vertexData = (float*)malloc(sizeof(float)*3*d_size);
 
@@ -809,16 +809,15 @@ void particle::draw()
         /* location = glGetUniformLocation(shader->mProgram, "model");
         if (location >= 0)
             glUniformMatrix4fv(location, 1, GL_FALSE, _m); // ( location, count,  transpose, float *value )
-*/
+        */
+
         location = glGetUniformLocation(shader->mProgram, "ourTexture");
         if(location >=0) glUniform1i(location, 0); // 0: GL_TEXTURE0 works!!! 0값이 전달될때 sampler2D로 변환되는것 같다.
 
         glEnable(GL_PROGRAM_POINT_SIZE);
         glPointSize(5);
         glBindVertexArray(VAO);
-        //glVertexAttribI1i(4, 3); //glVertexAttrib1f(4, 2);
-        //glDrawArrays(GL_POINTS, 0, d_size); // 0~2000
-
+        //glVertexAttribI1i(4, 3); //glVertexAttrib1f(4, 2);        
         glDrawArrays(GL_POINTS, 0, d_size); // 0~2000
 
         glBindVertexArray(0); // break
@@ -827,7 +826,6 @@ void particle::draw()
     }
     draw_axis();
 }
-
 
 objLight::objLight():xObject()
 {

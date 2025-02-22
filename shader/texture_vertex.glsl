@@ -48,7 +48,7 @@ void main()
     {
         Color = vec4(1.0,1.0,1.0,0.8);  //
         //Normal = vNormal;
-        gl_PointSize=20;
+        gl_PointSize=50;
     }
 
     //Color = vec4(1.0,0.0,0.0,0.5);  //texture!!!
