@@ -63,7 +63,7 @@ bool Shader::Load(const std::string& vertName, const std::string& fragName)
     if ( search != cached_shader_id.end())
     {
         mProgram=search->second;
-        std::cout << "DEBUG: Found " << search->first << ', id:???? ' << mProgram << '\n';
+        //std::cout << "DEBUG: Found " << search->first <<", id:" << mProgram << '\n';
 
     }
     else
@@ -72,7 +72,7 @@ bool Shader::Load(const std::string& vertName, const std::string& fragName)
         if (!CompileShader(vertName, GL_VERTEX_SHADER, mVertexShader) ||
             !CompileShader(fragName, GL_FRAGMENT_SHADER, mFragShader))
         {
-            printf("Shader load() fail ........\n");
+            printf("Error : Shader load() fail ........\n");
             return false;
         }
 
@@ -92,7 +92,7 @@ bool Shader::Load(const std::string& vertName, const std::string& fragName)
         cached_shader_id.insert({_key, mProgram}); // ok
    }
 
-    printf("Shader load() =====> program = %d \n", mProgram);
+   // printf("Shader load() =====> program = %d \n", mProgram);
 	return true;
 }
 
@@ -107,7 +107,7 @@ void Shader::Unload()
 
 void Shader::SetActive()
 {
-    glUseProgram(mProgram);
+    /// glUseProgram(mProgram);
 	// Set this program as the active one
     if (d_installed_program != mProgram)
     {

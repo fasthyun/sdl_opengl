@@ -291,7 +291,7 @@ void main_loop()
 
             printf("fps=%d  dt=%f \n",fps, dt);
             time_fps = 0;
-            fps_count=0;
+            fps_count = 0;
         }
 
         glClearColor(0.1,0.1,0.1,1);

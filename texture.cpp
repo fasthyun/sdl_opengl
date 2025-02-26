@@ -59,7 +59,7 @@ Texture::Texture(std::string _path)
     string  _filename=boost::filesystem::path(_path).filename().string();  // basename!
 
     auto path="./texture/"+_filename;
-    std::cout << "texture(): " << path  << "\n";
+    //std::cout << "texture(): " << path  << "\n";
     SDL_Surface *surface = IMG_Load(path.c_str());
     //SDL_Surface *surface=LoadImage(path);
     if (surface == nullptr) {
@@ -168,7 +168,7 @@ void Texture::makeTexture(SDL_Surface *surface)
         if (surface->format->format==SDL_PIXELFORMAT_RGBA32)
         {
             output=surface;
-            std::cout << "  +-----> SDL_PIXELFORMAT_RGBA32 \n";
+            /// std::cout << "  +-----> SDL_PIXELFORMAT_RGBA32 \n";
         }
         else{
             // SDL_PIXELFORMAT_BGRA32, SDL_PIXELFORMAT_ARGB32, SDL_PIXELFORMAT_ABGR32

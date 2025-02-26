@@ -64,8 +64,11 @@ xObject::xObject()
 
 xObject::xObject(const xObject &obj)
 {
-    uuid=obj.uuid;
-    parent=obj.parent;
+    //객체복사
+    this->uuid=obj.uuid;
+    this->parent=obj.parent;
+
+
 }
 
 void xObject::copyModel(xObject *obj) // 임시 생성!
@@ -88,7 +91,6 @@ void xObject::copy(xObject *obj) // 임시 생성!
 
     parent=obj->parent;
     shader=obj->shader; // ***
-
     position=obj->position;
     //set(up ,0,1,0);
     //set(forward,0,0,1);
@@ -97,7 +99,10 @@ void xObject::copy(xObject *obj) // 임시 생성!
     new_forward = obj->new_forward;
     new_up = obj->new_up;
 
-    copyModel(obj);
+    //if(triangles.size()==0 || vertexes.size()==0) // Cube
+    if(obj->triangles.size()!=0) // Cube
+        copyModel(obj); // ***
+
     make_axis();
     make_glVertexArray();
 }
@@ -703,7 +708,7 @@ particle::particle():xObject()
 
     vertexData = (float*)malloc(sizeof(float)*3*d_size);
 
-    motes = (struct_motes*)malloc(sizeof(struct_motes)*d_size);
+    motes = (struct_particle_vertex*)malloc(sizeof(struct_particle_vertex)*d_size);
 
     if (vertexData==nullptr)
     {
@@ -801,7 +806,7 @@ void particle::draw()
         }
 
         GLint location;
-        glEnable(GL_DEPTH_TEST);    // Enable depth buffering
+        glEnable(GL_DEPTH_TEST);    // Enable depth buffering? why????
 
         //shader->setMat4("model",_m1);
         shader->setMat4("model",model); // works
@@ -849,6 +854,7 @@ void objLight::update(float dt)
 
 cube::cube():xObject()
 {
+    name="Cube";
     rotate_angle_speed=30;
     flag_axis_on=true;
 }

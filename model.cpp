@@ -38,7 +38,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
 extern vector<xObject* > objects;
 vector<xObject* > cached_models;  //
 vector<xObject* > cached_objects; // cube , lamp, light ...
-
+std::map<std::string, xObject *(*)()> object_factory;
 
 std::map<string, Material*> Materials;	// map Material name to texid
 
@@ -949,15 +949,39 @@ void shader_object::draw()
 }
 
 
+/*
+*/
+
 xObject *findCachedObject(string _name)
+{
+  xObject *node=nullptr;
+
+  for (auto it = object_factory.begin(); it != object_factory.end(); ++it)
+  {
+      //std::cout << " name ===> " << _name << ", "<< it->first <<'\n';
+      if (_name.find(it->first) != string::npos)  //if(obj->name==_name)
+      {
+          node=it->second();// same?  node=(*it->second)();
+          std::cout <<"x: Found: " << it->first << ", " << node->name << '\n';
+
+          return node;
+      }
+  }
+  return node;
+}
+
+
+xObject *findCachedObject1(string _name)
 {
     xObject *node=nullptr;
     /* tempolarily need more time and works later!!! */
     for ( size_t i=0 ; i < cached_objects.size(); i++)
      {
         xObject *obj = cached_objects[i];
-        if(obj->name==_name)
-            node=obj;
+        if (obj->name.find(_name) != string::npos)  //if(obj->name==_name)
+        {
+            node=obj;            
+        }
     }
     return node;
 }
@@ -1046,6 +1070,14 @@ vector<xObject*> loadObjectsFrom3Dfile(string _path) // importObjectsFrom3Dfile
 }
 
 
+struct functor_base {
+    virtual bool operator()() = 0;
+};
+
+
+//xObject *create_cube() { return new cube(); }
+//xObject *create_particle2() { return new particle2(); }
+
 vector<xObject*> loadMapObjectsFrom3Dfile(string _path) // importObjectsFrom3Dfile
 {
     vector<xObject* > array_objects;
@@ -1057,6 +1089,7 @@ vector<xObject*> loadMapObjectsFrom3Dfile(string _path) // importObjectsFrom3Dfi
      {
          xObject *obj = array_objects[i];
          // printf("obj.children()=%d  %d\n",i,obj->VAO);
+         /*
          if(obj->name == "Lamp")
          {
             xObject *light = new objLight();
@@ -1064,7 +1097,7 @@ vector<xObject*> loadMapObjectsFrom3Dfile(string _path) // importObjectsFrom3Dfi
             //light->name="light";// temp
             obj=light;
             printf("=============> found Lamp!!! %s \n", obj->name.c_str());
-         }
+         } */
 
          if(obj->triangles.size()==0)
          {
@@ -1076,27 +1109,48 @@ vector<xObject*> loadMapObjectsFrom3Dfile(string _path) // importObjectsFrom3Dfi
             }
          }
 
+         // particle2, Cube , Lamp,
+         xObject *tmp=findCachedObject(obj->name);
+         if(tmp != nullptr) // found
+         {
+            //obj->copy(tmp);
+            tmp->copy(obj);
+            obj=tmp;
+         }
+
+         /*
          if (obj->name.find("Cube") != string::npos)
          {
-             // std::transform(_name.begin(), _name.end(), _name.begin(), ::tolower); // 소문자로 바꿔주기
+             // std::transform(_name.begin(), _name.end(), _name.begin(), ::tolower); // 소문자로 바꿔주기, 거지같음!
              xObject *_cube=new cube();
              _cube->copy(obj);
              obj=_cube;
              //printf("=============> found cube %s", _name.c_str());
-         }
+         }*/
+
          objects.push_back(obj);
      }
     return array_objects;
 }
+
+template<typename T> xObject * createInstance() { return new T; }
 
 void init_models()
 {
       xObject *obj;
       vector<xObject* > array_objects;
 
+      object_factory["particle2"] =&createInstance<particle2>;
+      object_factory["particle"] =&createInstance<particle2>;
+      object_factory["Cube"] = &createInstance<cube>;
+      object_factory["cube"] = &createInstance<cube>;
+      object_factory["Lamp"] = &createInstance<objLight>;
+
+
+      std::cout << "xObject" << "\n";
       obj=new xObject(); // fail? why?
       obj->name="center";
-      obj->flag_axis_on=false;
+      obj->flag_axis_on=true;
       obj->position=glm::vec3(0,300,0);
       //objects.push_back(obj);
 
@@ -1112,10 +1166,7 @@ void init_models()
       objects.push_back(obj);
       */
 
-      obj=new particle2();
-      //set(obj->pos,0,0,0);
-      obj->position=glm::vec3(0,1000,0);
-      objects.push_back(obj);
+
 
     //xObject *texobj = new texture_object("check.bmp");
     //set(texobj->pos,-2,0,0);
@@ -1148,9 +1199,17 @@ void init_models()
     //loadObjectsFrom3Dfile("./model/axis.fbx");
     //loadObjectsFrom3Dfile("./model/box.fbx");
 
-    //array_objects=loadMapObjectsFrom3Dfile("./model/teapot.fbx");
+    obj=new particle2();
+    //obj=new cube();
+    //cached_objects.push_back(obj);
+    obj->position=glm::vec3(0,500,0);
+
+
+    array_objects=loadMapObjectsFrom3Dfile("./model/map.fbx");
     //loadObjectsFrom3Dfile("./model/stage.fbx");
 
+
+    objects.push_back(obj);
     // tmp
     for ( int i=0 ; i < 0 ; i++)
     {

@@ -26,7 +26,7 @@ void main()
     Type = vType ;//* 1.0; // color mode
     if (vType==0) // texture!!
     {
-         Normal = vNormal;
+        Normal = vNormal;
         TexCoord = vTexCoord; // ---> vec2(vTexCoord.x, vTexCoord.y);
     }
     else if(vType==1) // diffusion
@@ -47,8 +47,10 @@ void main()
     else if(vType==4)  // point_sprite
     {
         Color = vec4(1.0,1.0,1.0,0.8);  //
-        //Normal = vNormal;
-        gl_PointSize=50;
+        Normal = vNormal; // life
+        //if (Normal.x<0)
+        //discard; //for fragment shader!!
+        gl_PointSize=vNormal.z;
     }
 
     //Color = vec4(1.0,0.0,0.0,0.5);  //texture!!!

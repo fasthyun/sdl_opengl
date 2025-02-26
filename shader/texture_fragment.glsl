@@ -33,6 +33,24 @@ uniform vec3 lightPos;  // works??
 
 void main()
 {
+    vec4 result;
+    float life;
+    if (Type == 4 ){ // particle: sprite_point
+     //   result =  Color;
+        life = Normal.x;
+        if (life <0 )
+        {
+            result = vec4(0,0,0,1.0);
+            discard;
+        }
+        else
+            result =  texture(ourTexture, gl_PointCoord) ;
+        //if(result.a < 0.5) discard;
+        //result =  vec4(0,1,0,0.3);
+        FragColor = result;
+        return;
+    }
+
 
     vec3 lightColor = vec3(1.0,1.0,1.0);
 
@@ -46,18 +64,11 @@ void main()
     float diff = max(dot(norm, lightDir), 0.0);
     vec3 diffuse = diff * lightColor;
 
-    vec4 result;
+
     ///FragColor = texture2D(ourTexture, TexCoord); // 130
     result =  vec4(0,1,0,0.5);
 
-    if (Type == 4 ){ // particle: sprite_point
-     //   result =  Color;
-        result =  texture(ourTexture, gl_PointCoord) ;
-        //if(result.a < 0.5) discard;
-        //result =  vec4(0,1,0,0.3);
-        FragColor = result;
-        return;
-    }
+
 
     if (Type == 3 ){ // particle: point
         result =  Color;

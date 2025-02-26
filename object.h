@@ -37,6 +37,8 @@ public:
     xObject(xObject *);
     xObject(xObject *&);
     xObject(const xObject &);
+
+    xObject *createObject(){return new xObject;};
     virtual ~xObject();  // virtual why?
     virtual void update(float dt=0);
     virtual void draw();
@@ -74,6 +76,7 @@ public:
     float yaw = 0.0; // y , angle
     float roll = 0.0; // z
     float scale[3] = {1.0,1.0,1.0}; // scale
+    float life = 100;
     ///float model_mat[16];
     glm::mat4 model; // new matrix
     uint64_t prev_time;
@@ -82,7 +85,7 @@ public:
     // OpenGL element
     GLuint VBO, VAO, EBO;
     GLuint VBO_axis, VAO_axis;
-    GLuint texname;
+    GLuint texname = -1;
     vector<xObject*> children;
     string name;
     string uuid;
@@ -136,11 +139,13 @@ public:
     virtual void draw(){}
 };
 
-struct struct_motes {
+struct struct_particle_vertex {
     glm::vec3 position;
-    glm::vec3 force;
-    float force_life;
+    glm::vec3 force;    
     float life;
+    float force_life;
+    float size;
+    float total_life;
 };
 
 class particle : public xObject{
@@ -149,7 +154,7 @@ class particle : public xObject{
     int d_size;
     float *vertexData;
 
-    struct_motes  *motes;
+    struct_particle_vertex  *motes;
 
 public:
     particle();

@@ -3,7 +3,7 @@ CONFIG  += c++11 precompile_header #warn_off
 CONFIG  -= qml_debug debug
 #LANGUAGE = C++
 
-QMAKE_CXXFLAGS += -Wno-sign-compare -Wno-unused-parameter -Wno-unused-variable -Wno-unused-value -Wwrite-strings -Wno-unused-but-set-variable -Wunused-function
+QMAKE_CXXFLAGS += -g -Wno-sign-compare -Wno-unused-parameter -Wno-unused-variable -Wno-unused-value -Wwrite-strings -Wno-unused-but-set-variable -Wunused-function
 #QMAKE_CFLAGS += -H -Wunused-function -Wno-unused-variable
 
 #INCLUDEPATH += /usr/include/freetype2
