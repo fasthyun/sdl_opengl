@@ -961,7 +961,7 @@ xObject *findCachedObject(string _name)
       //std::cout << " name ===> " << _name << ", "<< it->first <<'\n';
       if (_name.find(it->first) != string::npos)  //if(obj->name==_name)
       {
-          node=it->second();// same?  node=(*it->second)();
+          node=it->second(); // same?  node=(*it->second)();
           std::cout <<"x: Found: " << it->first << ", " << node->name << '\n';
 
           return node;
@@ -1140,8 +1140,8 @@ void init_models()
       xObject *obj;
       vector<xObject* > array_objects;
 
-      object_factory["particle2"] =&createInstance<particle2>;
-      object_factory["particle"] =&createInstance<particle2>;
+      object_factory["particle2"] =&createInstance<particle_base>;
+      object_factory["particle"] =&createInstance<particle_base>;
       object_factory["Cube"] = &createInstance<cube>;
       object_factory["cube"] = &createInstance<cube>;
       object_factory["Lamp"] = &createInstance<objLight>;
@@ -1199,7 +1199,7 @@ void init_models()
     //loadObjectsFrom3Dfile("./model/axis.fbx");
     //loadObjectsFrom3Dfile("./model/box.fbx");
 
-    obj=new particle2();
+    obj=new particle_base();
     //obj=new cube();
     //cached_objects.push_back(obj);
     obj->position=glm::vec3(0,500,0);

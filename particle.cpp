@@ -4,9 +4,11 @@
 #include <glm/gtc/random.hpp>
 
 //TODO: light object
-particle2::particle2():xObject()
+
+
+particle_base::particle_base():xObject()
 {
-    name="particle2";
+    name="particle";
     d_size=200;
 
     Texture *_tex = new Texture("particle.png"); //
@@ -28,32 +30,8 @@ particle2::particle2():xObject()
 
 }
 
-void particle2::init_particles()
+void particle_base::update_VBO()
 {
-    for ( int i=0 ; i < d_size ;i++ )
-    {        
-        float x,y,z;
-        x=0; //rand()%1000 - 500;
-        y=0; //rand()%1000 - 500;
-        z=0; //rand()%1000 - 500;
-        //glm::vec4 v1=glm::vec4(mesh->mVertices[i].x,mesh->mVertices[i].y,mesh->mVertices[i].z,1.0);
-        //glm::vec4 new_v = m1 * v1;        
-        motes[i].position.x=x;
-        motes[i].position.y=y;
-        motes[i].position.z=z;
-        motes[i].life=glm::linearRand(1.0,6.0);
-        motes[i].total_life=motes[i].life;
-        //motes[i].force=glm::sphericalRand(30);
-        motes[i].force=glm::ballRand(30.0);
-        motes[i].size=30;
-        //printf("x=%f  y=%f  z=%f \n",x,y,z );
-        //printf("x=%f  y=%f  z=%f \n",motes[i].force.x ,motes[i].force.y ,motes[i].force.z);
-    }
-}
-
-void particle2::update_VBO()
-{
-
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     //glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 3 * d_size /* bytes */, vertexes, GL_DYNAMIC_DRAW);
@@ -72,11 +50,11 @@ void particle2::update_VBO()
     glBindBuffer(GL_ARRAY_BUFFER, 0); // unbind
     glBindVertexArray(0); // unbind
 
+ //   free(vertexData);
 }
 
-void particle2::update(float dt)
-{    
-    //return;
+void particle_base::update(float dt)
+{
     int dead_count=0;
     for ( int i=0 ; i < d_size ;i++ )
     {
@@ -84,7 +62,7 @@ void particle2::update(float dt)
         motes[i].position +=  motes[i].force *dt;
         ///motes[i].force;
        // printf("x=%f  y=%f  z=%f \n",x,y,z);
-        motes[i].life -= dt;        
+        motes[i].life -= dt;
         //float life=motes[i].life;
         motes[i].size = 40*motes[i].life /motes[i].total_life;
         if (motes[i].life <0 )
@@ -97,10 +75,11 @@ void particle2::update(float dt)
     }
     else
         update_VBO();
+
 }
 
-void particle2::draw()
-{    
+void particle_base::draw()
+{
     update_model_matrix();
    //model = glm::mat4(1.0); // identity
     float _m[16];
@@ -148,4 +127,69 @@ void particle2::draw()
 
     }
     draw_axis();
+}
+
+
+void particle_base::init_particles()
+{
+    for ( int i=0 ; i < d_size ;i++ )
+    {
+        float x,y,z;
+        x=0; //rand()%1000 - 500;
+        y=0; //rand()%1000 - 500;
+        z=0; //rand()%1000 - 500;
+        //glm::vec4 v1=glm::vec4(mesh->mVertices[i].x,mesh->mVertices[i].y,mesh->mVertices[i].z,1.0);
+        //glm::vec4 new_v = m1 * v1;
+        motes[i].position.x=x;
+        motes[i].position.y=y;
+        motes[i].position.z=z;
+        motes[i].life=glm::linearRand(1.0,6.0);
+        motes[i].total_life=motes[i].life;
+        //motes[i].force=glm::sphericalRand(30);
+        motes[i].force=glm::ballRand(30.0);
+        motes[i].size=30;
+        //printf("x=%f  y=%f  z=%f \n",x,y,z );
+        //printf("x=%f  y=%f  z=%f \n",motes[i].force.x ,motes[i].force.y ,motes[i].force.z);
+    }
+}
+
+particle_spark::particle_spark():particle_base()
+{
+    name="particle_spark";
+    d_size=200;
+
+    Texture *_tex = new Texture("particle.png"); //
+    texname=_tex->getTextureName();
+
+    shader=new Shader();
+    shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
+
+    motes = (struct_particle_vertex*)malloc(sizeof(struct_particle_vertex)*d_size);
+
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+
+    //init_particles();
+
+    flag_axis_on=true;
+    make_axis();//
+    update_VBO();
+
+}
+
+void particle_spark::update_VBO()
+{
+
+
+
+}
+
+void particle_spark::update(float dt)
+{    
+
+}
+
+void particle_spark::draw()
+{    
+
 }

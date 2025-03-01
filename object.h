@@ -139,30 +139,6 @@ public:
     virtual void draw(){}
 };
 
-struct struct_particle_vertex {
-    glm::vec3 position;
-    glm::vec3 force;    
-    float life;
-    float force_life;
-    float size;
-    float total_life;
-};
-
-class particle : public xObject{
-    GLuint buffer;
-    GLuint vertex_array;
-    int d_size;
-    float *vertexData;
-
-    struct_particle_vertex  *motes;
-
-public:
-    particle();
-    virtual void update(float dt=0);
-    virtual void draw();
-    void update_VBO();
-};
-
 
 class objLight : public xObject{
     GLuint buffer;
