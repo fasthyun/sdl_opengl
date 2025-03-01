@@ -1133,7 +1133,7 @@ vector<xObject*> loadMapObjectsFrom3Dfile(string _path) // importObjectsFrom3Dfi
     return array_objects;
 }
 
-template<typename T> xObject * createInstance() { return new T; }
+template<typename T> xObject * createInstance() { return new T; } // test
 
 void init_models()
 {
