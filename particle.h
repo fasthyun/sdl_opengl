@@ -3,6 +3,7 @@
 
 #include "object.h"
 
+// temp
 struct struct_particle_vertex {
     glm::vec3 position;
     glm::vec3 force;
@@ -10,16 +11,17 @@ struct struct_particle_vertex {
     float force_life;
     float size;
     float total_life;
+    glm::vec3 velocity;
 };
 
 class particle_base : public xObject{
     GLuint buffer;
     GLuint vertex_array;
-    int d_size;
     float *vertexData;
+public:
+    int d_size;
     struct_particle_vertex  *motes;
 
-public:
     particle_base();
     void init_particles();
     virtual void update(float dt=0);
@@ -30,9 +32,9 @@ public:
 class particle_spark : public particle_base {
     GLuint buffer;
     GLuint vertex_array;
-    int d_size;
+    //int d_size;
     struct_particle_vertex  *motes;
-
+    glm::vec3 gravity;
 public:
     particle_spark();
     void init_particles();

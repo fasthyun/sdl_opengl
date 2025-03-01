@@ -9,7 +9,7 @@
 particle_base::particle_base():xObject()
 {
     name="particle";
-    d_size=200;
+    d_size=300;
 
     Texture *_tex = new Texture("particle.png"); //
     texname=_tex->getTextureName();
@@ -27,7 +27,6 @@ particle_base::particle_base():xObject()
     flag_axis_on=true;
     make_axis();//
     update_VBO();
-
 }
 
 void particle_base::update_VBO()
@@ -148,8 +147,9 @@ void particle_base::init_particles()
         //motes[i].force=glm::sphericalRand(30);
         motes[i].force=glm::ballRand(30.0);
         motes[i].size=30;
+        motes[i].velocity=glm::vec3(0.0,0.0,0.0);
         //printf("x=%f  y=%f  z=%f \n",x,y,z );
-        //printf("x=%f  y=%f  z=%f \n",motes[i].force.x ,motes[i].force.y ,motes[i].force.z);
+       // printf("x=%f  y=%f  z=%f \n",motes[i].force.x ,motes[i].force.y ,motes[i].force.z);
     }
 }
 
@@ -158,38 +158,65 @@ particle_spark::particle_spark():particle_base()
     name="particle_spark";
     d_size=200;
 
-    Texture *_tex = new Texture("particle.png"); //
-    texname=_tex->getTextureName();
+    //Texture *_tex = new Texture("particle.png"); //
+    //texname=_tex->getTextureName();
 
-    shader=new Shader();
-    shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
+    //shader=new Shader();
+    //shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
 
-    motes = (struct_particle_vertex*)malloc(sizeof(struct_particle_vertex)*d_size);
+    //motes = (struct_particle_vertex*)malloc(sizeof(struct_particle_vertex)*d_size);
 
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
 
     //init_particles();
 
-    flag_axis_on=true;
-    make_axis();//
-    update_VBO();
+    //flag_axis_on=true;
+    //make_axis();//
+    //update_VBO();
 
+    gravity=glm::vec3(0,-9.8,0);
 }
 
 void particle_spark::update_VBO()
 {
 
-
+    particle_base::update_VBO();
 
 }
 
 void particle_spark::update(float dt)
 {    
+    //particle_base::update(dt);
+
+    //int dead_count=0;
+
+    //printf("dsize=%d \n",d_size);
+    glm::vec3 vel;
+    for ( int i=0 ; i < d_size ;i++ )
+    {
+        //vel = motes[i].force * dt;// + gravity*dt;
+        //motes[i].velocity = motes[i].force * dt;// + gravity*dt;
+        motes[i].velocity = glm::vec3(1,1,1);// + gravity*dt;
+
+        //motes[i].position += motes[i].velocity *dt  ;
+
+        //printf("x=%f  y=%f  z=%f  \n",x,y,z,);
+        //motes[i].life -= dt;
+        //float life=motes[i].life;
+        //motes[i].size = 40*motes[i].life /motes[i].total_life;
+        //if (motes[i].life <0 )
+        //    dead_count++;
+    }
+    if( 999 >= d_size)
+    {
+        life=0;
+        particle_base::init_particles();
+    }
+    else
+        update_VBO();
 
 }
 
 void particle_spark::draw()
 {    
-
+    particle_base::draw();
 }
