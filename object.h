@@ -158,6 +158,7 @@ public:
     float rotate_angle_speed;
     virtual void update(float dt=0);
     virtual void draw();
+    float time_x,hz;
 };
 
 

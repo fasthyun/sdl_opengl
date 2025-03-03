@@ -38,9 +38,9 @@ void main()
     if (Type == 4 ){ // particle: sprite_point
      //   result =  Color;
         life = Normal.x;
-        if (life <0 )
+        if (life <=0 )
         {
-            result = vec4(0,0,0,1.0);
+            result = vec4(0,0,0,0.0);
             discard;
         }
         else

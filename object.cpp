@@ -719,11 +719,26 @@ cube::cube():xObject()
     name="Cube";
     rotate_angle_speed=30;
     flag_axis_on=true;
+    /*
+     * 오르락내리락
+     * sin(t) ---> 1hz ---> 0.5hz ---> 0.2hz
+     *
+     *
+     */
+    time_x=0;
+    hz=2;
+
 }
 
 void cube::update(float dt)
 {
     yaw += rotate_angle_speed * dt; // degree to radian
+    time_x += dt;
+
+    float rate=M_PI*2/hz;
+    //rate
+    float y = sin(rate*time_x)*30;
+    position.y = y;
 }
 
 void cube::draw()

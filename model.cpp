@@ -1205,7 +1205,7 @@ void init_models()
     obj->position=glm::vec3(0,500,0);
 
 
-    //array_objects=loadMapObjectsFrom3Dfile("./model/map.fbx");
+    array_objects=loadMapObjectsFrom3Dfile("./model/map.fbx");
     //loadObjectsFrom3Dfile("./model/stage.fbx");
 
 

@@ -11,7 +11,7 @@ struct vertex {
     float tu,tv; //
     float r,g,b,a;
     float normal[3];
-    int32_t type;  // 오히려 triangle에 type이 있어야하지 않나????
+    int32_t type;  // 오히려 triangle에 type이 있어야하지 않나? --> particle도 있음
 };
 
 //#define vertex_set(vert,x,y,z,_tu,_tv) vert->v[0]=x,vert->v[1]=y,vert->v[2]=z,vert->tu=_tu,vert->tv=_tv;

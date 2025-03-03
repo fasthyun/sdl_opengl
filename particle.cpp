@@ -42,6 +42,8 @@ void particle_base::update_VBO()
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(struct_particle_vertex)/* bytes */, (void*)0);
     //glEnableClientState(GL_VERTEX_ARRAY);
     //glVertexPointer(3, GL_FLOAT,sizeof(float) /* bytes */, (void*)0);
+    glEnableVertexAttribArray(2); // input to vertex-shader index 0
+    glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(struct_particle_vertex), (void*)offsetof(struct_particle_vertex,color)); // normal[3]
     glEnableVertexAttribArray(3); // input to vertex-shader index 0
     glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(struct_particle_vertex), (void*)offsetof(struct_particle_vertex,life)); // normal[3]
     glVertexAttribI1i(4, 4); //glVertexAttrib1f(4, 2); // 고정값: type = 4
@@ -139,15 +141,13 @@ void particle_base::init_particles()
         z=0; //rand()%1000 - 500;
         //glm::vec4 v1=glm::vec4(mesh->mVertices[i].x,mesh->mVertices[i].y,mesh->mVertices[i].z,1.0);
         //glm::vec4 new_v = m1 * v1;
-        motes[i].position.x=x;
-        motes[i].position.y=y;
-        motes[i].position.z=z;
+        motes[i].position=glm::vec3(0,0,0);
         motes[i].life=glm::linearRand(1.0,6.0);
         motes[i].total_life=motes[i].life;
         //motes[i].force=glm::sphericalRand(30);
         motes[i].force=glm::ballRand(30.0);
         motes[i].size=30;
-        motes[i].velocity=glm::vec3(0.0,0.0,0.0);
+        motes[i].velocity=glm::vec3(0,0,0);
         //printf("x=%f  y=%f  z=%f \n",x,y,z );
        // printf("x=%f  y=%f  z=%f \n",motes[i].force.x ,motes[i].force.y ,motes[i].force.z);
     }
@@ -169,11 +169,21 @@ particle_spark::particle_spark():particle_base()
 
     //init_particles();
 
+    for ( int i=0 ; i < d_size ;i++ )
+    {
+        motes[i].position=glm::vec3(0,0,0);
+        motes[i].life=0;
+        motes[i].total_life=1;
+        //motes[i].force=glm::sphericalRand(30);
+        motes[i].force=glm::ballRand(30.0);
+        motes[i].size=30;
+        motes[i].velocity=glm::vec3(0,0,0);
+    }
     //flag_axis_on=true;
     //make_axis();//
     //update_VBO();
 
-    gravity=glm::vec3(0,-9.8,0);
+    gravity=glm::vec3(0,-9.8*1,0);
 }
 
 void particle_spark::update_VBO()
@@ -186,34 +196,49 @@ void particle_spark::update_VBO()
 void particle_spark::update(float dt)
 {    
     //particle_base::update(dt);
+    // 1초에 100개 생성 어떻게?
 
-    //int dead_count=0;
+    int dead_count=0;
+    int count=0;
 
-    //printf("dsize=%d \n",d_size);
-    glm::vec3 vel;
     for ( int i=0 ; i < d_size ;i++ )
     {
-        //vel = motes[i].force * dt;// + gravity*dt;
-        //motes[i].velocity = motes[i].force * dt;// + gravity*dt;
-        motes[i].velocity = glm::vec3(1,1,1);// + gravity*dt;
+        float x,y,z;
+        x=0; //rand()%1000 - 500;
+        y=0; //rand()%1000 - 500;
+        z=0; //rand()%1000 - 500;
+        //glm::vec4 v1=glm::vec4(mesh->mVertices[i].x,mesh->mVertices[i].y,mesh->mVertices[i].z,1.0);
+        //glm::vec4 new_v = m1 * v1;
+        if (motes[i].life<=0)
+        {
+            motes[i].position=glm::vec3(0,0,0);
+            motes[i].life=glm::linearRand(1.0,6.0);
+            motes[i].total_life=motes[i].life;
+            //motes[i].force=glm::sphericalRand(30);
+            motes[i].force=glm::ballRand(30.0);
+            motes[i].size=30;
+            motes[i].velocity=glm::vec3(0,0,0);
+        }
 
-        //motes[i].position += motes[i].velocity *dt  ;
+        if(motes[i].life >0 )
+        {            
+            float life_rate;
+            motes[i].velocity += (motes[i].force + gravity)*dt;
+            motes[i].position += motes[i].velocity *dt  ;
 
-        //printf("x=%f  y=%f  z=%f  \n",x,y,z,);
-        //motes[i].life -= dt;
-        //float life=motes[i].life;
-        //motes[i].size = 40*motes[i].life /motes[i].total_life;
-        //if (motes[i].life <0 )
-        //    dead_count++;
+            life_rate=motes[i].life /motes[i].total_life;
+            if (life_rate<0.9)
+                motes[i].force=glm::vec3(0);
+            //printf("x=%f  y=%f  z=%f  \n",x,y,z,);                        
+            motes[i].size = 15*life_rate;
+            motes[i].life -= dt;
+            count++;
+        }
+
+        if (count>50)
+            break;
     }
-    if( 999 >= d_size)
-    {
-        life=0;
-        particle_base::init_particles();
-    }
-    else
-        update_VBO();
-
+    update_VBO();
 }
 
 void particle_spark::draw()

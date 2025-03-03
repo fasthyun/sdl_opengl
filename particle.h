@@ -7,6 +7,7 @@
 struct struct_particle_vertex {
     glm::vec3 position;
     glm::vec3 force;
+    glm::vec4 color;
     float life;
     float force_life;
     float size;
@@ -32,8 +33,6 @@ public:
 class particle_spark : public particle_base {
     GLuint buffer;
     GLuint vertex_array;
-    //int d_size;
-    struct_particle_vertex  *motes;
     glm::vec3 gravity;
 public:
     particle_spark();

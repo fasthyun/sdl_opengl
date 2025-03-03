@@ -346,3 +346,57 @@ glm::mat4 lookAt_with_glm(float eye_pos[3], float forward[3], float up[3])
     return m;
 }
 
+//https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
+glm::vec3  ray_intersects_triangle( const glm::vec3 &ray_origin, const glm::vec3 &ray_vector, glm::vec3 a,glm::vec3 b,glm::vec3 c)
+    //const triangle3& triangle) // c++17
+{
+    constexpr float epsilon = std::numeric_limits<float>::epsilon();
+
+    glm::vec3 edge1 = b - a;
+    glm::vec3 edge2 = c - a;
+    glm::vec3 ray_cross_e2 = glm::cross(ray_vector, edge2);
+    float det = glm::dot(edge1, ray_cross_e2);
+
+    if (det > -epsilon && det < epsilon)
+        return {};    // This ray is parallel to this triangle.
+
+    float inv_det = 1.0 / det;
+    glm::vec3 s = ray_origin - a;
+    float u = inv_det * dot(s, ray_cross_e2);
+
+    if ((u < 0 && abs(u) > epsilon) || (u > 1 && abs(u-1) > epsilon))
+        return {};
+
+    glm::vec3 s_cross_e1 = glm::cross(s, edge1);
+    float v = inv_det * dot(ray_vector, s_cross_e1);
+
+    if ((v < 0 && abs(v) > epsilon) || (u + v > 1 && abs(u + v - 1) > epsilon))
+        return {};
+
+    // At this stage we can compute t to find out where the intersection point is on the line.
+    float t = inv_det * dot(edge2, s_cross_e1);
+
+    if (t > epsilon) // ray intersection
+    {
+        return  glm::vec3(ray_origin + ray_vector * t);
+    }
+    else // This means that there is a line intersection but not a ray intersection.
+        return glm::vec3();
+}
+
+/*
+bool intersect_triangle( Ray R,  glm::vec3 A, glm::vec3 B, glm::vec3 C, float t,
+                        float u,float v,glm::vec3 N)
+{
+   glm::vec3 E1 = B-A;
+   glm::vec3 E2 = C-A;
+   glm::vec3 N = glm::cross(E1,E2);
+   float det = -glm::dot(R.Dir, N);
+   float invdet = 1.0/det;
+   vec3 AO  = R.Origin - A;
+   vec3 DAO = glm::cross(AO, R.Dir);
+   u =  glm::dot(E2,DAO) * invdet;
+   v = -glm::dot(E1,DAO) * invdet;
+   t =  glm::dot(AO,N)  * invdet;
+   return (det >= 1e-6 && t >= 0.0 && u >= 0.0 && v >= 0.0 && (u+v) <= 1.0);
+} */
