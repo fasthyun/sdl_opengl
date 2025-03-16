@@ -157,16 +157,11 @@ particle_spark::particle_spark():particle_base()
 {
     name="particle_spark";
     d_size=200;
-
     //Texture *_tex = new Texture("particle.png"); //
     //texname=_tex->getTextureName();
-
     //shader=new Shader();
     //shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
-
     //motes = (struct_particle_vertex*)malloc(sizeof(struct_particle_vertex)*d_size);
-
-
     //init_particles();
 
     for ( int i=0 ; i < d_size ;i++ )

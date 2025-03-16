@@ -346,8 +346,11 @@ glm::mat4 lookAt_with_glm(float eye_pos[3], float forward[3], float up[3])
     return m;
 }
 
-//https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
-glm::vec3  ray_intersects_triangle( const glm::vec3 &ray_origin, const glm::vec3 &ray_vector, glm::vec3 a,glm::vec3 b,glm::vec3 c)
+/* https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
+
+*/
+glm::vec3  ray_intersects_triangle( const glm::vec3 &ray_origin, const glm::vec3 &ray_vector,
+                                    glm::vec3 a,glm::vec3 b,glm::vec3 c)
     //const triangle3& triangle) // c++17
 {
     constexpr float epsilon = std::numeric_limits<float>::epsilon();
