@@ -1193,24 +1193,30 @@ void init_models()
     objects.push_back(obj);
     */
     xObject *model_obj;
-    //xObject *model_obj=new model_object("./model/teapot.fbx");
+    model_obj=new model_object("./model/ball.fbx");
     //set(model_obj->pos,0,0,0);
-    //objects.push_back(model_obj);
+    objects.push_back(model_obj);
     //loadObjectsFrom3Dfile("./model/axis.fbx");
     //loadObjectsFrom3Dfile("./model/box.fbx");
+
+
 
     obj=new particle_spark();
     //obj=new cube();
     //cached_objects.push_back(obj);
     obj->position=glm::vec3(0,500,0);
+    objects.push_back(obj);
 
 
     //array_objects=loadMapObjectsFrom3Dfile("./model/map.fbx");
-    array_objects=loadMapObjectsFrom3Dfile("./model/robot_arm.fbx");
-    //loadObjectsFrom3Dfile("./model/stage.fbx");
+    //array_objects=loadMapObjectsFrom3Dfile("./model/robot_arm.fbx");
+    //loadObjectsFrom3Dfile("./model/robot_arm.fbx");
+    //obj=loadObjectFrom3Dfile("./model/Bob.fbx","bob");
+    //objects.push_back(obj);
 
 
-    objects.push_back(obj);
+
+    //objects.push_back(obj);
     // tmp
     for ( int i=0 ; i < 0 ; i++)
     {
