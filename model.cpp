@@ -842,14 +842,17 @@ bool Import3DFromFile(const std::string filename, xObject *obj)
 {
     /*
         * Scene에는 여러개의 Object가 있을수 있다. 카메라, 라이트 등등
-        * 즉, 3d파일 1개에 여러개 Object가 있을수 있음.
-        * 게다가 각 Object들이 child를 갖을수 있음
-
+           즉, 3D파일 1개에 여러개 Object가 있을수 있음.
+        * 각 Object들이 child를 갖을 수 있음
         - blender에서 각 object는 properties를 갖는다.
         - properties가 FBX에서는 metadata임
         - xobject key를 찾으면... type적용
 
+<<<<<<< HEAD
         1. 각 OBject중 LAMP , Camera는 제외 ---> 바뀜!
+=======
+        1. 각 OBject중 LAMP , Camera는 throw!
+>>>>>>> ce77dd8dc2e5996c6dc03c48127544cd8725bdc7
         2. 지금은 level==0 일때는 전부 다 개별 object로 등록하자 ---> 바뀜!
         3. tree-child로 등록해야할지 , 개별 Object로 등록할지는... 조금더 해보고 결정
         4. metadata는 child 개수에 포함 안되는듯!
@@ -1032,6 +1035,7 @@ xObject* loadObjectFrom3Dfile(string _path, string _name) // importObjectFrom3Df
              return joe;
          }
     }
+    // TODO: memory leaks...
     return nullptr;
 }
 
@@ -1194,13 +1198,19 @@ void init_models()
     objects.push_back(obj);
     */
     xObject *model_obj;
+<<<<<<< HEAD
     model_obj=new model_object("./model/robot_arm.fbx");
+=======
+    //model_obj=new model_object("./model/ball.fbx");
+>>>>>>> ce77dd8dc2e5996c6dc03c48127544cd8725bdc7
     //set(model_obj->pos,0,0,0);
-    objects.push_back(model_obj);
+    //objects.push_back(model_obj);
     //loadObjectsFrom3Dfile("./model/axis.fbx");
-    //loadObjectsFrom3Dfile("./model/box.fbx");
+    //obj=loadObjectFrom3Dfile("./model/ball.fbx","ball");
+    obj=loadObjectFrom3Dfile("./model/robot_arm.fbx","ball");
 
-
+    //obj=loadObjectFrom3Dfile("./model/Bob.fbx","bob");
+    objects.push_back(obj);
 
     obj=new particle_spark();
     //obj=new cube();
