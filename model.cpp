@@ -530,16 +530,15 @@ int loadMetadata(aiMetadata *md, xObject *obj, string name="", int level=0) {
 // TODO : scale remove
 void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scalex, xObject *xobj, int level)
 {    
-    /*     
+    /* 30%
+     *
      * A node:
         +-- meta_data
         +-- meshes
            - vertexes
            - triangles
            - (already materials)
-        +-- children
-
-        30%
+        +-- children       
 
        1. 재귀함수 : need to change to what?
        2. object들을 xObject로 바꿔줘야한다.
@@ -850,7 +849,7 @@ bool Import3DFromFile(const std::string filename, xObject *obj)
         - properties가 FBX에서는 metadata임
         - xobject key를 찾으면... type적용
 
-        1. 각 OBject중 LAMP , Camera는 제외하고 등록하자... ---> 바뀜!
+        1. 각 OBject중 LAMP , Camera는 제외 ---> 바뀜!
         2. 지금은 level==0 일때는 전부 다 개별 object로 등록하자 ---> 바뀜!
         3. tree-child로 등록해야할지 , 개별 Object로 등록할지는... 조금더 해보고 결정
         4. metadata는 child 개수에 포함 안되는듯!
@@ -883,8 +882,10 @@ bool Import3DFromFile(const std::string filename, xObject *obj)
     std::cout << "Import of scene " + filename + " succeeded.\n";
     // We're done. Everything will be cleaned up by the importer destructor
 
-    loadMaterials(g_scene);  // 1. load material
-    loadMetadata(g_scene->mMetaData, obj, g_scene->mName.C_Str());  // 2. scene's metadata
+    // 1. load material
+    loadMaterials(g_scene);
+    // 2. scene's metadata
+    loadMetadata(g_scene->mMetaData, obj, g_scene->mName.C_Str());
     loadToObject(g_scene, g_scene->mRootNode, 1.0, obj, 0); // 3. load 3D to object
 
     return true;
@@ -1042,16 +1043,16 @@ vector<xObject*> loadObjectsFrom3Dfile(string _path) // importObjectsFrom3Dfile
 
        triangles.size() ==0 일때 skip!
     */
-    xObject *dummy = new xObject();
+    xObject *root_dummy = new xObject();
     Shader *_shader;
     _shader=new Shader();
     _shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
-    Import3DFromFile(_path, dummy);
+    Import3DFromFile(_path, root_dummy);
 
     vector<xObject* > array_objects;
-    for ( size_t i=0 ; i < dummy->children.size(); i++)
+    for ( size_t i=0 ; i < root_dummy->children.size(); i++)
      {
-         xObject *obj = dummy->children[i];
+         xObject *obj = root_dummy->children[i];
          obj->parent=nullptr;
          obj->shader=_shader;
          // printf("obj.children()=%d  %d\n",i,obj->VAO);
@@ -1065,7 +1066,7 @@ vector<xObject*> loadObjectsFrom3Dfile(string _path) // importObjectsFrom3Dfile
          }
          array_objects.push_back(obj);
      }
-    delete dummy;
+    delete root_dummy;
     return array_objects;
 }
 
@@ -1078,7 +1079,7 @@ struct functor_base {
 //xObject *create_cube() { return new cube(); }
 //xObject *create_particle2() { return new particle2(); }
 
-vector<xObject*> loadMapObjectsFrom3Dfile(string _path) // importObjectsFrom3Dfile
+vector<xObject*> importObjectsFrom3Dfile(string _path) // importObjectsFrom3Dfile
 {
     vector<xObject* > array_objects;
     array_objects=loadObjectsFrom3Dfile(_path);
@@ -1193,7 +1194,7 @@ void init_models()
     objects.push_back(obj);
     */
     xObject *model_obj;
-    model_obj=new model_object("./model/ball.fbx");
+    model_obj=new model_object("./model/robot_arm.fbx");
     //set(model_obj->pos,0,0,0);
     objects.push_back(model_obj);
     //loadObjectsFrom3Dfile("./model/axis.fbx");
@@ -1207,16 +1208,12 @@ void init_models()
     obj->position=glm::vec3(0,500,0);
     objects.push_back(obj);
 
-
-    //array_objects=loadMapObjectsFrom3Dfile("./model/map.fbx");
+    //array_objects=importObjectsFrom3Dfile("./model/map.fbx");
     //array_objects=loadMapObjectsFrom3Dfile("./model/robot_arm.fbx");
-    //loadObjectsFrom3Dfile("./model/robot_arm.fbx");
-    //obj=loadObjectFrom3Dfile("./model/Bob.fbx","bob");
+    //array_objects=loadObjectsFrom3Dfile("./model/robot_arm.fbx");
+    //obj=loadObjectFrom3Dfile("./model/Bob.fbx","bob"); // fault
     //objects.push_back(obj);
 
-
-
-    //objects.push_back(obj);
     // tmp
     for ( int i=0 ; i < 0 ; i++)
     {
