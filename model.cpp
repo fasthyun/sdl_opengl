@@ -889,7 +889,8 @@ bool Import3DFromFile(const std::string filename, xObject *obj)
     loadMaterials(g_scene);
     // 2. scene's metadata
     loadMetadata(g_scene->mMetaData, obj, g_scene->mName.C_Str());
-    loadToObject(g_scene, g_scene->mRootNode, 1.0, obj, 0); // 3. load 3D to object
+    // 3. load 3D to object
+    loadToObject(g_scene, g_scene->mRootNode, 1.0, obj, 0);
 
     return true;
 }
@@ -1198,13 +1199,10 @@ void init_models()
     objects.push_back(obj);
     */
     xObject *model_obj;
-<<<<<<< HEAD
     model_obj=new model_object("./model/robot_arm.fbx");
-=======
     //model_obj=new model_object("./model/ball.fbx");
->>>>>>> ce77dd8dc2e5996c6dc03c48127544cd8725bdc7
     //set(model_obj->pos,0,0,0);
-    //objects.push_back(model_obj);
+    objects.push_back(model_obj);
     //loadObjectsFrom3Dfile("./model/axis.fbx");
     //obj=loadObjectFrom3Dfile("./model/ball.fbx","ball");
     obj=loadObjectFrom3Dfile("./model/robot_arm.fbx","ball");
