@@ -234,7 +234,7 @@ int loadMaterials(const aiScene* scene) {
         aiString path;	// filename
         aiMaterial *aimaterial=scene->mMaterials[m];
         string _name = aimaterial->GetName().C_Str();
-        Material *_material = new Material(_name);
+        Material *_material = new Material(_name); // leak?
 
         Materials.insert({_name, _material}); // ok
 
@@ -309,6 +309,8 @@ int loadMaterials(const aiScene* scene) {
                    set4f(_material->emission,colorf);
                else if(keyname=="$clr.specular")
                    set4f(_material->specular,colorf);
+               else if(keyname=="$clr.ambient")
+                   set4f(_material->ambient,colorf);
 
                str+=" )";
                msg += str;
@@ -345,7 +347,7 @@ int loadMaterials(const aiScene* scene) {
                 */
            }
         }
-      /// std::cout << msgs ;
+      //std::cout << msgs ;
     }
     return true;
 }
@@ -900,7 +902,10 @@ model_object::model_object(string _path): xObject()
     //texname=texture_manager::get_glname("check.bmp");
     printf("model_object=%s \n", _path.c_str());
     shader=new Shader();
-    shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
+    bool result=shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
+    assert(result);
+    if (result==false)
+        printf("ERROR: model_object.shader.load() \n");
 
     for ( size_t i=0 ; i < cached_models.size(); i++)
     {
@@ -930,8 +935,9 @@ shader_object::shader_object(string _type)
 {
     printf("shader_object=%s \n", path.c_str());
     shader=new Shader();
-    shader->Load("./shader/texture_vertex.glsl", "./shader/texture_fragment.glsl");
-
+    bool result=shader->Load("./shader/texture_vertex.glsl", "./shader/texture_fragment.glsl");
+    if (result==false)
+        printf("ERROR: shader_object.shader.load() \n");
     /*
     for ( size_t i=0 ; i < models.size(); i++)
     {
@@ -1158,7 +1164,7 @@ void init_models()
       obj->name="center";
       obj->flag_axis_on=true;
       obj->position=glm::vec3(0,300,0);
-      //objects.push_back(obj);
+      objects.push_back(obj);
 
       //array_objects=loadObjectsFrom3Dfile("./model/light.fbx"); // Lamp, Light
       //cached_models.insert(std::end(cached_models), std::begin(array_objects), std::end(array_objects)); // tooo long...
@@ -1202,7 +1208,7 @@ void init_models()
     //model_obj=new model_object("./model/robot_arm_pre.fbx");
     model_obj=new model_object("./model/ball.fbx");
     //set(model_obj->position,0,30,0);
-    model_obj->position=glm::vec3(0,300,0);
+    //model_obj->position=glm::vec3(0,300,0);
     objects.push_back(model_obj);
     //loadObjectsFrom3Dfile("./model/axis.fbx");
     //obj=loadObjectFrom3Dfile("./model/ball.fbx","ball");
@@ -1216,7 +1222,7 @@ void init_models()
     //obj->position=glm::vec3(0,500,0);
     //objects.push_back(obj);
 
-    array_objects=importObjectsFrom3Dfile("./model/map.fbx");
+    //array_objects=importObjectsFrom3Dfile("./model/map.fbx");
     //array_objects=loadMapObjectsFrom3Dfile("./model/robot_arm.fbx");
     //array_objects=loadObjectsFrom3Dfile("./model/robot_arm.fbx");
     //obj=loadObjectFrom3Dfile("./model/Bob.fbx","bob"); // fault

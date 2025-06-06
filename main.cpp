@@ -48,6 +48,19 @@ int flag_nk=0;
 int flag_large_screen=false;
 int width=1024;
 int height=768;
+void GLAPIENTRY
+MessageCallback( GLenum source,
+                 GLenum type,
+                 GLuint id,
+                 GLenum severity,
+                 GLsizei length,
+                 const GLchar* message,
+                 const void* userParam )
+{
+  fprintf( stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
+           ( type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : "" ),
+            type, severity, message );
+}
 
 bool init_SDL()
 {
@@ -128,11 +141,6 @@ bool init_SDL()
     printf("Version GL:  %s\n", glGetString(GL_VERSION));
     printf("Version GLSL:  %s\n", glGetString(GL_SHADING_LANGUAGE_VERSION));
 
-    // Enable the debug callback over gl4.3
-    glEnable(GL_DEBUG_OUTPUT);
-    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);    
-    //glDebugMessageCallback(GLDebugMessageCallback, NULL);
-    //glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, true);
 
     // Close and destroy the renderer
     //SDL_DestroyRenderer(renderer);
@@ -274,6 +282,14 @@ void main_loop()
         /*nk_style_set_font(ctx, &roboto->handle);*/
     }
 
+    fflush(stdout); // *****
+
+    // Enable the debug callback over gl4.3
+    glEnable(GL_DEBUG_OUTPUT);
+    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+    glDebugMessageCallback(MessageCallback, NULL);
+    //glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, true);
+
 
     //SDL_GL_MakeCurrent(window,glContext);    
     while( !quit )
@@ -326,15 +342,13 @@ void main_loop()
         for ( size_t i=0 ; i < objects.size(); i++)
         {
             xObject *obj = objects[i];
-
             obj->update(dt);  //update objects
             if (obj->shader != nullptr)
             {
-                obj->shader->SetActive();
-                obj->shader->setMat4("projView",projview_mat4);
+                obj->shader->SetActive(); //
+                obj->shader->setMat4("projView",projview_mat4); ////  ERROR????
                 //glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(projview_mat4)); // ( location, count,  transpose, float *value )
-                if(_light)
-                    obj->shader->setVec3("lightPos",_light->position);
+                if(_light)  obj->shader->setVec3("lightPos",_light->position);
                 obj->draw(); //temp
             }
         }
@@ -515,8 +529,16 @@ int main(int argc, char *argv[])
     //init_font();
     //init_font_freetype();
     init_object(); 
+
     init_models();
+
+
     main_loop();
+    GLenum err;
+    while((err = glGetError()) != GL_NO_ERROR)
+    {
+      // Process/log the error.
+    }
     return 0;
 }
 

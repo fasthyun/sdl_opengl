@@ -107,15 +107,15 @@ void particle_base::draw()
         //glEnable(GL_DEPTH_TEST); // why???
 
         //shader->setMat4("model",_m1);
-        shader->setMat4("model",model); // works
+        ////shader->setMat4("model",model); // works
 
         /* location = glGetUniformLocation(shader->mProgram, "model");
         if (location >= 0)
             glUniformMatrix4fv(location, 1, GL_FALSE, _m); // ( location, count,  transpose, float *value )
-        */
+
         location = glGetUniformLocation(shader->mProgram, "ourTexture");
         if(location >=0) glUniform1i(location, 0); // 0: GL_TEXTURE0 works!!! 0값이 전달될때 sampler2D로 변환되는것 같다.
-
+        */
         glEnable(GL_PROGRAM_POINT_SIZE);
         glPointSize(5); // not work!
         glBindVertexArray(VAO);

@@ -47,7 +47,7 @@ xObject::xObject()
     VBO=0;
     VAO=0;
     EBO=0;
-    shader=new Shader();
+    ///shader=new Shader(); // why????
     //shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
     position.x=0;position.y=0;position.z=0;
     set(up ,0,1,0);
@@ -59,16 +59,26 @@ xObject::xObject()
     new_force = glm::vec3(0);
     name="None";
     make_axis();
+    printf("xObject()...\n");
 }
 
 
 xObject::xObject(const xObject &obj)
 {
     //객체복사
-    this->uuid=obj.uuid;
-    this->parent=obj.parent;
+    uuid=obj.uuid;
+    parent=obj.parent;
+}
 
+xObject::xObject(xObject *obj)
+{
+    xObject::copy(obj);
+}
 
+xObject::xObject(xObject *&obj)
+{
+    uuid=obj->uuid;
+    parent=obj->parent;
 }
 
 void xObject::copyModel(xObject *obj) // 임시 생성!
@@ -88,7 +98,6 @@ void xObject::copy(xObject *obj) // 임시 생성!
 {
 ///  uuid=obj->uuid;
     name=obj->name;
-
     parent=obj->parent;
     shader=obj->shader; // ***
     position=obj->position;
@@ -105,18 +114,6 @@ void xObject::copy(xObject *obj) // 임시 생성!
 
     make_axis();
     make_glVertexArray();
-}
-
-xObject::xObject(xObject *obj)
-{
-    xObject::copy(obj);
-}
-
-xObject::xObject(xObject *&obj)
-{
-    uuid=obj->uuid;
-    parent=obj->parent;
-
 }
 
 
@@ -345,12 +342,19 @@ void xObject::draw()
             the texture object used for each texture lookup. The value of a sampler
             indicates the texture image unit being accessed.
             Setting a sampler’s value to i selects texture image unit number i.
-        */
+        */        
 
         GLint location = glGetUniformLocation(shader->mProgram, "ourTexture");
-        if(location >=0) glUniform1i(location, 0); // 0: GL_TEXTURE0 works!!! 0값이 전달될때 sampler2D로 변환되는것 같다.
-        location = glGetUniformLocation(shader->mProgram, "material.emission");
+        if(location >=0) glUniform1i(location, 0); // 0: GL_TEXTURE0 works!!! 0값이 전달될때 sampler2D로 변환되는것 같다.        
+         else
+            printf("ERROR1: location is -1 \n");        
+
+        /*
+        location = glGetUniformLocation(shader->mProgram, "material.emission"); // emission;
         if(location >=0) glUniform3fv (location, 1, material->emission );
+        else
+           printf("ERROR2: location is -1 \n");
+           */
 
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, triangles.size() *3 /* index count so x3 */ , GL_UNSIGNED_INT, 0); //( mode, count, index_data_type, void * indices);

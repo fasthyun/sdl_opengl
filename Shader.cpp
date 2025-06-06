@@ -107,7 +107,7 @@ void Shader::Unload()
 
 void Shader::SetActive()
 {
-    /// glUseProgram(mProgram);
+    glUseProgram(mProgram);
 	// Set this program as the active one
     if (d_installed_program != mProgram)
     {
@@ -204,7 +204,7 @@ bool Shader::IsValidProgram()
 		char buffer[512];
 		memset(buffer, 0, 512);
         glGetProgramInfoLog(mProgram, 511, nullptr, buffer);
-        //SDL_Log("GLSL Link Status:\n%s", buffer);
+        printf("ERROR: GLSL Link Status:\n%s", buffer);
 		return false;
 	}	
 	return true;

@@ -39,26 +39,26 @@ public:
         glUseProgram(mProgram);
     }
     // utility uniform functions    
-    void setBool(const std::string &name, bool value) const
+    void xsetBool(const std::string &name, bool value) const
     {
         glUniform1i(glGetUniformLocation(mProgram, name.c_str()), (int)value);
     }
     // ------------------------------------------------------------------------
-    void setInt(const std::string &name, int value) const
+    void xsetInt(const std::string &name, int value) const
     {
         glUniform1i(glGetUniformLocation(mProgram, name.c_str()), value);
     }
     // ------------------------------------------------------------------------
-    void setFloat(const std::string &name, float value) const
+    void xsetFloat(const std::string &name, float value) const
     {
         glUniform1f(glGetUniformLocation(mProgram, name.c_str()), value);
     }
     // ------------------------------------------------------------------------
-    void setVec2(const std::string &name, const glm::vec2 &value) const
+    void xsetVec2(const std::string &name, const glm::vec2 &value) const
     {
         glUniform2fv(glGetUniformLocation(mProgram, name.c_str()), 1, &value[0]);
     }
-    void setVec2(const std::string &name, float x, float y) const
+    void xsetVec2(const std::string &name, float x, float y) const
     {
         glUniform2f(glGetUniformLocation(mProgram, name.c_str()), x, y);
     }
@@ -71,29 +71,33 @@ public:
     {
         glUniform3f(glGetUniformLocation(mProgram, name.c_str()), x, y, z);
     }
-    // ------------------------------------------------------------------------
-    void setVec4(const std::string &name, const glm::vec4 &value) const
+    // --x----------------------------------------------------------------------
+    void xsetVec4(const std::string &name, const glm::vec4 &value) const
     {
         glUniform4fv(glGetUniformLocation(mProgram, name.c_str()), 1, &value[0]);
     }
-    void setVec4(const std::string &name, float x, float y, float z, float w) const
+    void xsetVec4(const std::string &name, float x, float y, float z, float w) const
     {
         glUniform4f(glGetUniformLocation(mProgram, name.c_str()), x, y, z, w);
     }
     // ------------------------------------------------------------------------
-    void setMat2(const std::string &name, const glm::mat2 &mat) const
+    void xsetMat2(const std::string &name, const glm::mat2 &mat) const
     {
         glUniformMatrix2fv(glGetUniformLocation(mProgram, name.c_str()), 1, GL_FALSE, &mat[0][0]);
     }
     // ------------------------------------------------------------------------
-    void setMat3(const std::string &name, const glm::mat3 &mat) const
+    void xsetMat3(const std::string &name, const glm::mat3 &mat) const
     {
         glUniformMatrix3fv(glGetUniformLocation(mProgram, name.c_str()), 1, GL_FALSE, &mat[0][0]);
     }
     // ------------------------------------------------------------------------
     void setMat4(const std::string &name, const glm::mat4 &mat) const
     {
-        glUniformMatrix4fv(glGetUniformLocation(mProgram, name.c_str()), 1, GL_FALSE, &mat[0][0]);
+        GLint location=glGetUniformLocation(mProgram, name.c_str());
+        if (location >=0)
+            glUniformMatrix4fv(location, 1, GL_FALSE, &mat[0][0]);
+        else
+            printf("error....\n");
     }
 
 private:	
