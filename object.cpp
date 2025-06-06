@@ -267,7 +267,7 @@ void xObject::draw_axis()
      */
     if (flag_axis_on && VAO_axis>0)
     {
-        glDisable(GL_DEPTH_TEST);    // Enable depth buffering
+        glDisable(GL_DEPTH_TEST);
         shader->setMat4("model",model); //
         glLineWidth(3);
         glBindVertexArray(VAO_axis);
@@ -275,7 +275,6 @@ void xObject::draw_axis()
         glVertexAttribI1i(4, 2); //glVertexAttrib1f(4, 2);
         glDrawArrays(GL_LINES, 0, 6); // why 6?
     }
-
 }
 
 

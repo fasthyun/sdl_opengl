@@ -1199,24 +1199,24 @@ void init_models()
     objects.push_back(obj);
     */
     xObject *model_obj;
-    model_obj=new model_object("./model/robot_arm.fbx");
-    //model_obj=new model_object("./model/ball.fbx");
-    //set(model_obj->pos,0,0,0);
+    //model_obj=new model_object("./model/robot_arm_pre.fbx");
+    model_obj=new model_object("./model/ball.fbx");
+    //set(model_obj->position,0,30,0);
+    model_obj->position=glm::vec3(0,300,0);
     objects.push_back(model_obj);
     //loadObjectsFrom3Dfile("./model/axis.fbx");
     //obj=loadObjectFrom3Dfile("./model/ball.fbx","ball");
-    obj=loadObjectFrom3Dfile("./model/robot_arm.fbx","ball");
-
+    //obj=loadObjectFrom3Dfile("./model/robot_arm.fbx","ball");
     //obj=loadObjectFrom3Dfile("./model/Bob.fbx","bob");
-    objects.push_back(obj);
+    //objects.push_back(obj);
 
-    obj=new particle_spark();
+    //obj=new particle_spark();
     //obj=new cube();
     //cached_objects.push_back(obj);
-    obj->position=glm::vec3(0,500,0);
-    objects.push_back(obj);
+    //obj->position=glm::vec3(0,500,0);
+    //objects.push_back(obj);
 
-    //array_objects=importObjectsFrom3Dfile("./model/map.fbx");
+    array_objects=importObjectsFrom3Dfile("./model/map.fbx");
     //array_objects=loadMapObjectsFrom3Dfile("./model/robot_arm.fbx");
     //array_objects=loadObjectsFrom3Dfile("./model/robot_arm.fbx");
     //obj=loadObjectFrom3Dfile("./model/Bob.fbx","bob"); // fault
