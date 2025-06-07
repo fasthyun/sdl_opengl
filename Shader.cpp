@@ -63,8 +63,7 @@ bool Shader::Load(const std::string& vertName, const std::string& fragName)
     if ( search != cached_shader_id.end())
     {
         mProgram=search->second;
-        //std::cout << "DEBUG: Found " << search->first <<", id:" << mProgram << '\n';
-
+        std::cout << "DEBUG: Found " << search->first <<", id:" << mProgram << '\n';
     }
     else
     {
@@ -73,6 +72,7 @@ bool Shader::Load(const std::string& vertName, const std::string& fragName)
             !CompileShader(fragName, GL_FRAGMENT_SHADER, mFragShader))
         {
             printf("Error : Shader load() fail ........\n");
+            assert(false);
             return false;
         }
 
@@ -91,7 +91,6 @@ bool Shader::Load(const std::string& vertName, const std::string& fragName)
         // Textures.insert({aimaterial->GetName().C_Str(), _tex->d_tex_glname}); // c++11
         cached_shader_id.insert({_key, mProgram}); // ok
    }
-
    // printf("Shader load() =====> program = %d \n", mProgram);
 	return true;
 }

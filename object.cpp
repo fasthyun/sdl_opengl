@@ -59,7 +59,7 @@ xObject::xObject()
     new_force = glm::vec3(0);
     name="None";
     make_axis();
-    printf("xObject()...\n");
+    printf("xObject() init...\n");
 }
 
 
@@ -120,7 +120,7 @@ void xObject::copy(xObject *obj) // 임시 생성!
 xObject::~xObject(){
     if (parent !=nullptr)
     {
-        delete parent;
+        delete parent; ///?????
         parent = nullptr;
     }
     if (shader !=nullptr)

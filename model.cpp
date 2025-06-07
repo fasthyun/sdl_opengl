@@ -234,7 +234,7 @@ int loadMaterials(const aiScene* scene) {
         aiString path;	// filename
         aiMaterial *aimaterial=scene->mMaterials[m];
         string _name = aimaterial->GetName().C_Str();
-        Material *_material = new Material(_name); // leak?
+        Material *_material = new Material(_name); // leak????
 
         Materials.insert({_name, _material}); // ok
 
@@ -1013,16 +1013,15 @@ xObject *findCachedModel(string _name)
 
 xObject* loadObjectFrom3Dfile(string _path, string _name) // importObjectFrom3Dfile
 {
-    xObject *obj;
+    xObject *obj, *joe=nullptr;
     obj=findCachedModel(_name);
     if (obj!=nullptr)
     {
-        xObject *joe = new xObject();
+        joe = new xObject();
         joe->copy(obj);
         return joe;
     }
-
-    xObject *dummy = new xObject();
+    xObject *dummy = new xObject(); //leak!! children!
     Shader *_shader;
     _shader=new Shader();
     _shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
@@ -1030,20 +1029,21 @@ xObject* loadObjectFrom3Dfile(string _path, string _name) // importObjectFrom3Df
 
     for ( size_t i=0 ; i < dummy->children.size(); i++)
     {
-         xObject *obj = dummy->children[i];
-         obj->parent=nullptr;
-         obj->shader=_shader;
+         xObject *c = dummy->children[i];
          // printf("obj.children()=%d  %d\n",i,obj->VAO);
-         if(obj->name==_name)
+         if(c->name==_name)
          {
-             cached_models.push_back(obj); //save
-             xObject *joe = new xObject();
-             joe->copy(obj);//*joe=*obj;
-             return joe;
+             c->parent=nullptr;
+             c->shader=_shader;
+             cached_models.push_back(c); //save
+             joe = new xObject();
+             joe->copy(c);//*joe=*obj;
          }
-    }
-    // TODO: memory leaks...
-    return nullptr;
+         else
+            delete obj;
+    }    
+    delete dummy;// TODO: memory leaks...
+    return joe;
 }
 
 
@@ -1160,7 +1160,7 @@ void init_models()
 
 
       std::cout << "xObject" << "\n";
-      obj=new xObject(); // fail? why?
+      obj=new xObject(); // fail? why? // leak????
       obj->name="center";
       obj->flag_axis_on=true;
       obj->position=glm::vec3(0,300,0);
@@ -1206,15 +1206,15 @@ void init_models()
     */
     xObject *model_obj;
     //model_obj=new model_object("./model/robot_arm_pre.fbx");
-    model_obj=new model_object("./model/ball.fbx");
+    //model_obj=new model_object("./model/ball.fbx");
     //set(model_obj->position,0,30,0);
     //model_obj->position=glm::vec3(0,300,0);
-    objects.push_back(model_obj);
+    //objects.push_back(model_obj);
     //loadObjectsFrom3Dfile("./model/axis.fbx");
-    //obj=loadObjectFrom3Dfile("./model/ball.fbx","ball");
+    obj=loadObjectFrom3Dfile("./model/ball.fbx","ball");
     //obj=loadObjectFrom3Dfile("./model/robot_arm.fbx","ball");
     //obj=loadObjectFrom3Dfile("./model/Bob.fbx","bob");
-    //objects.push_back(obj);
+    objects.push_back(obj);
 
     //obj=new particle_spark();
     //obj=new cube();
@@ -1223,7 +1223,7 @@ void init_models()
     //objects.push_back(obj);
 
     //array_objects=importObjectsFrom3Dfile("./model/map.fbx");
-    //array_objects=loadMapObjectsFrom3Dfile("./model/robot_arm.fbx");
+    ///array_objects=loadMapObjectsFrom3Dfile("./model/robot_arm.fbx");
     //array_objects=loadObjectsFrom3Dfile("./model/robot_arm.fbx");
     //obj=loadObjectFrom3Dfile("./model/Bob.fbx","bob"); // fault
     //objects.push_back(obj);
