@@ -125,7 +125,7 @@ xObject::~xObject(){
     }
     if (shader !=nullptr)
     {
-        delete shader;
+        //delete shader;
         shader = nullptr;
     }
 }

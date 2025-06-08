@@ -1021,6 +1021,7 @@ xObject* loadObjectFrom3Dfile(string _path, string _name) // importObjectFrom3Df
         joe->copy(obj);
         return joe;
     }
+
     xObject *dummy = new xObject(); //leak!! children!
     Shader *_shader;
     _shader=new Shader();
@@ -1030,10 +1031,10 @@ xObject* loadObjectFrom3Dfile(string _path, string _name) // importObjectFrom3Df
     for ( size_t i=0 ; i < dummy->children.size(); i++)
     {
          xObject *c = dummy->children[i];
+         c->parent=nullptr;
          // printf("obj.children()=%d  %d\n",i,obj->VAO);
          if(c->name==_name)
          {
-             c->parent=nullptr;
              c->shader=_shader;
              cached_models.push_back(c); //save
              joe = new xObject();
@@ -1065,7 +1066,6 @@ vector<xObject*> loadObjectsFrom3Dfile(string _path) // importObjectsFrom3Dfile
      {
          xObject *obj = root_dummy->children[i];
          obj->parent=nullptr;
-         obj->shader=_shader;
          // printf("obj.children()=%d  %d\n",i,obj->VAO);
          //if (obj->triangles.size()==0)
          if(obj->name=="Camera")
@@ -1075,6 +1075,7 @@ vector<xObject*> loadObjectsFrom3Dfile(string _path) // importObjectsFrom3Dfile
              printf("[%s] skipped \n", obj->name.c_str());
              continue;
          }
+         obj->shader=_shader;
          array_objects.push_back(obj);
      }
     delete root_dummy;
@@ -1211,10 +1212,11 @@ void init_models()
     //model_obj->position=glm::vec3(0,300,0);
     //objects.push_back(model_obj);
     //loadObjectsFrom3Dfile("./model/axis.fbx");
-    obj=loadObjectFrom3Dfile("./model/ball.fbx","ball");
+    //obj=loadObjectFrom3Dfile("./model/robot_arm_pre.fbx");
+    //obj=loadObjectFrom3Dfile("./model/ball.fbx","ball");
     //obj=loadObjectFrom3Dfile("./model/robot_arm.fbx","ball");
     //obj=loadObjectFrom3Dfile("./model/Bob.fbx","bob");
-    objects.push_back(obj);
+    //objects.push_back(obj);
 
     //obj=new particle_spark();
     //obj=new cube();
@@ -1223,7 +1225,7 @@ void init_models()
     //objects.push_back(obj);
 
     //array_objects=importObjectsFrom3Dfile("./model/map.fbx");
-    ///array_objects=loadMapObjectsFrom3Dfile("./model/robot_arm.fbx");
+    importObjectsFrom3Dfile("./model/robot_arm.fbx");
     //array_objects=loadObjectsFrom3Dfile("./model/robot_arm.fbx");
     //obj=loadObjectFrom3Dfile("./model/Bob.fbx","bob"); // fault
     //objects.push_back(obj);
