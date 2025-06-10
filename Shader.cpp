@@ -78,6 +78,13 @@ bool Shader::Load(const std::string& vertName, const std::string& fragName)
 
         // Now create a shader program that
         // links together the vertex/frag shaders
+        if (mProgram!=0)
+        {
+            printf("Error : Shader mProgram is not NULL!!\n");
+            assert(false);
+            return false;
+        }
+
         mProgram = glCreateProgram();
         glAttachShader(mProgram, mVertexShader);
         glAttachShader(mProgram, mFragShader);

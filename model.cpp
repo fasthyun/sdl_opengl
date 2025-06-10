@@ -850,11 +850,8 @@ bool Import3DFromFile(const std::string filename, xObject *obj)
         - properties가 FBX에서는 metadata임
         - xobject key를 찾으면... type적용
 
-<<<<<<< HEAD
         1. 각 OBject중 LAMP , Camera는 제외 ---> 바뀜!
-=======
         1. 각 OBject중 LAMP , Camera는 throw!
->>>>>>> ce77dd8dc2e5996c6dc03c48127544cd8725bdc7
         2. 지금은 level==0 일때는 전부 다 개별 object로 등록하자 ---> 바뀜!
         3. tree-child로 등록해야할지 , 개별 Object로 등록할지는... 조금더 해보고 결정
         4. metadata는 child 개수에 포함 안되는듯!
@@ -1011,54 +1008,15 @@ xObject *findCachedModel(string _name)
 }
 
 
-xObject* loadObjectFrom3Dfile(string _path, string _name) // importObjectFrom3Dfile
-{
-    xObject *obj, *joe=nullptr;
-    obj=findCachedModel(_name);
-    if (obj!=nullptr)
-    {
-        joe = new xObject();
-        joe->copy(obj);
-        return joe;
-    }
-
-    xObject *dummy = new xObject(); //leak!! children!
-    Shader *_shader;
-    _shader=new Shader();
-    _shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
-    Import3DFromFile(_path, dummy);
-
-    for ( size_t i=0 ; i < dummy->children.size(); i++)
-    {
-         xObject *c = dummy->children[i];
-         c->parent=nullptr;
-         // printf("obj.children()=%d  %d\n",i,obj->VAO);
-         if(c->name==_name)
-         {
-             c->shader=_shader;
-             cached_models.push_back(c); //save
-             joe = new xObject();
-             joe->copy(c);//*joe=*obj;
-         }
-         else
-            delete obj;
-    }    
-    delete dummy;// TODO: memory leaks...
-    return joe;
-}
-
-
 vector<xObject*> loadObjectsFrom3Dfile(string _path) // importObjectsFrom3Dfile
 {
     /*
      * Temp :  fbx파일에서 레벨 0인 object만 따로 등록하기
-
        triangles.size() ==0 일때 skip!
     */
     xObject *root_dummy = new xObject();
-    Shader *_shader;
-    _shader=new Shader();
-    _shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
+    root_dummy->shader = new Shader();
+    root_dummy->shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
     Import3DFromFile(_path, root_dummy);
 
     vector<xObject* > array_objects;
@@ -1075,11 +1033,49 @@ vector<xObject*> loadObjectsFrom3Dfile(string _path) // importObjectsFrom3Dfile
              printf("[%s] skipped \n", obj->name.c_str());
              continue;
          }
-         obj->shader=_shader;
+         ///obj->shader=_shader;
          array_objects.push_back(obj);
      }
     delete root_dummy;
     return array_objects;
+}
+
+
+xObject* loadObjectFrom3Dfile(string _path, string _name) // importObjectFrom3Dfile
+{
+    xObject *joe=nullptr;
+    /*
+     * for future!
+    xObject *found_obj, *joe=nullptr;
+    found_obj=findCachedModel(_name);
+    if (found_obj!=nullptr)
+    {
+        joe = new xObject();
+        joe->copy(found_obj);
+        return joe;
+    }
+    */
+
+    loadObjectsFrom3Dfile(_path);
+    /*
+    for ( size_t i=0 ; i < dummy->children.size(); i++)
+    {
+         xObject *c = dummy->children[i];
+         c->parent=nullptr;
+         // printf("obj.children()=%d  %d\n",i,obj->VAO);
+         if(c->name==_name)
+         {
+             //c->shader=_shader;
+             cached_models.push_back(c); // to cache
+             joe = new xObject();
+             joe->copy(c);//*joe=*obj;
+         }
+         else
+            delete c;
+    }
+    delete dummy;// TODO: memory leaks...
+    */
+    return joe;
 }
 
 
@@ -1110,7 +1106,7 @@ vector<xObject*> importObjectsFrom3Dfile(string _path) // importObjectsFrom3Dfil
             //light->name="light";// temp
             obj=light;
             printf("=============> found Lamp!!! %s \n", obj->name.c_str());
-         } */
+         }
 
          if(obj->triangles.size()==0)
          {
@@ -1120,7 +1116,7 @@ vector<xObject*> importObjectsFrom3Dfile(string _path) // importObjectsFrom3Dfil
                 obj->copyModel(model);
                 printf("=============> copyModel!!!!!! %s \n", obj->name.c_str());
             }
-         }
+         } */
 
          // particle2, Cube , Lamp,
          xObject *tmp=findCachedObject(obj->name);
@@ -1129,6 +1125,7 @@ vector<xObject*> importObjectsFrom3Dfile(string _path) // importObjectsFrom3Dfil
             //obj->copy(tmp);
             tmp->copy(obj);
             obj=tmp;
+            printf("=============> copyOjbect!!!!!! %s \n", obj->name.c_str());
          }
 
          /*
@@ -1224,8 +1221,9 @@ void init_models()
     //obj->position=glm::vec3(0,500,0);
     //objects.push_back(obj);
 
-    //array_objects=importObjectsFrom3Dfile("./model/map.fbx");
-    importObjectsFrom3Dfile("./model/robot_arm.fbx");
+    array_objects=importObjectsFrom3Dfile("./model/map.fbx");
+    //importObjectsFrom3Dfile("./model/ball.fbx");
+    //importObjectsFrom3Dfile("./model/robot_arm_pre.fbx");
     //array_objects=loadObjectsFrom3Dfile("./model/robot_arm.fbx");
     //obj=loadObjectFrom3Dfile("./model/Bob.fbx","bob"); // fault
     //objects.push_back(obj);

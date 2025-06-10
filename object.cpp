@@ -170,11 +170,11 @@ void xObject::make_axis()
         0.0f,0.0f,100.0f,  0,0,1,1,   // z line  blue
         };
 
-    glGenVertexArrays(1, &VAO_axis);
+    glGenVertexArrays(1, &VAO_axis); // leak???
     glGenBuffers(1, &VBO_axis);
 
     glBindVertexArray(VAO_axis);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO_axis);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO_axis);  // leak???
     glBufferData(GL_ARRAY_BUFFER, sizeof(axies), axies, GL_STATIC_DRAW);
 
     // 이렇게 띄엄띄엄 값 전달.
@@ -195,7 +195,7 @@ void xObject::make_glVertexArray()
 {
     if (triangles.size()==0)
         return;
-    glGenVertexArrays(1, &VAO);
+    glGenVertexArrays(1, &VAO); // leak???
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
 
@@ -347,7 +347,9 @@ void xObject::draw()
         GLint location = glGetUniformLocation(shader->mProgram, "ourTexture");
         if(location >=0) glUniform1i(location, 0); // 0: GL_TEXTURE0 works!!! 0값이 전달될때 sampler2D로 변환되는것 같다.        
          else
+        {
             printf("ERROR1: location is -1 \n");        
+        }
 
         /*
         location = glGetUniformLocation(shader->mProgram, "material.emission"); // emission;
@@ -584,8 +586,8 @@ void camera::on_mouse_moved(int dx, int dy)
 grid::grid()
 {
     grid_n=100;
-    shader=new Shader();
-    shader->Load("./shader/grid_vertex.glsl","./shader/grid_fragment.glsl");
+    ///shader=new Shader();
+    ///shader->Load("./shader/grid_vertex.glsl","./shader/grid_fragment.glsl");
 
     float *vertexData = (float*)malloc(sizeof(float)*2000*4*2);
     if (vertexData==nullptr)
