@@ -38,7 +38,7 @@ public:
     xObject(xObject *&);
     xObject(const xObject &);
 
-    xObject *createObject(){return new xObject;};
+    xObject *createObject(){return new xObject;}; // need???
     virtual ~xObject();  // virtual why?
     virtual void update(float dt=0);
     virtual void draw();

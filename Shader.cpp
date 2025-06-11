@@ -93,6 +93,8 @@ bool Shader::Load(const std::string& vertName, const std::string& fragName)
         // Verify that the program linked successfully
         if (!IsValidProgram())
         {
+            printf("ERROR: shader.load() \n");
+            assert(false);
             return false;
         }
         // Textures.insert({aimaterial->GetName().C_Str(), _tex->d_tex_glname}); // c++11

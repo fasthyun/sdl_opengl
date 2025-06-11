@@ -128,6 +128,12 @@ xObject::~xObject(){
         //delete shader;
         shader = nullptr;
     }
+    for ( size_t i=0 ; i < children.size(); i++)
+     {
+         xObject *_obj = children[i];
+         //obj->parent=nullptr;
+         //array_objects.push_back(obj);
+     }
 }
 
 

@@ -786,7 +786,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
         //string _name = nd->mChildren[n]->mName.C_Str();
         child=new xObject();
         child->set_parent(xobj); //
-        child->set_shader(xobj->shader); // from parent's shader
+        //child->set_shader(xobj->shader); // from parent's shader
         xobj->children.push_back(child);
         //if (xobj.xobject_found==true)
         loadToObject(sc, nd->mChildren[n], scalex, child, level+1);
@@ -890,7 +890,7 @@ bool Import3DFromFile(const std::string filename, xObject *obj)
     loadMetadata(g_scene->mMetaData, obj, g_scene->mName.C_Str());
     // 3. load 3D to object
     loadToObject(g_scene, g_scene->mRootNode, 1.0, obj, 0);
-
+    // TODO: g_scene leak ???
     return true;
 }
 
@@ -899,8 +899,7 @@ model_object::model_object(string _path): xObject()
     //texname=texture_manager::get_glname("check.bmp");
     printf("model_object=%s \n", _path.c_str());
     shader=new Shader();
-    bool result=shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
-    assert(result);
+    bool result=shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");   
     if (result==false)
         printf("ERROR: model_object.shader.load() \n");
 
@@ -1015,8 +1014,8 @@ vector<xObject*> loadObjectsFrom3Dfile(string _path) // importObjectsFrom3Dfile
        triangles.size() ==0 일때 skip!
     */
     xObject *root_dummy = new xObject();
-    root_dummy->shader = new Shader();
-    root_dummy->shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
+    //root_dummy->shader = new Shader();
+    //root_dummy->shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
     Import3DFromFile(_path, root_dummy);
 
     vector<xObject* > array_objects;
@@ -1068,7 +1067,7 @@ xObject* loadObjectFrom3Dfile(string _path, string _name) // importObjectFrom3Df
              //c->shader=_shader;
              cached_models.push_back(c); // to cache
              joe = new xObject();
-             joe->copy(c);//*joe=*obj;
+             joe->copy(c);// *joe=*obj;
          }
          else
             delete c;
@@ -1221,8 +1220,8 @@ void init_models()
     //obj->position=glm::vec3(0,500,0);
     //objects.push_back(obj);
 
-    array_objects=importObjectsFrom3Dfile("./model/map.fbx");
-    //importObjectsFrom3Dfile("./model/ball.fbx");
+    //array_objects=importObjectsFrom3Dfile("./model/map.fbx");
+    importObjectsFrom3Dfile("./model/ball.fbx");
     //importObjectsFrom3Dfile("./model/robot_arm_pre.fbx");
     //array_objects=loadObjectsFrom3Dfile("./model/robot_arm.fbx");
     //obj=loadObjectFrom3Dfile("./model/Bob.fbx","bob"); // fault

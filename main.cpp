@@ -289,8 +289,8 @@ void main_loop()
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     glDebugMessageCallback(MessageCallback, NULL);
     //glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, true);
-
-
+    Shader *common_shader=new Shader();
+    bool result=common_shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
     //SDL_GL_MakeCurrent(window,glContext);    
     while( !quit )
     {
@@ -342,15 +342,15 @@ void main_loop()
         for ( size_t i=0 ; i < objects.size(); i++)
         {
             xObject *obj = objects[i];
+            Shader *_shader = common_shader;
             obj->update(dt);  //update objects
-            if (obj->shader != nullptr)
-            {
-                obj->shader->SetActive(); //
-                obj->shader->setMat4("projView",projview_mat4); ////  ERROR????
-                //glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(projview_mat4)); // ( location, count,  transpose, float *value )
-                if(_light)  obj->shader->setVec3("lightPos",_light->position);
-                obj->draw(); //temp
-            }
+            if (obj->shader != nullptr)                  
+                _shader= obj->shader;
+            _shader->SetActive(); //
+            _shader->setMat4("projView",projview_mat4);
+            //glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(projview_mat4)); // ( location, count,  transpose, float *value )
+            if(_light)  _shader->setVec3("lightPos",_light->position);
+            obj->draw(); //temp
         }
 
         // Draw top layer : FPS etc
