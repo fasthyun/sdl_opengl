@@ -58,7 +58,7 @@ xObject::xObject()
     model = glm::mat4(1);
     new_force = glm::vec3(0);
     name="None";
-    make_axis();
+    ///make_axis();
     printf("xObject() init...\n");
 }
 
@@ -112,7 +112,7 @@ void xObject::copy(xObject *obj) // 임시 생성!
     if(obj->triangles.size()!=0) // Cube
         copyModel(obj); // ***
 
-    make_axis();
+    ///make_axis();
     make_glVertexArray();
 }
 
@@ -270,7 +270,10 @@ void xObject::draw_axis()
      */
     if (flag_axis_on && VAO_axis>0)
     {
+        GLint x;
+        glm::mat4 _m1(1);
         glDisable(GL_DEPTH_TEST);
+        x=shader->mProgram;
         shader->setMat4("model",model); //
         glLineWidth(3);
         glBindVertexArray(VAO_axis);

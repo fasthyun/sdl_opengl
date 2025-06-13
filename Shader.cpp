@@ -100,17 +100,17 @@ bool Shader::Load(const std::string& vertName, const std::string& fragName)
         // Textures.insert({aimaterial->GetName().C_Str(), _tex->d_tex_glname}); // c++11
         cached_shader_id.insert({_key, mProgram}); // ok
    }
-   // printf("Shader load() =====> program = %d \n", mProgram);
+   printf("Shader load() =====> program = %d \n", mProgram);
 	return true;
 }
 
 void Shader::Unload()
 {
 	// Delete the program/shaders
-/*    glDeleteProgram(mProgram);
+    glDeleteProgram(mProgram);
 	glDeleteShader(mVertexShader);
 	glDeleteShader(mFragShader);
-*/
+
 }
 
 void Shader::SetActive()

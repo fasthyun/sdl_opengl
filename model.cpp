@@ -357,6 +357,7 @@ int loadMetadata(aiMetadata *md, xObject *obj, string name="", int level=0) {
     /* blender에서 각 object는 properties를 갖는다.
      * 이 properties가 FBX에서는 metadata임
      * xobject key를 찾으면...
+     * name is scene name...
      */
 
     if (md == nullptr)
@@ -556,6 +557,14 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
 
     unsigned int i;
     unsigned int n=0, t;
+    /*
+    if(nd->mName==aiString("Lamp"))
+    {
+        xobj->name="light"; // object name
+    }
+    else */
+    xobj->name = nd->mName.C_Str(); // 1.object name
+
     aiMatrix4x4 m = nd->mTransformation;
 
     string tab="";  // tab tricks. have a fun!
@@ -581,13 +590,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
     //copy(xobj->model_mat, &m.a1);
     //xobj->model = glm::make_mat4(&m.a1); // without transpose!!
 
-    /*
-    if(nd->mName==aiString("Lamp"))
-    {
-        xobj->name="light"; // object name
-    }
-    else */
-    xobj->name = nd->mName.C_Str(); // object name
+
     printf("%s[%s].mNumMeshes=%d \n", tab.c_str(), nd->mName.C_Str(), nd->mNumMeshes);
 
     //if (tab_level==0)
@@ -781,12 +784,11 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
     //from child object
     for (n = 0; n < nd->mNumChildren; ++n)
     {
-        // tempolarily needvmore time and works later!!!
+        // tempolarily
         xObject *child;
-        //string _name = nd->mChildren[n]->mName.C_Str();
         child=new xObject();
         child->set_parent(xobj); //
-        //child->set_shader(xobj->shader); // from parent's shader
+        child->set_shader(xobj->shader); // from parent's shader, common_shader
         xobj->children.push_back(child);
         //if (xobj.xobject_found==true)
         loadToObject(sc, nd->mChildren[n], scalex, child, level+1);
@@ -1006,6 +1008,7 @@ xObject *findCachedModel(string _name)
     return node;
 }
 
+extern Shader *common_shader;
 
 vector<xObject*> loadObjectsFrom3Dfile(string _path) // importObjectsFrom3Dfile
 {
@@ -1014,8 +1017,7 @@ vector<xObject*> loadObjectsFrom3Dfile(string _path) // importObjectsFrom3Dfile
        triangles.size() ==0 일때 skip!
     */
     xObject *root_dummy = new xObject();
-    //root_dummy->shader = new Shader();
-    //root_dummy->shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
+    root_dummy->shader = common_shader;
     Import3DFromFile(_path, root_dummy);
 
     vector<xObject* > array_objects;
@@ -1032,7 +1034,6 @@ vector<xObject*> loadObjectsFrom3Dfile(string _path) // importObjectsFrom3Dfile
              printf("[%s] skipped \n", obj->name.c_str());
              continue;
          }
-         ///obj->shader=_shader;
          array_objects.push_back(obj);
      }
     delete root_dummy;

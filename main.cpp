@@ -41,6 +41,7 @@ bool quit;
 SDL_Window* sdl_window = nullptr;
 SDL_GLContext glContext; //OpenGL context
 
+Shader *common_shader;
 /* GUI */
 struct nk_context *ctx;
 // struct nk_colorf bg;
@@ -289,9 +290,7 @@ void main_loop()
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     glDebugMessageCallback(MessageCallback, NULL);
     //glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, true);
-    Shader *common_shader=new Shader();
-    bool result=common_shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
-    //SDL_GL_MakeCurrent(window,glContext);    
+    //SDL_GL_MakeCurrent(window,glContext);
     while( !quit )
     {
         _now = SDL_GetTicks();
@@ -480,12 +479,31 @@ void init_object()
     printf("init_object()\n");
 }
 
-/*
+
 void init_shader()
 {
-    shader=new Shader();
-    shader->Load("./shader/basic_vertex.glsl","./shader/basic_fragment.glsl");
-}*/
+    //shader=new Shader();
+    //shader->Load("./shader/basic_vertex.glsl","./shader/basic_fragment.glsl");
+    common_shader=new Shader();
+    bool result=common_shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
+}
+
+
+#include <random>
+
+std::string generateRandomString(int length) {
+    const std::string characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    std::random_device rd;
+    std::mt19937 generator(rd());
+    std::uniform_int_distribution<> distribution(0, characters.size() - 1);
+
+    std::string randomString;
+    for (int i = 0; i < length; ++i) {
+        randomString += characters[distribution(generator)];
+    }
+    return randomString;
+}
+
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
 
@@ -513,6 +531,12 @@ void check_system_performance()
     std::cout << glm::to_string(m) << "\n";
     dt=SDL_GetTicks() - startTime;
     printf("check mat4*mat4 performance time = %d ms\n",dt);
+
+
+    // making random string
+    int length = 10;
+    std::string randomString = generateRandomString(length);
+    std::cout << "Random string: " << randomString << std::endl;
 }
 
 int main(int argc, char *argv[])
@@ -520,12 +544,13 @@ int main(int argc, char *argv[])
     cout << "SDL(OpenGL) program() !" << endl;
     cout << "sizeof(complex<float>) = "  << sizeof(std::complex<float>) << "bytes" << endl;
     cout << "sizeof(float) = "  << sizeof(float) << "bytes" << endl;
-    init_SDL();
-    init_GL();
 
     check_system_performance();
 
-    //init_shader();
+    init_SDL();
+    init_GL();
+
+    init_shader();
     //init_font();
     //init_font_freetype();
     init_object(); 
