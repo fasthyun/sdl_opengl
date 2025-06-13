@@ -782,9 +782,8 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
     for (n = 0; n < nd->mNumChildren; ++n)
     {
         // tempolarily needvmore time and works later!!!
-        xObject *child;
+        xObject *child =new xObject();
         //string _name = nd->mChildren[n]->mName.C_Str();
-        child=new xObject();
         child->set_parent(xobj); //
         //child->set_shader(xobj->shader); // from parent's shader
         xobj->children.push_back(child);
