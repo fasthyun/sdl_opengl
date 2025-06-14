@@ -38,7 +38,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
 extern vector<xObject* > objects;
 vector<xObject* > cached_models;  //
 vector<xObject* > cached_objects; // cube , lamp, light ...
-std::map<std::string, xObject *(*)()> object_factory;
+std::map<std::string, xObject *(*)()> object_factory; // can you understand???
 
 std::map<string, Material*> Materials;	// map Material name to texid
 
@@ -357,6 +357,7 @@ int loadMetadata(aiMetadata *md, xObject *obj, string name="", int level=0) {
     /* blender에서 각 object는 properties를 갖는다.
      * 이 properties가 FBX에서는 metadata임
      * xobject key를 찾으면...
+     * name is scene name...
      */
 
     if (md == nullptr)
@@ -556,6 +557,14 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
 
     unsigned int i;
     unsigned int n=0, t;
+    /*
+    if(nd->mName==aiString("Lamp"))
+    {
+        xobj->name="light"; // object name
+    }
+    else */
+    xobj->name = nd->mName.C_Str(); // 1.object name
+
     aiMatrix4x4 m = nd->mTransformation;
 
     string tab="";  // tab tricks. have a fun!
@@ -581,13 +590,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
     //copy(xobj->model_mat, &m.a1);
     //xobj->model = glm::make_mat4(&m.a1); // without transpose!!
 
-    /*
-    if(nd->mName==aiString("Lamp"))
-    {
-        xobj->name="light"; // object name
-    }
-    else */
-    xobj->name = nd->mName.C_Str(); // object name
+
     printf("%s[%s].mNumMeshes=%d \n", tab.c_str(), nd->mName.C_Str(), nd->mNumMeshes);
 
     //if (tab_level==0)
@@ -781,11 +784,11 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
     //from child object
     for (n = 0; n < nd->mNumChildren; ++n)
     {
-        // tempolarily needvmore time and works later!!!
-        xObject *child =new xObject();
-        //string _name = nd->mChildren[n]->mName.C_Str();
+        // tempolarily
+        xObject *child;
+        child=new xObject(nd->mChildren[n]->mName.C_Str());
         child->set_parent(xobj); //
-        //child->set_shader(xobj->shader); // from parent's shader
+        child->set_shader(xobj->shader); // from parent's shader, common_shader
         xobj->children.push_back(child);
         //if (xobj.xobject_found==true)
         loadToObject(sc, nd->mChildren[n], scalex, child, level+1);
@@ -1005,6 +1008,7 @@ xObject *findCachedModel(string _name)
     return node;
 }
 
+extern Shader *common_shader;
 
 vector<xObject*> loadObjectsFrom3Dfile(string _path) // importObjectsFrom3Dfile
 {
@@ -1013,14 +1017,14 @@ vector<xObject*> loadObjectsFrom3Dfile(string _path) // importObjectsFrom3Dfile
        triangles.size() ==0 일때 skip!
     */
     xObject *root_dummy = new xObject();
-    //root_dummy->shader = new Shader();
-    //root_dummy->shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
+    root_dummy->shader = common_shader;
     Import3DFromFile(_path, root_dummy);
 
     vector<xObject* > array_objects;
-    for ( size_t i=0 ; i < root_dummy->children.size(); i++)
-     {
-         xObject *obj = root_dummy->children[i];
+    while (!root_dummy->children.empty())
+    {
+         xObject *obj = root_dummy->children.back();
+         root_dummy->children.pop_back();
          obj->parent=nullptr;
          // printf("obj.children()=%d  %d\n",i,obj->VAO);
          //if (obj->triangles.size()==0)
@@ -1029,9 +1033,9 @@ vector<xObject*> loadObjectsFrom3Dfile(string _path) // importObjectsFrom3Dfile
          {
            //printf("%s[%s] skipped \n", tab.c_str(), nd->mName.C_Str());
              printf("[%s] skipped \n", obj->name.c_str());
+             delete obj;
              continue;
          }
-         ///obj->shader=_shader;
          array_objects.push_back(obj);
      }
     delete root_dummy;
@@ -1156,11 +1160,11 @@ void init_models()
 
 
       std::cout << "xObject" << "\n";
-      obj=new xObject(); // fail? why? // leak????
-      obj->name="center";
+      obj=new xObject("center"); // fail? why? // leak????
+      //obj->name="center";
       obj->flag_axis_on=true;
-      obj->position=glm::vec3(0,300,0);
-      objects.push_back(obj);
+      obj->position=glm::vec3(0, 0, 0);
+      ///objects.push_back(obj);
 
       //array_objects=loadObjectsFrom3Dfile("./model/light.fbx"); // Lamp, Light
       //cached_models.insert(std::end(cached_models), std::begin(array_objects), std::end(array_objects)); // tooo long...

@@ -36,7 +36,15 @@ xObject* findObject(string _name)
     return nullptr;
 }
 
-xObject::xObject()
+
+xObject::xObject():xObject("None")
+{
+
+}
+
+
+
+xObject::xObject(string _name)
 {
     boost::uuids::uuid _uuid = boost::uuids::random_generator()(); // get uuid
     uuid=to_string(_uuid);
@@ -57,9 +65,9 @@ xObject::xObject()
     // loadIdentity(model_mat);
     model = glm::mat4(1);
     new_force = glm::vec3(0);
-    name="None";
-    make_axis();
-    printf("xObject() init...\n");
+    name=_name;
+    ///make_axis();
+    std::cout << "xObject() init..." << name << "\n";
 }
 
 
@@ -112,15 +120,16 @@ void xObject::copy(xObject *obj) // 임시 생성!
     if(obj->triangles.size()!=0) // Cube
         copyModel(obj); // ***
 
-    make_axis();
+    ///make_axis();
     make_glVertexArray();
 }
 
 
 xObject::~xObject(){
+    std::cout << "deleting " << name << "\n";
     if (parent !=nullptr)
     {
-        delete parent; ///?????
+        //delete parent; ///?????
         parent = nullptr;
     }
     if (shader !=nullptr)
@@ -131,8 +140,7 @@ xObject::~xObject(){
     for ( size_t i=0 ; i < children.size(); i++)
      {
          xObject *_obj = children[i];
-         //obj->parent=nullptr;
-         //array_objects.push_back(obj);
+         delete _obj;
      }
 }
 
@@ -270,7 +278,10 @@ void xObject::draw_axis()
      */
     if (flag_axis_on && VAO_axis>0)
     {
+        GLint x;
+        glm::mat4 _m1(1);
         glDisable(GL_DEPTH_TEST);
+        x=shader->mProgram;
         shader->setMat4("model",model); //
         glLineWidth(3);
         glBindVertexArray(VAO_axis);

@@ -34,11 +34,12 @@ class xObject {
 
 public:
     xObject();
+    xObject(string _name);
     xObject(xObject *);
     xObject(xObject *&);
     xObject(const xObject &);
 
-    xObject *createObject(){return new xObject;}; // need???
+    xObject *createObject(){return new xObject("None");}; // need???
     virtual ~xObject();  // virtual why?
     virtual void update(float dt=0);
     virtual void draw();
@@ -84,8 +85,8 @@ public:
 
     // OpenGL element
     GLuint VBO, VAO, EBO;
-    GLuint VBO_axis, VAO_axis;
-    GLuint texname = -1;
+    GLuint VBO_axis, VAO_axis=0;
+    GLuint texname = 0;
     vector<xObject*> children;
     string name;
     string uuid;
