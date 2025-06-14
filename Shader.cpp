@@ -84,9 +84,9 @@ bool Shader::Load(const std::string& vertName, const std::string& fragName)
             return false;
         }
 
-        mProgram = glCreateProgram();
+        mProgram = glCreateProgram(); /// leak????
         glAttachShader(mProgram, mVertexShader);
-        glAttachShader(mProgram, mFragShader);
+        glAttachShader(mProgram, mFragShader); /// leak????
         glLinkProgram(mProgram);
 
         // Verify that the program linked successfully
@@ -148,10 +148,10 @@ bool Shader::CompileShader(const std::string& fileName,
 		const char* contentsChar = contents.c_str();
 		
 		// Create a shader of the specified type
-		outShader = glCreateShader(shaderType);
+        outShader = glCreateShader(shaderType);  // leak??? too manay
 		// Set the source characters and try to compile
 		glShaderSource(outShader, 1, &(contentsChar), nullptr);
-		glCompileShader(outShader);
+        glCompileShader(outShader); /// leak???
 		
 		if (!IsCompiled(outShader))
 		{

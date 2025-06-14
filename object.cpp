@@ -46,6 +46,7 @@ xObject::xObject():xObject("None")
 
 xObject::xObject(string _name)
 {
+    /*
     boost::uuids::uuid _uuid = boost::uuids::random_generator()(); // get uuid
     uuid=to_string(_uuid);
     //std::cout << "uuid=" << uuid << std::endl;
@@ -55,8 +56,8 @@ xObject::xObject(string _name)
     VBO=0;
     VAO=0;
     EBO=0;
-    ///shader=new Shader(); // why????
-    //shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
+    ///shader=new Shader(); // ok!!!
+    ///shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
     position.x=0;position.y=0;position.z=0;
     set(up ,0,1,0);
     set(forward,0,0,1);
@@ -67,6 +68,8 @@ xObject::xObject(string _name)
     new_force = glm::vec3(0);
     name=_name;
     ///make_axis();
+
+*/
     std::cout << "xObject() init..." << name << "\n";
 }
 

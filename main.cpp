@@ -557,7 +557,7 @@ int main(int argc, char *argv[])
 
     init_models();
 
-
+    return 0;
     main_loop();
     GLenum err;
     while((err = glGetError()) != GL_NO_ERROR)
