@@ -58,22 +58,14 @@ bool Shader::Load(const std::string& vertName, const std::string& fragName)
 {
     std::string _key = vertName+fragName;
 
-    auto search = cached_shader_id.find(_key);
+   /* auto search = cached_shader_id.find(_key);
     if ( search != cached_shader_id.end())
     {
         mProgram=search->second;
         std::cout << "DEBUG: Found " << search->first <<", id:" << mProgram << '\n';
     }
-    else
+    else */
     {
-      // Compile vertex and pixel shaders
-        if (!CompileShader(vertName, GL_VERTEX_SHADER, mVertexShader) ||
-            !CompileShader(fragName, GL_FRAGMENT_SHADER, mFragShader))
-        {
-            printf("Error : Shader load() fail ........\n");
-            assert(false);
-            return false;
-        }
 
         // Now create a shader program that
         // links together the vertex/frag shaders
@@ -83,24 +75,50 @@ bool Shader::Load(const std::string& vertName, const std::string& fragName)
             assert(false);
             return false;
         }
+        mProgram = glCreateProgram(); /// leak 4
+        if (mProgram==0)
+        {
+            printf("Error : Shader mProgram is  NULL!!\n");
+            assert(false);
+            return false;
+        }
+        // glDeleteProgram(mProgram); // works! clear leak!!!
 
-        mProgram = glCreateProgram(); /// leak????
+      // Compile vertex and pixel shaders
+         if (!CompileShader(vertName, GL_VERTEX_SHADER, mVertexShader))
+        {
+            printf("Error : Shader load() fail ........\n");
+            assert(false);
+            return false;
+        }
+
+        if (!CompileShader(fragName, GL_FRAGMENT_SHADER, mFragShader))
+        {
+            printf("Error : Shader load() fail ........\n");
+            assert(false);
+            return false;
+        }
+        //std::cout << "shader = " << mFragShader << "\n";
         glAttachShader(mProgram, mVertexShader);
-        glAttachShader(mProgram, mFragShader); /// leak????
+        glAttachShader(mProgram, mFragShader); //
         glLinkProgram(mProgram);
 
         // Verify that the program linked successfully
-        if (!IsValidProgram())
+        /*if (!IsValidProgram())
         {
             printf("ERROR: shader.load() \n");
             assert(false);
             return false;
-        }
+        }*/
         // Textures.insert({aimaterial->GetName().C_Str(), _tex->d_tex_glname}); // c++11
-        cached_shader_id.insert({_key, mProgram}); // ok
+        ///cached_shader_id.insert({_key, mProgram}); // ok
+        glDetachShader(mProgram, mVertexShader); //
+        glDetachShader(mProgram, mFragShader); //
+        glDeleteShader(mVertexShader); //
+        glDeleteShader(mFragShader);
    }
    printf("Shader load() =====> program = %d \n", mProgram);
-	return true;
+   return true;
 }
 
 void Shader::Unload()
@@ -132,9 +150,8 @@ void Shader::SetMatrixUniform(const char* name, const Matrix4& matrix)
 	glUniformMatrix4fv(loc, 1, GL_TRUE, matrix.GetAsFloatPtr());
 }
 
-bool Shader::CompileShader(const std::string& fileName,
-	GLenum shaderType,
-	GLuint& outShader)
+bool Shader::CompileShader(const std::string& fileName, GLenum shaderType, GLuint& outShader)
+    //  CompileShader(vertName, GL_VERTEX_SHADER, mVertexShader))
 {
 	// Open file
 	std::ifstream shaderFile(fileName);
@@ -143,21 +160,23 @@ bool Shader::CompileShader(const std::string& fileName,
 		// Read all the text into a string
 		std::stringstream sstream;
 		sstream << shaderFile.rdbuf();
-		std::string contents = sstream.str();
+        std::string contents = sstream.str();
         //std::cout << contents;
-		const char* contentsChar = contents.c_str();
-		
+        const char* contentsChar = contents.c_str();
+
 		// Create a shader of the specified type
-        outShader = glCreateShader(shaderType);  // leak??? too manay
+        outShader = glCreateShader(shaderType);  // leak fixed!
+        std::cout << "created shader = " << outShader << "\n";
 		// Set the source characters and try to compile
-		glShaderSource(outShader, 1, &(contentsChar), nullptr);
+        glShaderSource(outShader, 1, &(contentsChar), nullptr);
         glCompileShader(outShader); /// leak???
-		
-		if (!IsCompiled(outShader))
+        GLint status;
+        glGetShaderiv(outShader, GL_COMPILE_STATUS, &status);
+        //if (IsCompiled(outShader)==false) // leak
+        if (status != GL_TRUE)
 		{
             GLint maxLength = 0;
             glGetShaderiv(outShader, GL_INFO_LOG_LENGTH, &maxLength);
-
             // The maxLength includes the NULL character
             std::vector<GLchar> errorLog(maxLength);
             glGetShaderInfoLog(outShader, maxLength, &maxLength, &errorLog[0]);
@@ -167,18 +186,15 @@ bool Shader::CompileShader(const std::string& fileName,
             glDeleteShader(outShader); // Don't leak the shader.
 
             printf("ERROR:  %s\n", &errorLog[0]);
-
             printf("Failed to compile shader %s\n", fileName.c_str());
-
 			return false;
-		}
+        }
 	}
 	else
 	{
         printf("Shader can't open : %s\n", fileName.c_str());
 		return false;
-	}
-	
+	}    
 	return true;
 }
 
@@ -186,17 +202,15 @@ bool Shader::IsCompiled(GLuint shader)
 {
 	GLint status;
 	// Query the compile status
-	glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
-	
+	glGetShaderiv(shader, GL_COMPILE_STATUS, &status);	
 	if (status != GL_TRUE)
 	{
 		char buffer[512];
 		memset(buffer, 0, 512);
 		glGetShaderInfoLog(shader, 511, nullptr, buffer);
-        //SDL_Log("GLSL Compile Failed:\n%s", buffer);
+        printf("GLSL Compile Failed:\n%s", buffer);
 		return false;
-	}
-	
+	}	
 	return true;
 }
 

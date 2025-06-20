@@ -455,12 +455,16 @@ void init_object()
     //obj->name="grid";
     //objects.push_back(obj);
 
-    d_camera = new camera();
-    //set(d_camera->pos,0,500,700);
-    d_camera->position=glm::vec3(0,600,900);
-    set(d_camera->up,0,1,0); //
-    set(d_camera->forward,0,0,-1); //
-    objects.push_back(d_camera);
+    obj = new camera();
+    obj->position=glm::vec3(0,600,900);
+    set(obj->up,0,1,0); //
+    set(obj->forward,0,0,-1); //
+    d_camera = (camera*) obj;
+    objects.push_back(obj);
+
+
+    //obj=new xObject("xcenter"); // fail? why? // leak????
+    //objects.push_back(obj);
 
     //obj=new console();
     //obj->name="console";
@@ -545,7 +549,7 @@ int main(int argc, char *argv[])
     cout << "sizeof(complex<float>) = "  << sizeof(std::complex<float>) << "bytes" << endl;
     cout << "sizeof(float) = "  << sizeof(float) << "bytes" << endl;
 
-    check_system_performance();
+    ///check_system_performance();
 
     init_SDL();
     init_GL();
@@ -553,11 +557,17 @@ int main(int argc, char *argv[])
     init_shader();
     //init_font();
     //init_font_freetype();
-    init_object(); 
 
+    init_object();
     init_models();
 
-    return 0;
+    for ( int i=0 ; i < objects.size() ; i++)
+    {
+        xObject *obj= objects[i];
+        std::cout << i << "," << obj->name << " : " << obj << "\n";
+    }
+
+    //return 0;
     main_loop();
     GLenum err;
     while((err = glGetError()) != GL_NO_ERROR)

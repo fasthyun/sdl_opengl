@@ -84,7 +84,7 @@ public:
     Shader *shader;
 
     // OpenGL element
-    GLuint VBO, VAO, EBO;
+    GLuint VBO, VAO=0, EBO;
     GLuint VBO_axis, VAO_axis=0;
     GLuint texname = 0;
     vector<xObject*> children;

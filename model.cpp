@@ -36,6 +36,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
 
 
 extern vector<xObject* > objects;
+       //vector<xObject* > objects;
 vector<xObject* > cached_models;  //
 vector<xObject* > cached_objects; // cube , lamp, light ...
 std::map<std::string, xObject *(*)()> object_factory; // can you understand???
@@ -786,12 +787,14 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
     {
         // tempolarily
         xObject *child;
-        child=new xObject(nd->mChildren[n]->mName.C_Str());
+        /*
+        child=new xObject(nd->mChildren[n]->mName.C_Str()); // leak 119000bytes
         child->set_parent(xobj); //
         child->set_shader(xobj->shader); // from parent's shader, common_shader
         xobj->children.push_back(child);
         //if (xobj.xobject_found==true)
         loadToObject(sc, nd->mChildren[n], scalex, child, level+1);
+        */
     }
     // printf("%sobj.children=%d \n",tab.c_str(), xobj.children.size());
     printf("%sload model obj.name = %s \n",tab.c_str(), xobj->name.c_str());
@@ -1145,7 +1148,7 @@ vector<xObject*> importObjectsFrom3Dfile(string _path) // importObjectsFrom3Dfil
     return array_objects;
 }
 
-template<typename T> xObject * createInstance() { return new T; } // test
+template<typename T> xObject * createInstance() { return new T; } // test,can you understand?
 xObject *xxxx=nullptr;
 void init_models()
 {
@@ -1158,13 +1161,20 @@ void init_models()
       object_factory["cube"] = &createInstance<cube>;
       object_factory["Lamp"] = &createInstance<objLight>;
 
-      std::cout << "xObject" << "\n";
+
       obj=new xObject("center"); // fail? why? // leak????
       //obj->name="center";
       obj->flag_axis_on=true;
       obj->position=glm::vec3(0, 0, 0);
       objects.push_back(obj);
+      std::cout << "xObject(center) =" << obj << "\n";
+      //obj=new xObject("x"); // fail? why? // leak????
+      //std::cout << "xObject(x) =" << obj << "\n";
+      //objects.push_back(obj);
+      //std::cout << "xObject size=" << sizeof(xObject) << "\n";
       //xxxx=obj;
+
+
 
       /* array_objects=loadObjectsFrom3Dfile("./model/light.fbx"); // Lamp, Light
         cached_models.insert(std::end(cached_models), std::begin(array_objects), std::end(array_objects)); // tooo long...
@@ -1225,14 +1235,14 @@ void init_models()
     //objects.push_back(obj);
 
     //array_objects=importObjectsFrom3Dfile("./model/map.fbx");
-    //// importObjectsFrom3Dfile("./model/ball.fbx");
+    importObjectsFrom3Dfile("./model/ball.fbx");
     //importObjectsFrom3Dfile("./model/robot_arm_pre.fbx");
     //array_objects=loadObjectsFrom3Dfile("./model/robot_arm.fbx");
     //obj=loadObjectFrom3Dfile("./model/Bob.fbx","bob"); // fault
     //objects.push_back(obj);
 
     // tmp
-    for ( int i=0 ; i < 0 ; i++)
+    for ( int i=0 ; false ; i++)
     {
         xObject *obj;
         obj=loadObjectFrom3Dfile("./model/ball.fbx","ball");

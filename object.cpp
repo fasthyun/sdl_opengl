@@ -46,7 +46,6 @@ xObject::xObject():xObject("None")
 
 xObject::xObject(string _name)
 {
-    /*
     boost::uuids::uuid _uuid = boost::uuids::random_generator()(); // get uuid
     uuid=to_string(_uuid);
     //std::cout << "uuid=" << uuid << std::endl;
@@ -66,10 +65,10 @@ xObject::xObject(string _name)
     // loadIdentity(model_mat);
     model = glm::mat4(1);
     new_force = glm::vec3(0);
-    name=_name;
-    ///make_axis();
 
-*/
+    make_axis();
+
+    name=_name;
     std::cout << "xObject() init..." << name << "\n";
 }
 
@@ -186,8 +185,13 @@ void xObject::make_axis()
         0.0f,0.0f,0.0f,  0,0,1,1,   // z line  blue
         0.0f,0.0f,100.0f,  0,0,1,1,   // z line  blue
         };
+    if (VAO_axis != 0 )
+    {
+        printf("????????????????????????????? \n");
+        return;
+    }
 
-    glGenVertexArrays(1, &VAO_axis); // leak???
+    glGenVertexArrays(1, &VAO_axis); // leak??? 7080bytes, 2360byte
     glGenBuffers(1, &VBO_axis);
 
     glBindVertexArray(VAO_axis);
@@ -212,7 +216,12 @@ void xObject::make_glVertexArray()
 {
     if (triangles.size()==0)
         return;
-    glGenVertexArrays(1, &VAO); // leak???
+    if (VAO != 0 )
+    {
+        printf("????????????????????????????? \n");
+        return;
+    }
+    glGenVertexArrays(1, &VAO); // leak??? 2360bytes
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
 
@@ -283,9 +292,8 @@ void xObject::draw_axis()
     {
         GLint x;
         glm::mat4 _m1(1);
-        glDisable(GL_DEPTH_TEST);
-        x=shader->mProgram;
-        shader->setMat4("model",model); //
+        glDisable(GL_DEPTH_TEST);        
+        //shader->setMat4("model",model); //
         glLineWidth(3);
         glBindVertexArray(VAO_axis);
         //glVertexAttrib3f(vertColor_loc, 1.0f, 1.0f, 0.2f);
@@ -387,7 +395,6 @@ void xObject::draw()
            glDrawArrays(GL_TRIANGLES, 0, vertexes.size());
         */
     }
-
 
    draw_axis();
 
