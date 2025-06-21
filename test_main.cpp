@@ -16,9 +16,9 @@ class xObject {
 
 public:
     xObject(){};
-    virtual ~xObject();  // virtual why?
-    virtual void update(float dt=0);
-    virtual void draw();
+    //virtual ~xObject();  // virtual why?
+    //virtual void update(float dt=0);
+    //virtual void draw();
     vector<vertex>  vertexes; // verts
 
     float forward[3]; //
@@ -43,12 +43,16 @@ int main(int argc, char *argv[])
     cout << "sizeof(float) = "  << sizeof(float) << "bytes" << endl;
 
 
+    xObject *obj=new xObject();
+    objects.push_back(obj);
 
     for ( int i=0 ; i < objects.size() ; i++)
     {
-        xObject *obj= objects[i];
-        std::cout << i << "," << obj->name << " : " << obj << "\n";
+        xObject *_obj= objects[i];
+        std::cout << i << "," << _obj->name << " : " << _obj << "\n";
+        delete _obj;
     }
+
 
 
     return 0;
