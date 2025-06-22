@@ -7,7 +7,7 @@
 //bool Import3DFromFile( const std::string &filename);
 bool Import3DFromFile(const std::string filename, xObject *obj);
 void init_models();
-
+void clear_models();
 class model_object : public xObject{
 public:
     //model_object(){};

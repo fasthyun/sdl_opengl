@@ -561,11 +561,7 @@ int main(int argc, char *argv[])
     init_object();
     init_models();
 
-    for ( int i=0 ; i < objects.size() ; i++)
-    {
-        xObject *obj= objects[i];
-        std::cout << i << "," << obj->name << " : " << obj << "\n";
-    }
+
 
     //return 0;
     main_loop();
@@ -574,6 +570,15 @@ int main(int argc, char *argv[])
     {
       // Process/log the error.
     }
+    clear_models();
+
+    for ( int i=0 ; i < objects.size() ; i++)
+    {
+        xObject *_obj= objects[i];
+        std::cout << i << "," << _obj->name << " : " << _obj << "\n";
+        delete _obj;
+    }
+
     return 0;
 }
 

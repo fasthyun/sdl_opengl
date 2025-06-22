@@ -148,7 +148,7 @@ void Texture::makeTexture(SDL_Surface *surface)
     d_height = surface->h;
 
     int _bytes = surface->format->BytesPerPixel;    
-    glGenTextures(1, &d_tex_glname);
+    glGenTextures(1, &d_tex_glname); // leak!
     glBindTexture(GL_TEXTURE_2D, d_tex_glname);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // power of 2 !!, need in AMD!
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // repeat ok!
@@ -201,6 +201,12 @@ Material::Material(string _name)
     set4f(ambient,0.0,0.0,0.0,0.0);
     set4f(emission, 0.0, 0.0, 0.0, 0.0);
     texture = nullptr;
+}
+
+Material::~Material()
+{
+    if(texture!=nullptr)
+        delete texture; // danger : gl_tex
 }
 
 GLuint Material::getTextureName()

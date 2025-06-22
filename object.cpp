@@ -144,6 +144,10 @@ xObject::~xObject(){
          xObject *_obj = children[i];
          delete _obj;
      }
+    if (VAO!=0)
+        glDeleteVertexArrays(1,&VAO);
+    if (VAO_axis!=0)
+        glDeleteVertexArrays(1,&VAO_axis);
 }
 
 
@@ -191,7 +195,7 @@ void xObject::make_axis()
         return;
     }
 
-    glGenVertexArrays(1, &VAO_axis); // leak??? 7080bytes, 2360byte
+    glGenVertexArrays(1, &VAO_axis); // leak? ---> fixed
     glGenBuffers(1, &VBO_axis);
 
     glBindVertexArray(VAO_axis);

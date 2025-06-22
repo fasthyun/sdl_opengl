@@ -235,7 +235,7 @@ int loadMaterials(const aiScene* scene) {
         aiString path;	// filename
         aiMaterial *aimaterial=scene->mMaterials[m];
         string _name = aimaterial->GetName().C_Str();
-        Material *_material = new Material(_name); // leak????
+        Material *_material = new Material(_name); // leak ---> fixed
 
         Materials.insert({_name, _material}); // ok
 
@@ -1150,6 +1150,31 @@ vector<xObject*> importObjectsFrom3Dfile(string _path) // importObjectsFrom3Dfil
 
 template<typename T> xObject * createInstance() { return new T; } // test,can you understand?
 xObject *xxxx=nullptr;
+void clear_models()
+{
+   // std::map<string, Material*> Materials;
+
+    // C++11 alternative:
+    for (const auto& item : Materials)
+    {
+         string name = item.first;
+         Material* _mat = item.second;
+         delete _mat;
+    }
+
+    // C++11 alternative:
+    for (const auto& item : Textures)
+    {
+         string name = item.first;
+         GLuint _tex = item.second;
+
+    }
+
+    // Iterate using C++17 facilities
+    //for (const auto& [key, value] : Materials)
+    //    std::cout << '[' << key << "] = " << value << "; ";
+}
+
 void init_models()
 {
       xObject *obj;

@@ -32,6 +32,7 @@ class Material
 {
 public:
     Material(string _name);
+    ~Material();
     string name;
     float diffuse[4];
     float specular[4];

@@ -22,7 +22,8 @@ Shader::Shader()
 
 Shader::~Shader()
 {
-
+    if (mProgram!=0)
+        glDeleteProgram(mProgram);
 }
 
 /*
@@ -112,10 +113,10 @@ bool Shader::Load(const std::string& vertName, const std::string& fragName)
         }*/
         // Textures.insert({aimaterial->GetName().C_Str(), _tex->d_tex_glname}); // c++11
         ///cached_shader_id.insert({_key, mProgram}); // ok
-        glDetachShader(mProgram, mVertexShader); //
-        glDetachShader(mProgram, mFragShader); //
-        glDeleteShader(mVertexShader); //
-        glDeleteShader(mFragShader);
+        glDetachShader(mProgram, mVertexShader); // need?
+        glDetachShader(mProgram, mFragShader); // need?
+        //glDeleteShader(mVertexShader); // no more need
+        //glDeleteShader(mFragShader);
    }
    printf("Shader load() =====> program = %d \n", mProgram);
    return true;
@@ -127,7 +128,6 @@ void Shader::Unload()
     glDeleteProgram(mProgram);
 	glDeleteShader(mVertexShader);
 	glDeleteShader(mFragShader);
-
 }
 
 void Shader::SetActive()
