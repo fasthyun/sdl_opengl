@@ -1095,7 +1095,7 @@ struct functor_base {
 vector<xObject*> importObjectsFrom3Dfile(string _path) // importObjectsFrom3Dfile
 {
     vector<xObject* > array_objects;
-    array_objects=loadObjectsFrom3Dfile(_path);
+    array_objects = loadObjectsFrom3Dfile(_path);
     //objects.push_back(array_objects);
     //objects.insert(std::end(objects), std::begin(array_objects), std::end(array_objects)); // tooo long...
 
@@ -1149,7 +1149,7 @@ vector<xObject*> importObjectsFrom3Dfile(string _path) // importObjectsFrom3Dfil
 }
 
 template<typename T> xObject * createInstance() { return new T; } // test,can you understand?
-xObject *xxxx=nullptr;
+
 void clear_models()
 {
    // std::map<string, Material*> Materials;
@@ -1197,9 +1197,6 @@ void init_models()
       //std::cout << "xObject(x) =" << obj << "\n";
       //objects.push_back(obj);
       //std::cout << "xObject size=" << sizeof(xObject) << "\n";
-      //xxxx=obj;
-
-
 
       /* array_objects=loadObjectsFrom3Dfile("./model/light.fbx"); // Lamp, Light
         cached_models.insert(std::end(cached_models), std::begin(array_objects), std::end(array_objects)); // tooo long...

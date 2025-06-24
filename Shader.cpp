@@ -26,7 +26,18 @@ Shader::~Shader()
         glDeleteProgram(mProgram);
 }
 
+
+//DELETE :
+void Shader::Unload()
+{
+    // Delete the program/shaders
+    glDeleteProgram(mProgram);
+    glDeleteShader(mVertexShader);
+    glDeleteShader(mFragShader);
+}
+
 /*
+
 program=glCreateProgram();
 //glAttachShader(program​, vshader​);
 //char *vs = NULL,*fs = NULL,*fs2 = NULL;
@@ -52,6 +63,7 @@ glAttachShader(program,fshader);
 glLinkProgram(program);
 glUseProgram(program);
 */
+
 #include <map>
 std::map<std::string, GLuint> cached_shader_id;
 
@@ -76,7 +88,7 @@ bool Shader::Load(const std::string& vertName, const std::string& fragName)
             assert(false);
             return false;
         }
-        mProgram = glCreateProgram(); /// leak 4
+        mProgram = glCreateProgram(); /// leak ---> fixing
         if (mProgram==0)
         {
             printf("Error : Shader mProgram is  NULL!!\n");
@@ -115,21 +127,12 @@ bool Shader::Load(const std::string& vertName, const std::string& fragName)
         ///cached_shader_id.insert({_key, mProgram}); // ok
         glDetachShader(mProgram, mVertexShader); // need?
         glDetachShader(mProgram, mFragShader); // need?
-        //glDeleteShader(mVertexShader); // no more need
-        //glDeleteShader(mFragShader);
+        glDeleteShader(mVertexShader); // dont need here! leak fixed!
+        glDeleteShader(mFragShader); // leak fixed!
    }
    printf("Shader load() =====> program = %d \n", mProgram);
    return true;
 }
-
-void Shader::Unload()
-{
-	// Delete the program/shaders
-    glDeleteProgram(mProgram);
-	glDeleteShader(mVertexShader);
-	glDeleteShader(mFragShader);
-}
-
 void Shader::SetActive()
 {
     glUseProgram(mProgram);

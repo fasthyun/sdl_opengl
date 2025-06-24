@@ -148,6 +148,8 @@ xObject::~xObject(){
         glDeleteVertexArrays(1,&VAO);
     if (VAO_axis!=0)
         glDeleteVertexArrays(1,&VAO_axis);
+    if (VBO_axis!=0)
+        glDeleteBuffers(1,&VBO_axis);
 }
 
 

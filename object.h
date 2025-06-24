@@ -85,7 +85,7 @@ public:
 
     // OpenGL element
     GLuint VBO, VAO=0, EBO;
-    GLuint VBO_axis, VAO_axis=0;
+    GLuint VBO_axis=0, VAO_axis=0;
     GLuint texname = 0;
     vector<xObject*> children;
     string name;

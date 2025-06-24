@@ -491,7 +491,10 @@ void init_shader()
     common_shader=new Shader();
     bool result=common_shader->Load("./shader/texture_vertex.glsl","./shader/texture_fragment.glsl");
 }
-
+void clear_shader()
+{
+    delete common_shader;
+}
 
 #include <random>
 
@@ -564,13 +567,14 @@ int main(int argc, char *argv[])
 
 
     //return 0;
-    main_loop();
+    main_loop(); //loop
     GLenum err;
     while((err = glGetError()) != GL_NO_ERROR)
     {
       // Process/log the error.
     }
     clear_models();
+    clear_shader();
 
     for ( int i=0 ; i < objects.size() ; i++)
     {
