@@ -1187,7 +1187,7 @@ void init_models()
       object_factory["Lamp"] = &createInstance<objLight>;
 
 
-      obj=new xObject("center"); // fail? why? // leak????
+      obj=new xObject("center"); // fail???
       //obj->name="center";
       obj->flag_axis_on=true;
       obj->position=glm::vec3(0, 0, 0);

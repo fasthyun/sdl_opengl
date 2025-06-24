@@ -434,7 +434,6 @@ void main_loop()
         }
         // printf("dt=%d \n",dt);
 
-
         SDL_GL_SwapWindow( sdl_window );
     } // while
 
