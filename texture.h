@@ -39,7 +39,7 @@ public:
     float ambient[4];
     float emission[4];
     float shininess, strength;
-    Texture *texture;
+    Texture *texture; // TODO: change to tex_id ?
     GLuint  getTextureName();
 };
 

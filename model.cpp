@@ -268,7 +268,7 @@ int loadMaterials(const aiScene* scene) {
                 {
                     Textures.insert({aimaterial->GetName().C_Str(), _tex->d_tex_glname}); // c++11
                     found_texture++;
-                    _material->texture=_tex; // testing texture 1개로 가정함 !!!
+                    _material->texture=_tex; // test: texture 1개로 가정함 !!!
                 }
             }
         }
@@ -786,15 +786,13 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
     for (n = 0; n < nd->mNumChildren; ++n)
     {
         // tempolarily
-        xObject *child;
-        /*
+        xObject *child;        
         child=new xObject(nd->mChildren[n]->mName.C_Str()); // leak 119000bytes
         child->set_parent(xobj); //
         child->set_shader(xobj->shader); // from parent's shader, common_shader
         xobj->children.push_back(child);
         //if (xobj.xobject_found==true)
         loadToObject(sc, nd->mChildren[n], scalex, child, level+1);
-        */
     }
     // printf("%sobj.children=%d \n",tab.c_str(), xobj.children.size());
     printf("%sload model obj.name = %s \n",tab.c_str(), xobj->name.c_str());
@@ -1257,8 +1255,8 @@ void init_models()
     //objects.push_back(obj);
 
     //array_objects=importObjectsFrom3Dfile("./model/map.fbx");
-    importObjectsFrom3Dfile("./model/ball.fbx");
-    //importObjectsFrom3Dfile("./model/robot_arm_pre.fbx");
+    //importObjectsFrom3Dfile("./model/ball.fbx");
+    importObjectsFrom3Dfile("./model/robot_arm_pre.fbx");
     //array_objects=loadObjectsFrom3Dfile("./model/robot_arm.fbx");
     //obj=loadObjectFrom3Dfile("./model/Bob.fbx","bob"); // fault
     //objects.push_back(obj);

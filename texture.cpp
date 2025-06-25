@@ -196,11 +196,11 @@ void Texture::makeTexture(SDL_Surface *surface)
 Material::Material(string _name)
 {
     name = _name;
+    texture = nullptr;
     set4f(diffuse,0.0,0.0,0.0,0.0);
     set4f(specular,0.0,0.0,0.0,0.0);
     set4f(ambient,0.0,0.0,0.0,0.0);
-    set4f(emission, 0.0, 0.0, 0.0, 0.0);
-    texture = nullptr;
+    set4f(emission, 0.0, 0.0, 0.0, 0.0);    
 }
 
 Material::~Material()

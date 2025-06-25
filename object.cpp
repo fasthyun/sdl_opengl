@@ -136,7 +136,7 @@ xObject::~xObject(){
     }
     if (shader !=nullptr)
     {
-        //delete shader;
+        //delete shader; danger!
         shader = nullptr;
     }
     for ( size_t i=0 ; i < children.size(); i++)
