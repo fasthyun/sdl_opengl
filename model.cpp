@@ -566,7 +566,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
     else */
     xobj->name = nd->mName.C_Str(); // 1.object name
 
-    aiMatrix4x4 m = nd->mTransformation;
+
 
     string tab="";  // tab tricks. have a fun!
 
@@ -586,6 +586,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
     if(loadMetadata(nd->mMetaData, xobj, nd->mName.C_Str(), level)==true)
         xobj->xobject_found=true; // test
 
+    aiMatrix4x4 m = nd->mTransformation;
     // no transpose then, extract scale, translate, rotate
     // m.Transpose();  // Q: transpose for OpenGL?   A: maybe!
     //copy(xobj->model_mat, &m.a1);
@@ -596,14 +597,14 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
 
     //if (tab_level==0)
     // when non_transpose
+    // ai to gml
     aiVector3f pScaling, pRotation, pPosition;
     aiQuaternion qRotation;
     //m.Decompose(pScaling,pRotation,pPosition);
     m.Decompose(pScaling,qRotation,pPosition);
     //qRotation.Normalize();
     glm::quat MyQuaternion;
-    MyQuaternion = glm::quat(qRotation.w,qRotation.x,qRotation.y,qRotation.z);
-
+    MyQuaternion = glm::quat(qRotation.w,qRotation.x,qRotation.y,qRotation.z); // not good?
     //xobj->pos[0]=pPosition.x; xobj->pos[1]=pPosition.y;  xobj->pos[2]=pPosition.z; // translate. ok
     xobj->position=glm::vec3(pPosition.x,pPosition.y,pPosition.z);
     //xobj->scale[0]=m.a1,xobj->scale[1]=m.b2,xobj->scale[2]=m.c3; //scale. ok
@@ -625,7 +626,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
 
     printf("%s >>> translate(x) = %8.4f (y)=%8.4f (z)=%8.4f \n",tab.c_str(), pPosition.x,pPosition.y,pPosition.z);
     //printf("rotate (x) = %8.4f (y)=%8.4f (z)=%8.4f \n",glm::degrees(pRotation.x),glm::degrees(pRotation.y),glm::degrees(pRotation.z));
-    ///printf("rotate w=%4.4f x=%4.4f y=%4.4f z=%4.4f \n",qRotation.w,qRotation.x,qRotation.y,qRotation.z);
+    //printf("rotate w=%4.4f x=%4.4f y=%4.4f z=%4.4f \n",qRotation.w,qRotation.x,qRotation.y,qRotation.z);
 
 
     //m.a4=0;m.b4=0,m.c4=0;// works!!!
@@ -637,10 +638,12 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
     printf("%8.4f,%8.4f,%8.4f,%8.4f\n", m.d1, m.d2,m.d3,m.d4);
     glm::mat4 m1= glm::make_mat4(&m.a1);
     */
-    glm::mat4 m1= ModelMatrix; // glm::mat4 m1= glm::transpose(ModelMatrix); <=== up-side-down!
+    glm::mat4 m1= ModelMatrix;
+    //glm::mat4 m1= glm::transpose(ModelMatrix); <=== up-side-down!
 
     //xobj->model = glm::make_mat4(&m.a1);
-    xobj->model = glm::mat4(1);
+    //xobj->model = glm::mat4(1);
+    xobj->model = ModelMatrix;
 
     int vertex_offset=0;
     for ( n=0 ; n < nd->mNumMeshes; ++n)
@@ -781,7 +784,8 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
     }
 
 
-    printf("%s + nd->mNumChildren = %d \n",tab.c_str(),nd->mNumChildren);
+    if (nd->mNumChildren!=0)
+        printf("%s + nd->mNumChildren = %d \n",tab.c_str(),nd->mNumChildren);
     //from child object
     for (n = 0; n < nd->mNumChildren; ++n)
     {
@@ -795,7 +799,7 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
         loadToObject(sc, nd->mChildren[n], scalex, child, level+1);
     }
     // printf("%sobj.children=%d \n",tab.c_str(), xobj.children.size());
-    printf("%sload model obj.name = %s \n",tab.c_str(), xobj->name.c_str());
+    printf("%sloaded model obj.name = %s \n",tab.c_str(), xobj->name.c_str());
 }
 
 
