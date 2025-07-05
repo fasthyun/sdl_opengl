@@ -184,8 +184,8 @@ void xObject::draw_dir_up()
 void xObject::make_axis()
 {
     float axies[] = {
-        0.0f,0.0f,0.0f,  1,0,0,1,   // x line red
-        100.0f,0.0f,0.0f,  1,0,0,1,   // x line red
+        0.0f,0.0f,0.0f,  1,0,0,1,   // x  red
+        100.0f,0.0f,0.0f,  1,0,0,1,   // x  red
         0.0f,0.0f,0.0f,  0,1,0,1,   // y line gree
         0.0f,100.0f,0.0f,  0,1,0,1,   // y line gree
         0.0f,0.0f,0.0f,  0,0,1,1,   // z line  blue
@@ -201,7 +201,7 @@ void xObject::make_axis()
     glGenBuffers(1, &VBO_axis);
 
     glBindVertexArray(VAO_axis);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO_axis);  // leak???
+    glBindBuffer(GL_ARRAY_BUFFER, VBO_axis);
     glBufferData(GL_ARRAY_BUFFER, sizeof(axies), axies, GL_STATIC_DRAW);
 
     // 이렇게 띄엄띄엄 값 전달.
@@ -297,10 +297,10 @@ void xObject::draw_axis()
     if (flag_axis_on && VAO_axis>0)
     {
         GLint x;
-        glm::mat4 _m1(1);
+        //glm::mat4 _m1(1);
         glDisable(GL_DEPTH_TEST);        
         //shader->setMat4("model",model); //
-        glLineWidth(3);
+        glLineWidth(4);
         glBindVertexArray(VAO_axis);
         //glVertexAttrib3f(vertColor_loc, 1.0f, 1.0f, 0.2f);
         glVertexAttribI1i(4, 2); //glVertexAttrib1f(4, 2);
@@ -317,18 +317,19 @@ void xObject::draw_meshes()
 
 void xObject::update_model_matrix()
 {
-        model = glm::mat4(1.0); // identity
-        //model=glm::rotate(model, roll , glm::vec3(0,0,1));//z
-        //model=glm::rotate(model, yaw , glm::vec3(0,1,0)); //y
-        //model=glm::rotate(model, pitch , glm::vec3(1,0,0)); //x
-        //model=glm::scale(model, glm::vec3(scale[0],scale[1],scale[2]));
-        glm::mat4 Mi = glm::mat4(1.0f);
-        //glm::mat4 RotationMatrix = glm::mat4(1.0);
-        glm::mat4 RotationMatrix = glm::rotate(Mi, glm::radians(yaw), glm::vec3(0.0, 1.0, 0.0));
-        glm::mat4 TranslationMatrix = glm::translate(model, position);
-        glm::mat4 ScaleMatrix = glm::mat4(1.0);
-        /* TransformedVector = TranslationMatrix * RotationMatrix * ScaleMatrix * OriginalVertex; */
-        model= TranslationMatrix * RotationMatrix * ScaleMatrix; // works!!!
+    return;
+    model = glm::mat4(1.0); // identity
+    //model=glm::rotate(model, roll , glm::vec3(0,0,1));//z
+    //model=glm::rotate(model, yaw , glm::vec3(0,1,0)); //y
+    //model=glm::rotate(model, pitch , glm::vec3(1,0,0)); //x
+    //model=glm::scale(model, glm::vec3(scale[0],scale[1],scale[2]));
+    glm::mat4 Mi = glm::mat4(1.0f);
+    //glm::mat4 RotationMatrix = glm::mat4(1.0);
+    glm::mat4 RotationMatrix = glm::rotate(Mi, glm::radians(yaw), glm::vec3(0.0, 1.0, 0.0));
+    glm::mat4 TranslationMatrix = glm::translate(model, position);
+    glm::mat4 ScaleMatrix = glm::mat4(1.0);
+    /* TransformedVector = TranslationMatrix * RotationMatrix * ScaleMatrix * OriginalVertex; */
+    model= TranslationMatrix * RotationMatrix * ScaleMatrix; // works!!!
 }
 
 #include <glm/gtc/matrix_transform.hpp>
@@ -344,15 +345,16 @@ void xObject::draw()
     //m1[3].x =pos[0];    m1[3].y =pos[1];    m1[3].z =pos[2];
     //m1[3].x =pos[0];    m1[3].y =pos[1];    m1[3].z =pos[2];
 
-    update_model_matrix();
+    //update_model_matrix();
     glm::mat4 _m1(1);
     float _m[16];
     if (parent)
     {
-        loadIdentity(_m);
+        //loadIdentity(_m);
         //set(_m,parent->model_m);
         //mat4x4_mult(_m, parent->model_mat, model_mat);
-        _m1=parent->model * _m1;
+        _m1=parent->model * model;
+        //_m1= model;
     }
     else _m1 = model;
     //else mat4x4_set(_m, model_mat); // copy
@@ -361,11 +363,13 @@ void xObject::draw()
 
     if (texname > 0)
         glBindTexture(GL_TEXTURE_2D, texname);
+    if (shader)
+        shader->setMat4("model",_m1);
 
     if (VAO>0)
     {
         glEnable(GL_DEPTH_TEST);    // Enable depth buffering
-        shader->setMat4("model",_m1);
+
         /* GLint location;
           location = glGetUniformLocation(shader->mProgram, "model");
           if (location >= 0)
@@ -376,7 +380,7 @@ void xObject::draw()
             the texture object used for each texture lookup. The value of a sampler
             indicates the texture image unit being accessed.
             Setting a sampler’s value to i selects texture image unit number i.
-        */        
+        */
 
         GLint location = glGetUniformLocation(shader->mProgram, "ourTexture");
         if(location >=0) glUniform1i(location, 0); // 0: GL_TEXTURE0 works!!! 0값이 전달될때 sampler2D로 변환되는것 같다.        

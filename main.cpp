@@ -45,7 +45,7 @@ Shader *common_shader;
 /* GUI */
 struct nk_context *ctx;
 // struct nk_colorf bg;
-int flag_nk=0;
+int flag_nk=true;
 int flag_large_screen=false;
 int width=1024;
 int height=768;
@@ -337,7 +337,7 @@ void main_loop()
         glm::mat4 projview_mat4 = projectionMatrix * viewMatrix;
 
 
-        objLight *_light= (objLight *) findObject( "Lamp");
+        objLight *_light= (objLight *) findObject( "Light");
         for ( size_t i=0 ; i < objects.size(); i++)
         {
             xObject *obj = objects[i];
@@ -345,6 +345,8 @@ void main_loop()
             obj->update(dt);  //update objects
             if (obj->shader != nullptr)                  
                 _shader= obj->shader;
+            else
+                obj->shader = common_shader;
             _shader->SetActive(); //
             _shader->setMat4("projView",projview_mat4);
             //glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(projview_mat4)); // ( location, count,  transpose, float *value )

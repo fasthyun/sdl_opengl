@@ -587,63 +587,69 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
         xobj->xobject_found=true; // test
 
     aiMatrix4x4 m = nd->mTransformation;
+    glm::mat4 m1;
+
     // no transpose then, extract scale, translate, rotate
-    // m.Transpose();  // Q: transpose for OpenGL?   A: maybe!
+    m.Transpose();  // Q: transpose for OpenGL?   A: maybe! need !
     //copy(xobj->model_mat, &m.a1);
     //xobj->model = glm::make_mat4(&m.a1); // without transpose!!
 
 
     printf("%s[%s].mNumMeshes=%d \n", tab.c_str(), nd->mName.C_Str(), nd->mNumMeshes);
 
-    //if (tab_level==0)
-    // when non_transpose
-    // ai to gml
-    aiVector3f pScaling, pRotation, pPosition;
-    aiQuaternion qRotation;
-    //m.Decompose(pScaling,pRotation,pPosition);
-    m.Decompose(pScaling,qRotation,pPosition);
-    //qRotation.Normalize();
-    glm::quat MyQuaternion;
-    MyQuaternion = glm::quat(qRotation.w,qRotation.x,qRotation.y,qRotation.z); // not good?
-    //xobj->pos[0]=pPosition.x; xobj->pos[1]=pPosition.y;  xobj->pos[2]=pPosition.z; // translate. ok
-    xobj->position=glm::vec3(pPosition.x,pPosition.y,pPosition.z);
-    //xobj->scale[0]=m.a1,xobj->scale[1]=m.b2,xobj->scale[2]=m.c3; //scale. ok
+    if (0){
+        //if (tab_level==0)
+        // when non_transpose
+        // ai to gml
+        aiVector3f pScaling, pRotation, pPosition;
+        aiQuaternion qRotation;
+        //m.Decompose(pScaling,pRotation,pPosition);
+        m.Decompose(pScaling,qRotation,pPosition);
+        //qRotation.Normalize();
+        glm::quat MyQuaternion;
+        MyQuaternion = glm::quat(qRotation.w,qRotation.x,qRotation.y,qRotation.z); // not good?
+        //xobj->pos[0]=pPosition.x; xobj->pos[1]=pPosition.y;  xobj->pos[2]=pPosition.z; // translate. ok
+        xobj->position=glm::vec3(pPosition.x,pPosition.y,pPosition.z);
+        //xobj->scale[0]=m.a1,xobj->scale[1]=m.b2,xobj->scale[2]=m.c3; //scale. ok
 
-    glm::mat4 TranslationMatrix = glm::mat4(1) ;
-    //glm::mat4 TranslationMatrix = glm::translate(glm::mat4(1), glm::vec3( pPosition.x,pPosition.y,pPosition.z));
-    glm::mat4 ScaleMatrix = glm::scale(glm::mat4(1), glm::vec3(pScaling.x,pScaling.y,pScaling.z));
-    glm::mat4 RotationMatrix = glm::mat4_cast(MyQuaternion);
-    glm::mat4 ModelMatrix = TranslationMatrix * RotationMatrix * ScaleMatrix; // works!!!
+        glm::mat4 TranslationMatrix = glm::mat4(1) ;
+        //glm::mat4 TranslationMatrix = glm::translate(glm::mat4(1), glm::vec3( pPosition.x,pPosition.y,pPosition.z));
+        glm::mat4 ScaleMatrix = glm::scale(glm::mat4(1), glm::vec3(pScaling.x,pScaling.y,pScaling.z));
+        glm::mat4 RotationMatrix = glm::mat4_cast(MyQuaternion);
+        glm::mat4 ModelMatrix = TranslationMatrix * RotationMatrix * ScaleMatrix; // works!!!
 
-    if (0)
+        if (0)
+        {
+            std::cout << glm::to_string(TranslationMatrix) << "\n";
+            std::cout << glm::to_string(RotationMatrix) << "\n";
+            std::cout << glm::to_string(ScaleMatrix) << "\n";
+            std::cout << glm::to_string(ModelMatrix) << "\n";
+        }
+        float angleY, angleX,angleZ;
+
+        printf("%s >>> translate(x) = %8.4f (y)=%8.4f (z)=%8.4f \n",tab.c_str(), pPosition.x,pPosition.y,pPosition.z);
+        //printf("rotate (x) = %8.4f (y)=%8.4f (z)=%8.4f \n",glm::degrees(pRotation.x),glm::degrees(pRotation.y),glm::degrees(pRotation.z));
+        //printf("rotate w=%4.4f x=%4.4f y=%4.4f z=%4.4f \n",qRotation.w,qRotation.x,qRotation.y,qRotation.z);
+
+
+        //m.a4=0;m.b4=0,m.c4=0;// works!!!
+        /*
+        m.Transpose();  // Q: transpose for OpenGL?   A: maybe!
+        printf("%8.4f,%8.4f,%8.4f,%8.4f\n", m.a1, m.a2,m.a3,m.a4);
+        printf("%8.4f,%8.4f,%8.4f,%8.4f\n", m.b1, m.b2,m.b3,m.b4);
+        printf("%8.4f,%8.4f,%8.4f,%8.4f\n", m.c1, m.c2,m.c3,m.c4);
+        printf("%8.4f,%8.4f,%8.4f,%8.4f\n", m.d1, m.d2,m.d3,m.d4);
+        glm::mat4 m1= glm::make_mat4(&m.a1);
+        */
+        m1= ModelMatrix;
+        //glm::mat4 m1= glm::transpose(ModelMatrix); <=== up-side-down!
+        xobj->model = ModelMatrix;
+   }
+    else
     {
-        std::cout << glm::to_string(TranslationMatrix) << "\n";
-        std::cout << glm::to_string(RotationMatrix) << "\n";
-        std::cout << glm::to_string(ScaleMatrix) << "\n";
-        std::cout << glm::to_string(ModelMatrix) << "\n";
+        xobj->model = glm::make_mat4(&m.a1);
+        m1=xobj->model;
     }
-    float angleY, angleX,angleZ;
-
-    printf("%s >>> translate(x) = %8.4f (y)=%8.4f (z)=%8.4f \n",tab.c_str(), pPosition.x,pPosition.y,pPosition.z);
-    //printf("rotate (x) = %8.4f (y)=%8.4f (z)=%8.4f \n",glm::degrees(pRotation.x),glm::degrees(pRotation.y),glm::degrees(pRotation.z));
-    //printf("rotate w=%4.4f x=%4.4f y=%4.4f z=%4.4f \n",qRotation.w,qRotation.x,qRotation.y,qRotation.z);
-
-
-    //m.a4=0;m.b4=0,m.c4=0;// works!!!
-    /*
-    m.Transpose();  // Q: transpose for OpenGL?   A: maybe!
-    printf("%8.4f,%8.4f,%8.4f,%8.4f\n", m.a1, m.a2,m.a3,m.a4);
-    printf("%8.4f,%8.4f,%8.4f,%8.4f\n", m.b1, m.b2,m.b3,m.b4);
-    printf("%8.4f,%8.4f,%8.4f,%8.4f\n", m.c1, m.c2,m.c3,m.c4);
-    printf("%8.4f,%8.4f,%8.4f,%8.4f\n", m.d1, m.d2,m.d3,m.d4);
-    glm::mat4 m1= glm::make_mat4(&m.a1);
-    */
-    glm::mat4 m1= ModelMatrix;
-    //glm::mat4 m1= glm::transpose(ModelMatrix); <=== up-side-down!
-
-    //xobj->model = glm::make_mat4(&m.a1);
-    //xobj->model = glm::mat4(1);
-    xobj->model = ModelMatrix;
 
     int vertex_offset=0;
     for ( n=0 ; n < nd->mNumMeshes; ++n)
@@ -733,13 +739,11 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
                 vert.type=1; // color mode
             }            
 
-            // transform to OpenGL
+            // transform to OpenGL : no!!!
                 glm::vec4 v1=glm::vec4(mesh->mVertices[i].x,mesh->mVertices[i].y,mesh->mVertices[i].z,1.0);
-                glm::vec4 new_v = m1 * v1;
-                vert.v[0]=new_v.x;
-                vert.v[1]=new_v.y;
-                vert.v[2]=new_v.z;
-
+                //glm::vec4 new_v = m1 * v1;
+                //vert.v[0]=new_v.x; vert.v[1]=new_v.y;vert.v[2]=new_v.z;
+                vert.v[0]=v1.x; vert.v[1]=v1.y;vert.v[2]=v1.z;
             xobj->vertexes.push_back(vert);
 
         }
@@ -851,7 +855,7 @@ bool Import3DFromFile(const std::string filename, xObject *obj)
 {
     /*
         * Scene에는 여러개의 Object가 있을수 있다. 카메라, 라이트 등등
-           즉, 3D파일 1개에 여러개 Object가 있을수 있음.
+           즉, 3D파일 1개에 여러개 Object가 있을 수 있음.
         * 각 Object들이 child를 갖을 수 있음
         - blender에서 각 object는 properties를 갖는다.
         - properties가 FBX에서는 metadata임
@@ -1189,7 +1193,7 @@ void init_models()
       object_factory["Lamp"] = &createInstance<objLight>;
 
 
-      obj=new xObject("center"); // fail???
+      obj=new xObject("center"); // fail??? why?
       //obj->name="center";
       obj->flag_axis_on=true;
       obj->position=glm::vec3(0, 0, 0);
