@@ -354,7 +354,7 @@ void xObject::draw()
         //set(_m,parent->model_m);
         //mat4x4_mult(_m, parent->model_mat, model_mat);
         _m1=parent->model * model;
-        //_m1= model;
+        _m1= model;
     }
     else _m1 = model;
     //else mat4x4_set(_m, model_mat); // copy

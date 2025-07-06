@@ -589,15 +589,17 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
     aiMatrix4x4 m = nd->mTransformation;
     glm::mat4 m1;
 
-    // no transpose then, extract scale, translate, rotate
-    m.Transpose();  // Q: transpose for OpenGL?   A: maybe! need !
-    //copy(xobj->model_mat, &m.a1);
-    //xobj->model = glm::make_mat4(&m.a1); // without transpose!!
 
+    m.Transpose();  // Q: transpose for OpenGL?   A: need ! ---> more test need!
 
+    printf("%8.4f,%8.4f,%8.4f,%8.4f\n", m.a1, m.a2, m.a3, m.a4);
+    printf("%8.4f,%8.4f,%8.4f,%8.4f\n", m.b1, m.b2,m.b3,m.b4);
+    printf("%8.4f,%8.4f,%8.4f,%8.4f\n", m.c1, m.c2,m.c3,m.c4);
+    printf("%8.4f,%8.4f,%8.4f,%8.4f\n", m.d1, m.d2,m.d3,m.d4);
+    //glm::mat4 m1= glm::make_mat4(&m.a1);
     printf("%s[%s].mNumMeshes=%d \n", tab.c_str(), nd->mName.C_Str(), nd->mNumMeshes);
-
     if (0){
+        // no transpose then, extract scale, translate, rotate
         //if (tab_level==0)
         // when non_transpose
         // ai to gml
@@ -633,22 +635,15 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
 
 
         //m.a4=0;m.b4=0,m.c4=0;// works!!!
-        /*
-        m.Transpose();  // Q: transpose for OpenGL?   A: maybe!
-        printf("%8.4f,%8.4f,%8.4f,%8.4f\n", m.a1, m.a2,m.a3,m.a4);
-        printf("%8.4f,%8.4f,%8.4f,%8.4f\n", m.b1, m.b2,m.b3,m.b4);
-        printf("%8.4f,%8.4f,%8.4f,%8.4f\n", m.c1, m.c2,m.c3,m.c4);
-        printf("%8.4f,%8.4f,%8.4f,%8.4f\n", m.d1, m.d2,m.d3,m.d4);
-        glm::mat4 m1= glm::make_mat4(&m.a1);
-        */
-        m1= ModelMatrix;
+
         //glm::mat4 m1= glm::transpose(ModelMatrix); <=== up-side-down!
         xobj->model = ModelMatrix;
+        m1= ModelMatrix;
    }
     else
     {
         xobj->model = glm::make_mat4(&m.a1);
-        m1=xobj->model;
+        m1 = xobj->model;
     }
 
     int vertex_offset=0;
@@ -699,9 +694,9 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
             vertex vert;
             if(mesh->mNormals != nullptr)
             {
-                vert.normal[0]=mesh->mNormals[i].x;
-                vert.normal[1]=mesh->mNormals[i].z;
-                vert.normal[2]=-mesh->mNormals[i].y;
+                vert.normal[0]= mesh->mNormals[i].x;
+                vert.normal[1]= mesh->mNormals[i].y;  // ok
+                vert.normal[2]= mesh->mNormals[i].z; // ok
                 count_normal++;
             }
 
@@ -739,11 +734,19 @@ void loadToObject(const struct aiScene *sc, const struct aiNode* nd, float scale
                 vert.type=1; // color mode
             }            
 
-            // transform to OpenGL : no!!!
-                glm::vec4 v1=glm::vec4(mesh->mVertices[i].x,mesh->mVertices[i].y,mesh->mVertices[i].z,1.0);
-                //glm::vec4 new_v = m1 * v1;
-                //vert.v[0]=new_v.x; vert.v[1]=new_v.y;vert.v[2]=new_v.z;
-                vert.v[0]=v1.x; vert.v[1]=v1.y;vert.v[2]=v1.z;
+            glm::vec4 v1=glm::vec4(mesh->mVertices[i].x,mesh->mVertices[i].y,mesh->mVertices[i].z,1.0);
+            if (1){
+                 // transform to OpenGL : no!!! ?????
+                 //vert.v[0]=v1.x; vert.v[1]=v1.z;vert.v[2]= -v1.y;
+                 vert.v[0]=v1.x; vert.v[1]=v1.y;vert.v[2]= v1.z;
+                }
+                else
+                {
+                    // transform
+                    //glm::vec4 new_v = m1 * v1; //
+                    //vert.v[0]=new_v.x; vert.v[1]=new_v.y;vert.v[2]=new_v.z;
+                }
+
             xobj->vertexes.push_back(vert);
 
         }
@@ -1263,8 +1266,8 @@ void init_models()
     //objects.push_back(obj);
 
     //array_objects=importObjectsFrom3Dfile("./model/map.fbx");
-    //importObjectsFrom3Dfile("./model/ball.fbx");
-    importObjectsFrom3Dfile("./model/robot_arm_pre.fbx");
+    importObjectsFrom3Dfile("./model/ball.fbx");
+    //importObjectsFrom3Dfile("./model/robot_arm_pre.fbx");
     //array_objects=loadObjectsFrom3Dfile("./model/robot_arm.fbx");
     //obj=loadObjectFrom3Dfile("./model/Bob.fbx","bob"); // fault
     //objects.push_back(obj);
