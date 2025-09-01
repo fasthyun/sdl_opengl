@@ -185,11 +185,11 @@ void xObject::make_axis()
 {
     float axies[] = {
         0.0f,0.0f,0.0f,  1,0,0,1,   // x  red
-        100.0f,0.0f,0.0f,  1,0,0,1,   // x  red
+        2.0f,0.0f,0.0f,  1,0,0,1,   // x  red
         0.0f,0.0f,0.0f,  0,1,0,1,   // y line gree
-        0.0f,100.0f,0.0f,  0,1,0,1,   // y line gree
+        0.0f,2.0f,0.0f,  0,1,0,1,   // y line gree
         0.0f,0.0f,0.0f,  0,0,1,1,   // z line  blue
-        0.0f,0.0f,100.0f,  0,0,1,1,   // z line  blue
+        0.0f,0.0f,2.0f,  0,0,1,1,   // z line  blue
         };
     if (VAO_axis != 0 )
     {
